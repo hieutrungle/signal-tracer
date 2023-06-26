@@ -92,6 +92,43 @@ namespace Utils {
         stream << std::fixed << std::setprecision(precision) << value;
         return stream.str();
     }
+
+    class Timer {
+    private:
+        // Type aliases to make accessing nested type easier
+        using Clock = std::chrono::steady_clock;
+        using Second = std::chrono::duration<double, std::ratio<1> >;
+
+        std::chrono::time_point<Clock> m_begin{ Clock::now() };
+
+    public:
+
+        void reset() {
+            m_begin = Clock::now();
+        }
+
+        double elapsed() const {
+            return std::chrono::duration_cast<Second>(Clock::now() - m_begin).count();
+        }
+
+        void execution_time() {
+            auto sec = static_cast<int>(elapsed());
+            auto h = static_cast<double>(sec) / 3600.0;
+            if (h < 1.0) {
+                auto m = static_cast<double>(sec) / 60.0;
+                if (m < 1.0) {
+                    std::clog << "Execution time: " << sec << " seconds" << std::endl;
+                    return;
+                }
+                auto s = static_cast<double>(sec % 60);
+                std::clog << "Execution time: " << m << " minutes " << s << " seconds" << std::endl;
+                return;
+            }
+            auto m = static_cast<double>(sec % 3600) / 60.0;
+            auto s = static_cast<double>((sec % 3600) % 60);
+            std::clog << "Execution time: " << h << " hours " << m << " minutes " << s << " seconds" << std::endl;
+        };
+    };
 };
 
 

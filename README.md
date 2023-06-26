@@ -42,7 +42,7 @@ This project is a simulation of ray tracing for wireless communication. It is ba
 
 Install the latest drivers. We highly recommend the closed-source binary drivers. It’s not GNU or whatever, but they work. If your distribution doesn’t provide an automatic install, try Ubuntu’s guide.
 
-Install all needed compilers, tools & libs. Complete list is : cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev . 
+Install all needed compilers, tools & libs. Complete list is : cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev .
 
 Use sudo apt-get install ***** or su && yum install ******.
 
@@ -108,11 +108,29 @@ Release run:
 
 ## Results
 
-### Direct Path
+### Basic Demo
+
+#### Direct Path
 
 ![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/direct.png)
 
-### Reflect Path
+#### Reflect Path
+
+**Single reflection:**
+
+![Reflect Path - 1 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/reflect1.png)
+
+**Double reflection:**
+
+![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/reflect2.png)
+
+### City Demo
+
+#### Direct Path
+
+![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/direct.png)
+
+#### Reflect Path
 
 **Single reflection:**
 
@@ -145,7 +163,7 @@ int vertexColorLocation = glGetUniformLocation(shader_program.GetID(), "objectCo
 glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 ```
 
-**Texture**
+- Texture
 
 ```cpp
 glUniform1i(glGetUniformLocation(shader_program, "texture0"), 0);

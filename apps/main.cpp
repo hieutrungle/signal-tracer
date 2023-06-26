@@ -127,12 +127,15 @@ int main(int argc, char* argv []) {
 
     // Load models
     // ----------------------------------
-    Model city_model{ "/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj" };
-    // Model city_model{ "/home/hieule/research/comm_ray/assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj" };
+    // Model city_model{ "/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj" };
+    Model city_model{ "/home/hieule/research/comm_ray/assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj" };
 
     // Signal tracer
     // ----------------------------------
+    Utils::Timer timer{}; // TODO:
+    timer.reset();
     signal_tracer::SignalTracer sig_tracer{ city_model.get_meshes(), 1 };
+    timer.execution_time();
 
     // TX-RX positions
     // ----------------------------------
@@ -149,7 +152,9 @@ int main(int argc, char* argv []) {
     glm::vec3 tx_pos {radio_positions[0]};
     glm::vec3 rx_pos {radio_positions[1]};
 
+    timer.reset();
     sig_tracer.tracing(radio_positions[0], radio_positions[1]);
+    timer.execution_time();
 
     for (const auto& ref_record : sig_tracer.get_reflection_records()) {
         std::cout << "reflection record: " << ref_record << std::endl;
