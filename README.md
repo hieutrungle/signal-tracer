@@ -46,6 +46,66 @@ Install all needed compilers, tools & libs. Complete list is : cmake make g++ li
 
 Use sudo apt-get install ***** or su && yum install ******.
 
+## Usage
+
+### Build
+
+Debug build:
+
+```bash
+export PARALLEL_CORES=$(($(grep -c "^processor" /proc/cpuinfo) - 1))
+export PARALLEL_CORES=$(($(nproc) - 1))
+echo "Building with $PARALLEL_CORES cores"
+
+mkdir -p ./build
+cd ./build
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake --build . -- -j$PARALLEL_CORES
+```
+
+Release build:
+
+```bash
+export PARALLEL_CORES=$(($(grep -c "^processor" /proc/cpuinfo) - 1))
+export PARALLEL_CORES=$(($(nproc) - 1))
+echo "Building with $PARALLEL_CORES cores"
+
+mkdir -p ./build
+cd ./build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . -- -j$PARALLEL_CORES
+```
+
+### Run
+
+Debug run:
+
+```bash
+./build/bin/main.exe
+```
+
+Release run:
+
+```bash
+./build_release/bin/main.exe
+```
+
+### Mouse
+
+- Left click: Pan
+- Right click: Arcball rotation
+- Middle click: Move forward/backward
+- Scroll: Move forward/backward
+
+### Keyboard
+
+- W: Move up
+- S: Move down
+- A: Move left
+- D: Move right
+- Q: Move backward
+- E: Move forward
+
 ## Results
 
 ### Direct Path
