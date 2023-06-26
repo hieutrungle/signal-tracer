@@ -107,6 +107,7 @@ public:
         m_camera_ptr->arcball_rotate(xoffset, yoffset);
     }
 
+    // TODO: change fov
     void zoom(float yoffset) {
         yoffset = yoffset * m_move_speed * 5 * m_delta_time;
         m_camera_ptr->zoom(yoffset);
@@ -160,6 +161,10 @@ public:
         m_draw_reflection_mode = draw_reflection_mode;
     }
 
+    void set_camera_fov(float fov) {
+        m_camera_ptr->set_fov(fov);
+    }
+
     [[nodiscard]] std::shared_ptr<BaseCamera> get_camera_ptr() const {
         return m_camera_ptr;
     }
@@ -196,8 +201,8 @@ public:
         return m_camera_ptr->get_view_matrix();
     }
 
-    [[nodiscard]] float get_zoom() const {
-        return m_camera_ptr->get_zoom();
+    [[nodiscard]] float get_camera_fov() const {
+        return m_camera_ptr->get_fov();
     }
 
     [[nodiscard]] glm::vec3 get_position() const {

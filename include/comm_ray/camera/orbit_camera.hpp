@@ -20,13 +20,14 @@ public:
         glm::vec3 position = CameraDefaultParam::position,
         glm::vec3 target = CameraDefaultParam::target,
         glm::vec3 world_up = CameraDefaultParam::world_up,
-        float zoom = CameraDefaultParam::zoom
+        float fov = CameraDefaultParam::fov
     )
-        : BaseCamera(position, target, world_up, zoom) {
+        : BaseCamera(position, target, world_up, fov) {
         init_camera();
     }
 
     void reset() override {
+        m_fov = CameraDefaultParam::fov;
         m_position = CameraDefaultParam::position;
         m_target = CameraDefaultParam::target;
         m_world_up = glm::normalize(CameraDefaultParam::world_up);

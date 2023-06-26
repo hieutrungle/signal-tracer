@@ -76,7 +76,8 @@ namespace GLFWCallback {
     }
 
     void scroll_callback(GLFWwindow* UTILS_UNUSED_PARAM(window), double UTILS_UNUSED_PARAM(xoffset), double yoffset) {
-        viewing.process_mouse_scroll(static_cast<float>(yoffset));
+        // viewing.process_mouse_scroll(static_cast<float>(yoffset));
+        viewing.set_camera_fov(viewing.get_camera_fov() - static_cast<float>(yoffset));
     }
 
     /*

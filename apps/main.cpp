@@ -235,7 +235,7 @@ int main(int argc, char* argv []) {
         // Camera
         // -------------------------
         view = viewing.get_view_matrix();
-        projection = glm::perspective(glm::radians(viewing.get_zoom()), aspect_ratio, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(viewing.get_camera_fov()), aspect_ratio, 0.1f, 100.0f);
 
         // -------------------------
         directional_light.color(Lighting::WHITE);

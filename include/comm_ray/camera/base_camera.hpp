@@ -25,10 +25,10 @@ enum class CameraMovement {
 };
 
 namespace CameraDefaultParam {
-    inline glm::vec3 position{ 0.0f, 40.0f, 13.0f };
+    inline glm::vec3 position{ 0.0f, 40.0f, 30.0f };
     inline glm::vec3 target{ 0.0f, 0.0f, 0.0f };
     inline glm::vec3 world_up{ 0.0f, 1.0f, 0.0f };
-    inline float zoom{ 45.0 };
+    inline float fov{ 45.0 };
 }
 
 
@@ -41,12 +41,12 @@ public:
         glm::vec3 position = CameraDefaultParam::position,
         glm::vec3 target = CameraDefaultParam::target,
         glm::vec3 world_up = CameraDefaultParam::world_up,
-        float zoom = CameraDefaultParam::zoom
+        float fov = CameraDefaultParam::fov
     )
         : m_position{ position }
         , m_target{ target }
         , m_world_up{ glm::normalize(world_up) }
-        , m_zoom{ zoom } {}
+        , m_fov{ fov } {}
 
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     virtual glm::mat4 get_view_matrix() {
@@ -73,8 +73,8 @@ public:
         return m_cam_front;
     }
 
-    [[nodiscard]] float get_zoom() const {
-        return m_zoom;
+    [[nodiscard]] float get_fov() const {
+        return m_fov;
     }
 
     [[nodiscard]] float get_yaw() const {
@@ -90,6 +90,16 @@ public:
     }
     void set_front(const glm::vec3& front) {
         m_cam_front = front;
+    }
+
+    void set_target(const glm::vec3& target) {
+        m_target = target;
+    }
+
+    void set_fov(float fov) {
+        if (fov < 1.0f) { fov = 1.0f; }
+        if (fov > 45.0f) { fov = 45.0f; }
+        m_fov = fov;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const BaseCamera& base_camera) {
@@ -131,6 +141,6 @@ protected:
     float m_yaw{};
     float m_pitch{};
     // camera options
-    float m_zoom{};
+    float m_fov{}; // field of view in degrees
 };
 #endif // !BASE_CAMERA_HPP

@@ -95,7 +95,7 @@ Release run:
 - Left click: Pan
 - Right click: Arcball rotation
 - Middle click: Move forward/backward
-- Scroll: Move forward/backward
+- Scroll: Zoom in/out - change field of view
 
 ### Keyboard
 

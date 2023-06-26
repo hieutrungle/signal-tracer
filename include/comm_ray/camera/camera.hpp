@@ -3,9 +3,9 @@
 #define CAMERA_HPP
 
 #include "config.hpp"
-#include <glad/gl.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "glad/gl.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 #include <vector>
 
 // TODO: add camera base class
@@ -191,6 +191,10 @@ public:
     }
     void set_front(const glm::vec3& front) {
         m_cam_front = front;
+    }
+
+    void set_zoom(float zoom) {
+        m_zoom = zoom;
     }
 
     glm::vec3 spherical2cartesian(float yaw, float pitch, float radius) {
