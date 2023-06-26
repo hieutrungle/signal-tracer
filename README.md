@@ -44,8 +44,19 @@ Install all needed compilers, tools & libs. Complete list is : cmake make g++ li
 
 ## Results
 
-<!-- url from assets/images -->
-![image](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/direct.png)
+### Direct Path
+
+![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/direct.png)
+
+### Reflect Path
+
+**Single reflection:**
+
+![Reflect Path - 1 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/reflect1.png)
+
+**Double reflection:**
+
+![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/reflect2.png)
 
 ## Tips
 
