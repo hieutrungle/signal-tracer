@@ -45,7 +45,7 @@ Install all needed compilers, tools & libs. Complete list is : cmake make g++ li
 ## Results
 
 <!-- url from assets/images -->
-![image](https://github.com/hieutrungle/[reponame]/blob/[branch]/image.jpg?raw=true)
+![image](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/direct.png)
 
 ## Tips
 
