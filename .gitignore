@@ -5,13 +5,12 @@ core.*
 *out.*
 *.ipynb_checkpoints
 *.vscode
-assets
+assets/*
 *tmp*
 *temp*
 **.sh*
 
-!assets/demo_layouts/Basic_Demo/
-!assets/demo_layouts/City_Demo/
+!assets/demo_layouts
 !external
 !include
 !shader
