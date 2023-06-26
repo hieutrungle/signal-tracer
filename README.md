@@ -112,33 +112,33 @@ Release run:
 
 #### Direct Path
 
-![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/direct.png)
+![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/basic_demo/direct.png)
 
 #### Reflect Path
 
 **Single reflection:**
 
-![Reflect Path - 1 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/reflect1.png)
+![Reflect Path - 1 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/basic_demo/reflect1.png)
 
 **Double reflection:**
 
-![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/reflect2.png)
+![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/basic_demo/reflect2.png)
 
 ### City Demo
 
 #### Direct Path
 
-![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/direct.png)
+![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/direct.png)
 
 #### Reflect Path
 
 **Single reflection:**
 
-![Reflect Path - 1 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/reflect1.png)
+![Reflect Path - 1 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/reflect1.png)
 
 **Double reflection:**
 
-![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/reflect2.png)
+![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/reflect2.png)
 
 ## Tips
 
