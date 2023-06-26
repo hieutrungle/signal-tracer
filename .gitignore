@@ -11,6 +11,7 @@ assets/*
 **.sh*
 
 !assets/demo_layouts
+!assets/images
 !external
 !include
 !shader

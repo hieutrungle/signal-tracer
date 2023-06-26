@@ -42,6 +42,11 @@ Install the latest drivers. We highly recommend the closed-source binary drivers
 
 Install all needed compilers, tools & libs. Complete list is : cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev . Use sudo apt-get install ***** or su && yum install ******.
 
+## Results
+
+<!-- url from assets/images -->
+![image](https://github.com/hieutrungle/[reponame]/blob/[branch]/image.jpg?raw=true)
+
 ## Tips
 
 Those are equivalent to the following commands:
