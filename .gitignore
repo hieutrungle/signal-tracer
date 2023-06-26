@@ -1,0 +1,19 @@
+*cache*
+build
+build_release
+core.*
+*out.*
+*.ipynb_checkpoints
+*.vscode
+assets
+*tmp*
+*temp*
+**.sh*
+
+# !assets/demo_layouts/Basic_Demo
+# !assets/demo_layouts/City_Demo
+!external
+!include
+!shader
+!src
+!tests

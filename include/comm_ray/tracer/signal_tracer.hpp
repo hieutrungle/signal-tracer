@@ -1,0 +1,261 @@
+#pragma once
+
+#ifndef SIGNAL_TRACER_HPP
+#define SIGNAL_TRACER_HPP
+
+#include "mesh.hpp"
+#include "bvh_map.hpp"
+#include "triangle.hpp"
+#include "point_container.hpp"
+#include "glm/glm.hpp"
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+
+// // TODO: Setup world that contains all the objects' triangles similar to the HittableList class in Ray Tracing in One Weekend. This HittableList is a wrapper of all meshes from all models. The BVHMap is a wrapper of all triangles from all meshes. The BVHMap is used to accelerate the intersection test between a ray and the triangles. The HittableList is used to find the closest intersection point between a ray and the triangles.
+
+// // TODO: Setup a world.
+
+
+/*
+    HittableList model{};
+    auto material = make_shared<Material>(attributes);
+    model.add(make_shared<Triangle>(p1, p2, p3, material));
+
+    ------------------------------------------
+    BVH constructor
+    BVH(const std::vector<shared_ptr<Hittable>>& src_objects, size_t start, size_t end) { init BVH structure }
+    BVH(const HittableList& model) : BVH{ model.objects(), 0, model.objects().size() } {}
+
+    There are two ways to initialize a BVH:
+    1. Initialize a BVH with a HittableList object (a model).
+    2. Initialize a BVH with a vector of shared_ptr<Hittable> objects (shared pointers of all triangles).
+
+    we choose the first method. Initialize a model object with all triangles from all meshes. Then initialize a BVH with the model object.
+    ------------------------------------------
+
+    std::shared_ptr<BVH> bvh = std::make_shared<BVH>(model);
+
+    ------------------------------------------
+    There can be many model we want to render. We can store all models in a vector that is a member of the world object (a bigger HittableList).
+    HittableList member variable:
+    std::vector<shared_ptr<Hittable>> m_objects{};
+
+    Child class of Hittable:
+        class BVH : public
+        class Triangle : public
+        class HittableList : public
+    ------------------------------------------
+
+    HittableList model1{};
+    auto material1 = make_shared<Material>(attributes1);
+    model1.add(make_shared<Triangle>(p11, p12, p13, material1));
+
+    HittableList model2{};
+    auto material2 = make_shared<Material>(attributes2);
+    model2.add(make_shared<Triangle>(p21, p22, p23, material2));
+
+    std::shared_ptr<BVH> bvh1 = std::make_shared<BVH>(model1);
+    std::shared_ptr<BVH> bvh2 = std::make_shared<BVH>(model2);
+
+    std::vector<std::shared_ptr<Hittable>> models{};
+    models.push_back(bvh1);
+    models.push_back(bvh2);
+
+    HittalbeList world{};
+    world.add(models);
+
+    world.intersect(ray, interval, record);
+
+    ------------------------------------------
+    When calling world.intersect(), the world object will call the intersect() function of each model object. The model object, which is a BVH, will perform the intersection test between the ray and and its AABB.
+    If the ray intersects with the AABB, the BVH object will call the intersect() function of its left and right child nodes. The left and right child nodes are either BVH objects or Triangle objects (leaf nodes are triangles).
+    If the traversal arrives at a leaf node (a triangle) of the BVH structure, that Triangle object will call its intersect() function to record the intersection information to the IntersectRecord object.
+    ------------------------------------------
+*/
+
+/*
+    // TODO: Implement reflective paths based on mirror reflection.
+*/
+
+
+namespace signal_tracer {
+
+    struct ReflectionRecord {
+        int reflection_count{};
+        std::vector<glm::vec3> ref_points{};
+
+        // cout overload
+        friend std::ostream& operator<<(std::ostream& os, const ReflectionRecord& record) {
+            os << "ReflectionRecord: " << std::endl;
+            os << "Reflection count: " << record.reflection_count << std::endl;
+            os << "Trace path: " << std::endl;
+            for (const auto& point : record.ref_points) {
+                os << "\t" << glm::to_string(point) << std::endl;
+            }
+            return os;
+        }
+    };
+
+    class SignalTracer {
+    public:
+        SignalTracer() = default;
+        SignalTracer(const std::vector<Mesh>& meshes, int max_reflection = 1)
+            : m_triangles{ init_triangles(meshes) }
+            , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) }
+            , m_max_reflection{ max_reflection } {}
+
+        const std::shared_ptr<BVH>& bvh() const { return m_bvh; }
+        int max_reflection() const { return m_max_reflection; }
+        const std::vector<ReflectionRecord>& get_reflection_records() const { return m_ref_records; }
+
+        virtual ~SignalTracer() = default;
+
+        // virtual void init() = 0;
+        // virtual void draw() = 0;
+        // virtual void update() = 0;
+        // virtual void reset() = 0;
+        // virtual void destroy() = 0;
+
+        void tracing(glm::vec3 tx_pos, glm::vec3 rx_pos) {
+            std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
+            std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
+
+            ReflectionRecord ref_record{ 0, std::vector<glm::vec3>{tx_pos} };
+            if (trace_direct(tx_pos, rx_pos, ref_record)) {
+                m_ref_records.emplace_back(ref_record);
+            }
+            if (trace_single_reflect(tx_pos, rx_pos, m_ref_records)) {}
+            if (trace_double_reflect(tx_pos, rx_pos, m_ref_records)) {}
+        }
+
+        bool trace_direct(const glm::vec3& tx_pos, const glm::vec3& rx_pos, ReflectionRecord& ref_record) const {
+            Ray ray(tx_pos, rx_pos - tx_pos);
+            Interval interval{ 10 * Constant::EPSILON, glm::length(rx_pos - tx_pos) - 10 * Constant::EPSILON };
+            IntersectRecord record{};
+            if (!m_bvh->intersect(ray, interval, record)) {
+                ref_record.ref_points.emplace_back(rx_pos);
+                // std::cout << "Direct lighting" << std::endl;
+                return true;
+            }
+            // std::clog << "No direct lighting" << std::endl;
+            return false;
+        }
+
+        bool trace_single_reflect(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
+            bool is_reflect = false;
+            for (const auto& triangle : m_triangles) {
+                glm::vec3 mirror_point = triangle->get_mirror_point(tx_pos);
+                Ray ray{ mirror_point, rx_pos - mirror_point };
+                Interval interval{ Constant::EPSILON, glm::length(rx_pos - mirror_point) - Constant::EPSILON };
+                IntersectRecord record{};
+                if (triangle->intersect(ray, interval, record)) {
+                    glm::vec3 reflective_point = record.get_point();
+
+                    ReflectionRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos} };
+                    if (trace_direct(tx_pos, reflective_point, ref_record) && trace_direct(reflective_point, rx_pos, ref_record)) {
+                        ref_records.emplace_back(ref_record);
+                        // std::cout << "Reflect lighting" << std::endl;
+                        is_reflect = true;
+                    }
+                }
+            }
+            return is_reflect;
+        }
+
+        bool trace_double_reflect(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
+            bool is_reflect = false;
+            // Setup mirror points of tx and rx
+            std::vector<glm::vec3> tx_mirror_points{};
+            std::vector<glm::vec3> rx_mirror_points{};
+            for (const auto& triangle : m_triangles) {
+                tx_mirror_points.emplace_back(triangle->get_mirror_point(tx_pos));
+                rx_mirror_points.emplace_back(triangle->get_mirror_point(rx_pos));
+            }
+
+            // Find the first reflection point
+            for (std::size_t i = 0; i < m_triangles.size(); ++i) {
+                glm::vec3 tx_mirror_point = tx_mirror_points[i];
+                std::shared_ptr<Triangle> tx_triangle {m_triangles[i]};
+
+                for (std::size_t j = 0; j < m_triangles.size(); ++j) {
+                    if (i == j) continue;
+                    glm::vec3 rx_mirror_point = rx_mirror_points[j];
+                    std::shared_ptr<Triangle> rx_triangle{ m_triangles[j] };
+
+                    Ray ray{ tx_mirror_point, rx_mirror_point - tx_mirror_point };
+                    Interval interval{ 0.0f, glm::length(rx_mirror_point - tx_mirror_point) };
+                    IntersectRecord mirror_record{};
+                    if (tx_triangle->intersect(ray, interval, mirror_record)) {
+                        glm::vec3 tx_reflective_point = mirror_record.get_point();
+
+                        ray = Ray{ rx_mirror_point, tx_mirror_point - rx_mirror_point };
+                        mirror_record.clear();
+                        if (rx_triangle->intersect(ray, interval, mirror_record)) {
+                            glm::vec3 rx_reflective_point = mirror_record.get_point();
+
+                            ReflectionRecord ref_record{ 2, std::vector<glm::vec3>{tx_pos} };
+                            if (trace_direct(tx_pos, tx_reflective_point, ref_record) && trace_direct(tx_reflective_point, rx_reflective_point, ref_record) && trace_direct(rx_reflective_point, rx_pos, ref_record)) {
+                                ref_records.emplace_back(ref_record);
+                                is_reflect = true;
+                            }
+                        }
+                    }
+                }
+            }
+            return is_reflect;
+        }
+
+        bool is_direct_lighting() const { return m_is_direct_lighting; }
+
+        friend std::ostream& operator<<(std::ostream& os, const SignalTracer& signal_tracer) {
+            os << "SignalTracer: " << std::endl;
+            for (const auto& ref_record : signal_tracer.m_ref_records) {
+                os << ref_record;
+            }
+            return os;
+        }
+
+    private:
+
+        std::vector<std::shared_ptr<Triangle>> init_triangles(const std::vector<Mesh>& meshes) {
+            std::vector<std::shared_ptr<Triangle>> triangles{};
+            std::vector<Vertex> vertex_buffer;
+            vertex_buffer.reserve(3);
+            int triangle_count{ 0 };
+            int vertex_count{ 0 };
+            for (const auto& mesh : meshes) {
+                for (const auto& idx : mesh.get_indices()) {
+                    vertex_count++;
+                    vertex_buffer.push_back(mesh.get_vertices()[idx]);
+                    triangle_count++;
+                    if (triangle_count == 3) {
+                        triangles.emplace_back(std::make_shared<Triangle>(
+                            vertex_buffer[0].position,
+                            vertex_buffer[1].position,
+                            vertex_buffer[2].position)
+                        );
+                        vertex_buffer.clear();
+                        triangle_count = 0;
+                    }
+                }
+            }
+            std::cout << "Triangle count: " << triangles.size() << std::endl;
+            std::cout << "Vertex count: " << vertex_count << std::endl;
+            return triangles;
+        }
+
+    private:
+        std::vector<std::shared_ptr<Triangle>> m_triangles{};
+        std::shared_ptr<BVH> m_bvh{};
+        std::vector<ReflectionRecord> m_ref_records{};
+        int m_max_reflection{ 1 };
+        bool m_is_direct_lighting{ false };
+    };
+}
+
+
+
+#endif // !SIGNAL_TRACER_HPP
