@@ -10,8 +10,8 @@ assets
 *temp*
 **.sh*
 
-# !assets/demo_layouts/Basic_Demo
-# !assets/demo_layouts/City_Demo
+!assets/demo_layouts/Basic_Demo/
+!assets/demo_layouts/City_Demo/
 !external
 !include
 !shader

@@ -11,7 +11,6 @@ This project is a simulation of ray tracing for wireless communication. It is ba
 - [ ] Refraction
 - [ ] Diffraction
 - [ ] Scattering
-
 - [x] Texture
 - [ ] GUI
 - [x] 3D Model
