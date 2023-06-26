@@ -117,16 +117,16 @@ namespace Utils {
             if (h < 1.0) {
                 auto m = static_cast<double>(sec) / 60.0;
                 if (m < 1.0) {
-                    std::clog << "Execution time: " << sec << " seconds" << std::endl;
+                    std::clog << "Execution time: " << sec << " seconds" << std::endl << std::endl;
                     return;
                 }
                 auto s = static_cast<double>(sec % 60);
-                std::clog << "Execution time: " << m << " minutes " << s << " seconds" << std::endl;
+                std::clog << "Execution time: " << m << " minutes " << s << " seconds" << std::endl << std::endl;
                 return;
             }
             auto m = static_cast<double>(sec % 3600) / 60.0;
             auto s = static_cast<double>((sec % 3600) % 60);
-            std::clog << "Execution time: " << h << " hours " << m << " minutes " << s << " seconds" << std::endl;
+            std::clog << "Execution time: " << h << " hours " << m << " minutes " << s << " seconds" << std::endl << std::endl;
         };
     };
 };
