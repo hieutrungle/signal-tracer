@@ -110,11 +110,11 @@ Release run:
 
 ### Basic Demo
 
-#### Direct Path
+#### Basic Direct Path
 
 ![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/basic_demo/direct.png)
 
-#### Reflect Path
+#### Basic Reflect Path
 
 **Single reflection:**
 
@@ -126,11 +126,11 @@ Release run:
 
 ### City Demo
 
-#### Direct Path
+#### City Direct Path
 
 ![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/direct.png)
 
-#### Reflect Path
+#### City Reflect Path
 
 **Single reflection:**
 
