@@ -128,8 +128,8 @@ Release run:
 
 Execution time:
 
-- Building BVH: 46 seconds
-- Signal Tracing: 51 seconds
+- Building BVH: 48 seconds
+- Signal Tracing: 50 seconds
 
 #### City Direct Path
 
