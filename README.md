@@ -34,13 +34,17 @@ This project is a simulation of ray tracing for wireless communication. It is ba
 - [ ] Dear ImGui: GUI for C++
 - [ ] FreeType: Font for OpenGL
 - [ ] irrKlang: Audio and Sound for C++
-
+- [ ] OpenCV: Computer Vision for C++
+- [ ] OpenAL: Audio and Sound for C++
+- [ ] OpenCL: Parallel Computing for C++
 
 ## Installation
 
 Install the latest drivers. We highly recommend the closed-source binary drivers. It’s not GNU or whatever, but they work. If your distribution doesn’t provide an automatic install, try Ubuntu’s guide.
 
-Install all needed compilers, tools & libs. Complete list is : cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev . Use sudo apt-get install ***** or su && yum install ******.
+Install all needed compilers, tools & libs. Complete list is : cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev . 
+
+Use sudo apt-get install ***** or su && yum install ******.
 
 ## Results
 
