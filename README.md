@@ -126,6 +126,11 @@ Release run:
 
 ### City Demo
 
+Execution time:
+
+- Building BVH: 46 seconds
+- Signal Tracing: 51 seconds
+
 #### City Direct Path
 
 ![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/direct.png)
