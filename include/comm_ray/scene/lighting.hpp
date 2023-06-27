@@ -11,15 +11,6 @@
 
 namespace Lighting {
 
-    glm::vec3 RED = glm::vec3(1.0f, 0.0f, 0.0f);
-    glm::vec3 GREEN = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 BLUE = glm::vec3(0.0f, 0.0f, 1.0f);
-    glm::vec3 YELLOW = glm::vec3(1.0f, 1.0f, 0.0f);
-    glm::vec3 CYAN = glm::vec3(0.0f, 1.0f, 1.0f);
-    glm::vec3 MAGENTA = glm::vec3(1.0f, 0.0f, 1.0f);
-    glm::vec3 WHITE = glm::vec3(1.0f, 1.0f, 1.0f);
-    glm::vec3 BLACK = glm::vec3(0.0f, 0.0f, 0.0f);
-
     class Light {
     public:
         Light(
@@ -40,7 +31,6 @@ namespace Lighting {
             shader_program.SetUniform((m_name + ".diffuse").c_str(), m_diffuse * m_color);
             shader_program.SetUniform((m_name + ".specular").c_str(), m_specular * m_color);
         };
-        // virtual void draw(cy::GLSLProgram& shader_program, const glm::mat4& view_matrix) = 0;
 
         const glm::vec3 color() const { return m_color; }
         float ambient() const { return m_ambient; }
