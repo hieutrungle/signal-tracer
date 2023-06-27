@@ -7,8 +7,7 @@
 #include "glm/glm.hpp"
 #include "cyGL.h"
 #include "glm/gtc/type_ptr.hpp"
-#include "point_container.hpp"
-
+#include "reflection_record.hpp"
 
 namespace signal_tracer {
     class Line {
