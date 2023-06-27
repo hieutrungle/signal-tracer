@@ -14,6 +14,7 @@ in vec2 tex_coords;
 in vec3 frag_pos_camera;
 in vec3 normal_camera;
 
+uniform vec3 color;
 uniform sampler2D texture_diffuse0;
 uniform sampler2D texture_specular0;
 uniform DirectionalLight directional_light;
@@ -26,6 +27,9 @@ void main()
 	vec3 view_direction = normalize(-frag_pos_camera);
 	vec3 result = vec3(0.0);
     result += calc_directional_light_color(directional_light, normal_normalized, view_direction);
+	if (color != vec3(0.0)) {
+		result *= color;
+	}
 
     frag_color = vec4(result, 1.0);
 }
