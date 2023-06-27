@@ -127,8 +127,8 @@ int main(int argc, char* argv []) {
 
     // Load models
     // ----------------------------------
-    // Model city_model{ "/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj" };
-    Model city_model{ "/home/hieule/research/comm_ray/assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj" };
+    Model city_model{ "/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj" };
+    // Model city_model{ "/home/hieule/research/comm_ray/assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj" };
 
     // Signal tracer
     // ----------------------------------
