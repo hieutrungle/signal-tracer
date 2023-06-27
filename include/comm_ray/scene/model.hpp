@@ -7,6 +7,7 @@
 #include <assimp/postprocess.h>
 #include <glad/gl.h>
 #include <glm/glm.hpp>
+#include "glm/gtc/type_ptr.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "cyGL.h"
@@ -19,7 +20,7 @@ public:
     Model(const std::string& path) {
         load_model(path);
     }
-    void draw(cy::GLSLProgram& shader_program);
+    void draw(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 
     static void load_texture(const char* path, unsigned int& texture);
 
@@ -38,7 +39,15 @@ private:
     std::vector<Texture> load_material_textures(aiMaterial* mat, aiTextureType type, const std::string& type_name);
 };
 
-void Model::draw(cy::GLSLProgram& shader_program) {
+void Model::draw(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
+    shader_program.Bind();
+    glm::mat4 normal_matrix = glm::transpose(glm::inverse(view * model));
+    shader_program.SetUniformMatrix4("view", glm::value_ptr(view), 1, false);
+    shader_program.SetUniformMatrix4("projection", glm::value_ptr(projection), 1, false);
+    shader_program.SetUniformMatrix4("model", glm::value_ptr(model), 1, false);
+    shader_program.SetUniformMatrix4("view_model", glm::value_ptr(view * model), 1, false);
+    shader_program.SetUniformMatrix4("mvp", glm::value_ptr(projection * view * model), 1, false);
+    shader_program.SetUniformMatrix4("normal_matrix", glm::value_ptr(normal_matrix), 1, false);
     for (auto& mesh : m_meshes)
         mesh.draw(shader_program);
 }
