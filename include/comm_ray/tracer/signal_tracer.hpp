@@ -5,6 +5,10 @@
 
 #include "mesh.hpp"
 #include "bvh_map.hpp"
+#include "constant.hpp"
+#include "cubesphere.h"
+#include "line.hpp"
+#include "reflection_record.hpp"
 #include "triangle.hpp"
 #include "point_container.hpp"
 #include "glm/glm.hpp"
@@ -83,26 +87,54 @@
 
 namespace signal_tracer {
 
-    struct ReflectionRecord {
-        int reflection_count{};
-        std::vector<glm::vec3> ref_points{};
-
-        // cout overload
-        friend std::ostream& operator<<(std::ostream& os, const ReflectionRecord& record) {
-            os << "ReflectionRecord: " << std::endl;
-            os << "Reflection count: " << record.reflection_count << std::endl;
-            os << "Trace path: " << std::endl;
-            for (const auto& point : record.ref_points) {
-                os << "\t" << glm::to_string(point) << std::endl;
-            }
-            return os;
-        }
+    enum class StationColor {
+        red,
+        green,
+        blue,
+        yellow,
+        cyan,
+        magenta,
+        orange,
+        purple,
+        pink,
+        brown,
     };
+
+    constexpr auto operator+(StationColor color) noexcept {
+        return static_cast<std::underlying_type_t<StationColor>>(color);
+    }
+
+    const glm::vec3 get_station_color(StationColor color) {
+        switch (color) {
+        case StationColor::red:
+            return Constant::RED;
+        case StationColor::green:
+            return Constant::GREEN;
+        case StationColor::blue:
+            return Constant::BLUE;
+        case StationColor::yellow:
+            return Constant::YELLOW;
+        case StationColor::cyan:
+            return Constant::CYAN;
+        case StationColor::magenta:
+            return Constant::MAGENTA;
+        case StationColor::orange:
+            return Constant::ORANGE;
+        case StationColor::purple:
+            return Constant::PURPLE;
+        case StationColor::pink:
+            return Constant::PINK;
+        case StationColor::brown:
+            return Constant::BROWN;
+        default:
+            return Constant::DARK_GRAY;
+        }
+    }
 
     class SignalTracer {
     public:
         SignalTracer() = default;
-        SignalTracer(const std::vector<Mesh>& meshes, int max_reflection = 1)
+        SignalTracer(const std::vector<Mesh>& meshes, int max_reflection = 2)
             : m_triangles{ init_triangles(meshes) }
             , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) }
             , m_max_reflection{ max_reflection } {}
@@ -113,13 +145,34 @@ namespace signal_tracer {
 
         virtual ~SignalTracer() = default;
 
-        // virtual void init() = 0;
+        /*
+            - Init sig_tracer
+            - tracing to get all reflection records
+            - init points for drawing using Line class
+            - draw in for loop
+        */
+
+        // virtual void init_draw() = 0;
         // virtual void draw() = 0;
         // virtual void update() = 0;
         // virtual void reset() = 0;
         // virtual void destroy() = 0;
 
+        void set_display_reflection_count(int reflection_count) {
+            m_display_reflection_count = reflection_count;
+        }
+
+        void set_positions(const glm::vec3& tx_pos, const glm::vec3& rx_pos) {
+            m_station_positions.clear();
+            m_station_positions.emplace_back(tx_pos);
+            m_station_positions.emplace_back(rx_pos);
+        }
+
         void tracing(glm::vec3 tx_pos, glm::vec3 rx_pos) {
+            m_ref_records.clear();
+            m_lines.clear();
+            m_is_direct_lighting = false;
+            set_positions(tx_pos, rx_pos);
             std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
 
@@ -208,6 +261,34 @@ namespace signal_tracer {
             return is_reflect;
         }
 
+        void init_draw() {
+            std::transform(m_ref_records.begin(), m_ref_records.end(), std::back_inserter(m_lines), [](const signal_tracer::ReflectionRecord& ref_record) {
+                return signal_tracer::Line{ ref_record };
+                });
+        }
+
+        void draw_radio_stations(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
+            shader_program.Bind();
+            for (std::size_t i = 0; i < m_station_positions.size(); ++i) {
+                // get color from StationColor enum class
+                StationColor color = static_cast<StationColor>(i);
+                shader_program.SetUniform("color", get_station_color(color));
+                m_radio_object.draw(shader_program, glm::translate(model, m_station_positions[i]), view, projection);
+            }
+        }
+
+        void draw(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
+            shader_program.Bind();
+            for (auto& line : m_lines) {
+                if (line.get_reflection_count() == m_display_reflection_count) {
+                    // shader_program.SetUniformVec3("color", glm::vec3{ 0.0f, 0.0f, 1.0f });
+                    line.draw(shader_program, model, view, projection);
+                }
+
+
+            }
+        }
+
         bool is_direct_lighting() const { return m_is_direct_lighting; }
 
         friend std::ostream& operator<<(std::ostream& os, const SignalTracer& signal_tracer) {
@@ -248,11 +329,18 @@ namespace signal_tracer {
         }
 
     private:
+        // Tracing
         std::vector<std::shared_ptr<Triangle>> m_triangles{};
         std::shared_ptr<BVH> m_bvh{};
         std::vector<ReflectionRecord> m_ref_records{};
         int m_max_reflection{ 1 };
         bool m_is_direct_lighting{ false };
+        std::vector<glm::vec3> m_station_positions{};
+
+        // Drawing
+        Cubesphere m_radio_object{ 0.25f, 3, true };
+        std::vector<signal_tracer::Line> m_lines{};
+        int m_display_reflection_count{ 0 };
     };
 }
 
