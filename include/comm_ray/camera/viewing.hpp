@@ -14,21 +14,80 @@
 
 class Viewing {
 public:
-    Viewing() = default;
-
-    Viewing(std::shared_ptr<BaseCamera> camera_ptr, int width, int height)
+    Viewing(std::shared_ptr<BaseCamera> camera_ptr
+    )
         : m_camera_ptr{ camera_ptr }
-        , m_last_x{ static_cast<float>(width) / 2.0f }
-        , m_last_y{ static_cast<float>(height) / 2.0f }
         , m_first_mouse{ true }
         , m_mouse_left_down{ false }
         , m_mouse_right_down{ false }
         , m_mouse_middle_down{ false } {}
 
+    // Copy constructor
+    Viewing(const Viewing& viewing)
+        : m_camera_ptr{ viewing.m_camera_ptr }
+        , m_first_mouse{ viewing.m_first_mouse }
+        , m_mouse_left_down{ viewing.m_mouse_left_down }
+        , m_mouse_right_down{ viewing.m_mouse_right_down }
+        , m_mouse_middle_down{ viewing.m_mouse_middle_down }
+        , m_mouse_sensitivity{ viewing.m_mouse_sensitivity }
+        , m_move_speed{ viewing.m_move_speed }
+        , m_delta_time{ viewing.m_delta_time }
+        , m_draw_mode{ viewing.m_draw_mode }
+        , m_draw_reflection_mode{ viewing.m_draw_reflection_mode } {}
+
+    // Move constructor
+    Viewing(Viewing&& viewing) noexcept
+        : m_camera_ptr{ std::move(viewing.m_camera_ptr) }
+        , m_first_mouse{ std::move(viewing.m_first_mouse) }
+        , m_mouse_left_down{ std::move(viewing.m_mouse_left_down) }
+        , m_mouse_right_down{ std::move(viewing.m_mouse_right_down) }
+        , m_mouse_middle_down{ std::move(viewing.m_mouse_middle_down) }
+        , m_mouse_sensitivity{ std::move(viewing.m_mouse_sensitivity) }
+        , m_move_speed{ std::move(viewing.m_move_speed) }
+        , m_delta_time{ std::move(viewing.m_delta_time) }
+        , m_draw_mode{ std::move(viewing.m_draw_mode) }
+        , m_draw_reflection_mode{ std::move(viewing.m_draw_reflection_mode) } {}
+
+    // Assignment operator
+    Viewing& operator=(const Viewing& viewing) {
+        if (this == &viewing) {
+            return *this;
+        }
+        m_camera_ptr = viewing.m_camera_ptr;
+        m_first_mouse = viewing.m_first_mouse;
+        m_mouse_left_down = viewing.m_mouse_left_down;
+        m_mouse_right_down = viewing.m_mouse_right_down;
+        m_mouse_middle_down = viewing.m_mouse_middle_down;
+        m_mouse_sensitivity = viewing.m_mouse_sensitivity;
+        m_move_speed = viewing.m_move_speed;
+        m_delta_time = viewing.m_delta_time;
+        m_draw_mode = viewing.m_draw_mode;
+        m_draw_reflection_mode = viewing.m_draw_reflection_mode;
+        return *this;
+    }
+
+    // Move assignment operator
+    Viewing& operator=(Viewing&& viewing) noexcept {
+        if (this == &viewing) {
+            return *this;
+        }
+        m_camera_ptr = std::move(viewing.m_camera_ptr);
+        m_first_mouse = std::move(viewing.m_first_mouse);
+        m_mouse_left_down = std::move(viewing.m_mouse_left_down);
+        m_mouse_right_down = std::move(viewing.m_mouse_right_down);
+        m_mouse_middle_down = std::move(viewing.m_mouse_middle_down);
+        m_mouse_sensitivity = std::move(viewing.m_mouse_sensitivity);
+        m_move_speed = std::move(viewing.m_move_speed);
+        m_delta_time = std::move(viewing.m_delta_time);
+        m_draw_mode = std::move(viewing.m_draw_mode);
+        m_draw_reflection_mode = std::move(viewing.m_draw_reflection_mode);
+        return *this;
+    }
+
+    ~Viewing() = default;
+
     void reset() {
         m_camera_ptr->reset();
-        m_last_x = 0.0f;
-        m_last_y = 0.0f;
         m_first_mouse = true;
         m_mouse_left_down = false;
         m_mouse_right_down = false;
@@ -107,22 +166,13 @@ public:
         m_camera_ptr->arcball_rotate(xoffset, yoffset);
     }
 
-    // TODO: change fov
     void zoom(float yoffset) {
-        yoffset = yoffset * m_move_speed * 5 * m_delta_time;
+        yoffset = yoffset * m_move_speed * m_delta_time;
         m_camera_ptr->zoom(yoffset);
     }
 
     void set_camera_ptr(std::shared_ptr<BaseCamera> camera_ptr) {
         m_camera_ptr = camera_ptr;
-    }
-
-    void set_last_x(float last_x) {
-        m_last_x = last_x;
-    }
-
-    void set_last_y(float last_y) {
-        m_last_y = last_y;
     }
 
     void set_first_mouse(bool first_mouse) {
@@ -167,14 +217,6 @@ public:
 
     [[nodiscard]] std::shared_ptr<BaseCamera> get_camera_ptr() const {
         return m_camera_ptr;
-    }
-
-    [[nodiscard]] float get_last_x() const {
-        return m_last_x;
-    }
-
-    [[nodiscard]] float get_last_y() const {
-        return m_last_y;
     }
 
     [[nodiscard]] bool get_first_mouse() const {
@@ -254,15 +296,12 @@ public:
         os << "viewing info: " << std::endl;
         os << "camera info: " << std::endl;
         os << *viewing.m_camera_ptr << std::endl;
-        os << "last_x: " << viewing.m_last_x << std::endl;
-        os << "last_y: " << viewing.m_last_y << std::endl;
         os << "first_mouse: " << viewing.m_first_mouse << std::endl;
         os << "mouse_left_down: " << viewing.m_mouse_left_down << std::endl;
         os << "mouse_right_down: " << viewing.m_mouse_right_down << std::endl;
         os << "mouse_middle_down: " << viewing.m_mouse_middle_down << std::endl;
         return os;
     }
-
 
 private:
     // camera ptr
@@ -278,7 +317,7 @@ private:
     bool m_mouse_middle_down{ false };
     // mouse sensitivity
     float m_mouse_sensitivity{ 0.1f };
-    float m_move_speed{ 10.0f };
+    float m_move_speed{ 20.0f };
     // delta_time
     float m_delta_time{};
     // draw mode
