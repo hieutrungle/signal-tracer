@@ -131,6 +131,18 @@ namespace signal_tracer {
         }
     }
 
+    /*
+        Instructions:
+
+        1 Initilization Part:
+        - Initialize a SignalTracer object with a vector of Mesh objects.
+        - Call the tracing() function to get all reflection records.
+        - Call the init_draw() function to initialize the Line objects for drawing.
+
+        2 Drawing Part:
+        - Call the draw_radio_stations() function to draw the radio stations.
+        - Call the draw() function to draw the Line objects.
+    */
     class SignalTracer {
     public:
         SignalTracer() = default;
@@ -145,18 +157,49 @@ namespace signal_tracer {
 
         virtual ~SignalTracer() = default;
 
-        /*
-            - Init sig_tracer
-            - tracing to get all reflection records
-            - init points for drawing using Line class
-            - draw in for loop
-        */
+        // Copy constructor
+        SignalTracer(const SignalTracer& signal_tracer) {
+            *this = signal_tracer;
+        }
 
-        // virtual void init_draw() = 0;
-        // virtual void draw() = 0;
-        // virtual void update() = 0;
-        // virtual void reset() = 0;
-        // virtual void destroy() = 0;
+        // Move constructor
+        SignalTracer(SignalTracer&& signal_tracer) noexcept {
+            *this = std::move(signal_tracer);
+        }
+
+        // Assignment operator
+        SignalTracer& operator=(const SignalTracer& signal_tracer) {
+            m_triangles = signal_tracer.m_triangles;
+            m_bvh = signal_tracer.m_bvh;
+            m_max_reflection = signal_tracer.m_max_reflection;
+            m_ref_records = signal_tracer.m_ref_records;
+            m_is_direct_lighting = signal_tracer.m_is_direct_lighting;
+            m_station_positions = signal_tracer.m_station_positions;
+            m_radio_object = signal_tracer.m_radio_object;
+            m_lines = signal_tracer.m_lines;
+            m_display_reflection_count = signal_tracer.m_display_reflection_count;
+            return *this;
+        }
+
+        // Move assignment operator
+        SignalTracer& operator=(SignalTracer&& signal_tracer) noexcept {
+            m_triangles = std::move(signal_tracer.m_triangles);
+            m_bvh = std::move(signal_tracer.m_bvh);
+            m_max_reflection = std::move(signal_tracer.m_max_reflection);
+            m_ref_records = std::move(signal_tracer.m_ref_records);
+            m_is_direct_lighting = std::move(signal_tracer.m_is_direct_lighting);
+            m_station_positions = std::move(signal_tracer.m_station_positions);
+            m_radio_object = std::move(signal_tracer.m_radio_object);
+            m_lines = std::move(signal_tracer.m_lines);
+            m_display_reflection_count = std::move(signal_tracer.m_display_reflection_count);
+            return *this;
+        }
+
+        void reset() {
+            m_ref_records.clear();
+            m_lines.clear();
+            m_is_direct_lighting = false;
+        }
 
         void set_display_reflection_count(int reflection_count) {
             m_display_reflection_count = reflection_count;
@@ -190,10 +233,8 @@ namespace signal_tracer {
             IntersectRecord record{};
             if (!m_bvh->intersect(ray, interval, record)) {
                 ref_record.ref_points.emplace_back(rx_pos);
-                // std::cout << "Direct lighting" << std::endl;
                 return true;
             }
-            // std::clog << "No direct lighting" << std::endl;
             return false;
         }
 
@@ -210,7 +251,6 @@ namespace signal_tracer {
                     ReflectionRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos} };
                     if (trace_direct(tx_pos, reflective_point, ref_record) && trace_direct(reflective_point, rx_pos, ref_record)) {
                         ref_records.emplace_back(ref_record);
-                        // std::cout << "Reflect lighting" << std::endl;
                         is_reflect = true;
                     }
                 }
@@ -231,7 +271,7 @@ namespace signal_tracer {
             // Find the first reflection point
             for (std::size_t i = 0; i < m_triangles.size(); ++i) {
                 glm::vec3 tx_mirror_point = tx_mirror_points[i];
-                std::shared_ptr<Triangle> tx_triangle {m_triangles[i]};
+                std::shared_ptr<Triangle> tx_triangle{ m_triangles[i] };
 
                 for (std::size_t j = 0; j < m_triangles.size(); ++j) {
                     if (i == j) continue;
