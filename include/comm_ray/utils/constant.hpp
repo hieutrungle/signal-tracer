@@ -17,7 +17,7 @@ namespace Constant {
     const float INFINITY_POS = INFINITY_POS_T<float>;
     const float INFINITY_NEG = INFINITY_NEG_T<float>;
 
-    const float EPSILON = 1e-6;
+    const float EPSILON = 1e-5;
 
     const inline glm::vec3 NEG_INF_VEC = glm::vec3(INFINITY_NEG);
     const inline glm::vec3 MIN_BOUND = glm::vec3(INFINITY_POS);
