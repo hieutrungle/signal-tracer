@@ -6,18 +6,61 @@
 #include "glad/gl.h"
 #include "glm/glm.hpp"
 #include "cyGL.h"
+#include "drawable.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "reflection_record.hpp"
 
 namespace signal_tracer {
-    class Line {
+    class Line : public Drawable {
 
     public:
         Line() = default;
         Line(const ReflectionRecord& ref_record)
-            : m_points{ init_points(ref_record) }
+            : Drawable{}
+            , m_points{ init_points(ref_record) }
             , m_reflection_count{ ref_record.reflection_count } {
             setup_draw();
+        }
+
+        // copy constructor
+        Line(const Line& other)
+            : Drawable{}
+            , m_points{ other.m_points }
+            , m_reflection_count{ other.m_reflection_count } {
+            setup_draw();
+        }
+
+        // move constructor
+        Line(Line&& other) noexcept
+            : Drawable{}
+            , m_points{ std::move(other.m_points) }
+            , m_reflection_count{ other.m_reflection_count } {
+            setup_draw();
+        }
+
+        // copy assignment
+        Line& operator=(const Line& other) {
+            if (this != &other) {
+                m_points = other.m_points;
+                m_reflection_count = other.m_reflection_count;
+                setup_draw();
+            }
+            return *this;
+        }
+
+        // move assignment
+        Line& operator=(Line&& other) noexcept {
+            if (this != &other) {
+                m_points = std::move(other.m_points);
+                m_reflection_count = other.m_reflection_count;
+                setup_draw();
+            }
+            return *this;
+        }
+
+        ~Line() {
+            glDeleteVertexArrays(1, &m_vao);
+            glDeleteBuffers(1, &m_vbo);
         }
 
         std::vector<glm::vec3> init_points(ReflectionRecord ref_record) const {
@@ -43,7 +86,7 @@ namespace signal_tracer {
             return m_reflection_count;
         }
 
-        void draw(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
+        void draw(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) const override {
             shader_program.Bind();
             glm::mat4 normal_matrix = glm::transpose(glm::inverse(view * model));
             shader_program.SetUniformMatrix4("view", glm::value_ptr(view), 1, false);
@@ -56,9 +99,9 @@ namespace signal_tracer {
             glDrawArrays(GL_LINES, 0, m_points.size());
         };
 
-    private:
+    protected:
         // Remember to activate the program before setting uniforms!
-        void setup_draw() {
+        void setup_draw() const override {
             glGenVertexArrays(1, &m_vao);
             glBindVertexArray(m_vao);
 
@@ -77,7 +120,6 @@ namespace signal_tracer {
     private:
         std::vector<glm::vec3> m_points{};
         int m_reflection_count{};
-        unsigned int m_vao{}, m_vbo{}, m_ebo{};
     };
 }
 
