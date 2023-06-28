@@ -12,12 +12,11 @@
 #include "glm/glm.hpp"
 
 #include "cubesphere.h"
-#include "lighting.hpp"
-#include "model.hpp"
 #include "utils.hpp"
 #include "signal_tracer.hpp"
 #include "viewing.hpp"
 #include "callback.hpp"
+#include "program_container.hpp"
 
 #include <string>
 #include <iostream>
@@ -26,29 +25,10 @@
 
 namespace signal_tracer {
 
-    struct WindowParams {
-        int width{};
-        int height{};
-        std::string title{};
-        bool debug_flag{ false };
-    };
-
-    struct ShaderProgram {
-        // A thin wrapper for cy::GLSLProgram
-        std::string name;
-        cy::GLSLProgram program;
-        std::vector<std::shared_ptr<Light>> lights;
-        glm::vec3 model_mat{ 1.0f };
-        glm::vec3 view_mat{ 1.0f };
-        glm::vec3 proj_mat{ 1.0f };
-    };
     class Scene {
     public:
         Scene(WindowParams& window_params, std::shared_ptr<Viewing>& viewing_ptr)
-            : m_width{ window_params.width }
-            , m_height{ window_params.height }
-            , m_title{ window_params.title }
-            , m_debug{ window_params.debug_flag }
+            : m_window_params{ window_params }
             , m_viewing_ptr{ viewing_ptr }
             , m_window_ptr{ init_window() }
             , m_callback{ m_window_ptr, m_viewing_ptr } {
@@ -60,15 +40,10 @@ namespace signal_tracer {
 
         // Move constructor
         Scene(Scene&& other) noexcept
-            : m_width{ other.m_width }
-            , m_height{ other.m_height }
-            , m_title{ other.m_title }
-            , m_debug{ other.m_debug }
+            : m_window_params{ other.m_window_params }
             , m_viewing_ptr{ other.m_viewing_ptr }
             , m_window_ptr{ other.m_window_ptr }
-            , m_programs{ std::move(other.m_programs) }
-            , m_models{ std::move(other.m_models) }
-            , m_lights{ std::move(other.m_lights) }
+            , m_prog_ptrs{ std::move(other.m_prog_ptrs) }
             , m_signal_tracer_ptr{ std::move(other.m_signal_tracer_ptr) }
             , m_delta_time{ other.m_delta_time }
             , m_callback{ std::move(other.m_callback) } {
@@ -81,15 +56,10 @@ namespace signal_tracer {
         // Move assignment
         Scene& operator=(Scene&& other) noexcept {
             if (this != &other) {
-                m_width = other.m_width;
-                m_height = other.m_height;
-                m_title = other.m_title;
-                m_debug = other.m_debug;
+                m_window_params = other.m_window_params;
                 m_viewing_ptr = other.m_viewing_ptr;
                 m_window_ptr = other.m_window_ptr;
-                m_programs = std::move(other.m_programs);
-                m_models = std::move(other.m_models);
-                m_lights = std::move(other.m_lights);
+                m_prog_ptrs = std::move(other.m_prog_ptrs);
                 m_signal_tracer_ptr = std::move(other.m_signal_tracer_ptr);
                 m_delta_time = other.m_delta_time;
                 m_callback = std::move(other.m_callback);
@@ -116,7 +86,7 @@ namespace signal_tracer {
             }
 
             default_window_hints();
-            GLFWwindow* window_ptr = glfwCreateWindow(m_width, m_height, "CommRay", nullptr, nullptr);
+            GLFWwindow* window_ptr = glfwCreateWindow(m_window_params.width, m_window_params.height, "CommRay", nullptr, nullptr);
             if (!window_ptr) {
                 std::cout << "Failed to create GLFW window" << std::endl;
                 glfwTerminate();
@@ -141,10 +111,9 @@ namespace signal_tracer {
 
             default_gl_state();
             default_window_state();
-            if (m_debug) { set_debug(); }
-            set_viewport(m_width, m_height);
+            if (m_window_params.debug_flag) { set_debug(); }
             set_clear_color(0.0f, 0.0f, 0.0f, 1.0f);
-            set_window_title(m_title);
+            set_window_title(m_window_params.title);
 
             m_callback.set_callback();
         }
@@ -178,17 +147,13 @@ namespace signal_tracer {
 #ifdef __APPLE__
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-            if (m_debug)
+            if (m_window_params.debug_flag)
                 glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
         }
 
         void default_window_state() {
             glfwSetInputMode(m_window_ptr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             return;
-        }
-
-        void set_viewport(int width, int height) {
-            glViewport(0, 0, width, height);
         }
 
         void set_clear_color(float r, float g, float b, float a) {
@@ -216,24 +181,24 @@ namespace signal_tracer {
         }
 
         int get_width() {
-            return m_width;
+            return m_window_params.width;
         }
 
         int get_height() {
-            return m_height;
+            return m_window_params.height;
         }
 
         float get_aspect_ratio() {
-            return static_cast<float>(m_width) / static_cast<float>(m_height);
+            return static_cast<float>(m_window_params.width) / static_cast<float>(m_window_params.height);
         }
 
         std::string get_title() {
-            return m_title;
+            return m_window_params.title;
         }
 
         void set_window_title(const std::string& title) {
-            m_title = title;
-            glfwSetWindowTitle(m_window_ptr, m_title.c_str());
+            m_window_params.title = title;
+            glfwSetWindowTitle(m_window_ptr, m_window_params.title.c_str());
         }
 
         /*
@@ -262,37 +227,11 @@ namespace signal_tracer {
             ---------------------------------
         */
         void add_program(std::shared_ptr<ShaderProgram>& program) {
-            m_programs.emplace_back(program);
+            m_prog_ptrs.emplace_back(program);
         }
 
         void add_programs(std::vector<std::shared_ptr<ShaderProgram>>& programs) {
-            m_programs.insert(m_programs.end(), programs.begin(), programs.end());
-        }
-
-        /*
-            ---------------------------------
-            MODEL
-            ---------------------------------
-        */
-        void add_model(const std::shared_ptr<Model>& model) {
-            m_models.emplace_back(model);
-        }
-
-        void add_models(const std::vector<std::shared_ptr<Model>>& models) {
-            m_models.insert(m_models.end(), models.begin(), models.end());
-        }
-
-        /*
-            ---------------------------------
-            LIGHTING
-            ---------------------------------
-        */
-        void add_light(std::shared_ptr<Light>& light) {
-            m_lights.emplace_back(light);
-        }
-
-        void add_lights(std::vector<std::shared_ptr<Light>>& lights) {
-            m_lights.insert(m_lights.end(), lights.begin(), lights.end());
+            m_prog_ptrs.insert(m_prog_ptrs.end(), programs.begin(), programs.end());
         }
 
         /*
@@ -302,15 +241,6 @@ namespace signal_tracer {
         */
         void set_signal_tracer(const std::shared_ptr<SignalTracer>& sig_tracer) {
             m_signal_tracer_ptr = sig_tracer;
-        }
-
-        /*
-            ---------------------------------
-            VIEWING
-            ---------------------------------
-        */
-        void set_viewing(const std::shared_ptr<Viewing>& viewing) {
-            m_viewing_ptr = viewing;
         }
 
         void set_delta_time(float delta_time) {
@@ -327,27 +257,70 @@ namespace signal_tracer {
             ---------------------------------
         */
         void render() {
-            // TODO rendering
+            // delta time
+            // ----------------------------------
+            float accu_delta_time{};
+            int frame_count{ 0 };
+            float fps_last_time{ 0.0f };
+            float last_frame_time{ 0.0f };
+            while (!should_close()) {
 
-            // 
-            // clear();
-            // for (auto& model : m_models) {
-            //     model->draw(m_programs, m_viewing_ptr, m_lights, m_signal_tracer_ptr);
-            // }
-            // swap_buffers();
-            // poll_events();
+                // FPS counter
+                // -------------------------
+                accu_delta_time += ((float) glfwGetTime() - fps_last_time);
+                fps_last_time = static_cast<float>(glfwGetTime());
+                frame_count++;
+                if (accu_delta_time >= 1.0) {
+                    std::string fps = "FPS: " + std::to_string(frame_count);
+                    std::string ms = Utils::round_to_string(1000.0 / (float) frame_count, 2) + "ms";
+                    m_window_params.title = "CommRay | " + fps + " | " + ms;
+                    set_window_title(m_window_params.title);
+                    frame_count = 0;
+                    accu_delta_time = 0.0;
+                }
+
+                clear();
+
+                render_step();
+
+                swap_buffers();
+                poll_events();
+
+                set_delta_time(static_cast<float>(glfwGetTime()) - last_frame_time);
+                move_camera_keys();
+                last_frame_time = (float) glfwGetTime();
+            }
+        }
+
+        void render_step() {
+            glm::mat4 model_mat = glm::mat4(1.0f);
+            glm::mat4 view_mat = m_viewing_ptr->get_view_matrix();
+            glm::mat4 projection_mat = glm::perspective(glm::radians(m_viewing_ptr->get_camera_fov()), get_aspect_ratio(), 0.1f, 100.0f);
+
+            // Draw models from shader programs
+            // ----------------------------------
+            for (auto& prog_ptr : m_prog_ptrs) {
+                for (const auto& light_ptr : prog_ptr->lights) {
+                    light_ptr->set_color(Constant::WHITE);
+                    light_ptr->init(prog_ptr->program, view_mat);
+                }
+                for (const auto& drawable_ptr : prog_ptr->drawables) {
+                    drawable_ptr->draw(prog_ptr->program, model_mat, view_mat, projection_mat);
+                }
+            }
+
+
         }
 
     private:
-        int m_width{};
-        int m_height{};
-        std::string m_title{ "CommRay" };
-        bool m_debug{ false };
+        // int m_width{};
+        // int m_height{};
+        // std::string m_title{ "CommRay" };
+        // bool m_debug{ false };
+        WindowParams m_window_params{};
         std::shared_ptr<Viewing> m_viewing_ptr{};
         GLFWwindow* m_window_ptr{};
-        std::vector<std::shared_ptr<ShaderProgram>> m_programs{};
-        std::vector<std::shared_ptr<Model>> m_models{};
-        std::vector<std::shared_ptr<Light>> m_lights{};
+        std::vector<std::shared_ptr<ShaderProgram>> m_prog_ptrs{};
         std::shared_ptr<SignalTracer> m_signal_tracer_ptr{};
         float m_delta_time{ 0.0f };
         GLFWCallback m_callback{};
