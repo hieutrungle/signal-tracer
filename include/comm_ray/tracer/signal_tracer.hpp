@@ -3,7 +3,8 @@
 #ifndef SIGNAL_TRACER_HPP
 #define SIGNAL_TRACER_HPP
 
-#include "mesh.hpp"
+#include "model.hpp"
+// #include "mesh.hpp"
 #include "bvh_map.hpp"
 #include "constant.hpp"
 #include "cubesphere.h"
@@ -146,8 +147,8 @@ namespace signal_tracer {
     class SignalTracer {
     public:
         SignalTracer() = default;
-        SignalTracer(const std::vector<Mesh>& meshes, int max_reflection = 2)
-            : m_triangles{ init_triangles(meshes) }
+        SignalTracer(const std::vector<Model>& models, int max_reflection = 2)
+            : m_triangles{ init_triangles(models) }
             , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) }
             , m_max_reflection{ max_reflection } {}
 
@@ -229,7 +230,7 @@ namespace signal_tracer {
 
         bool trace_direct(const glm::vec3& tx_pos, const glm::vec3& rx_pos, ReflectionRecord& ref_record) const {
             Ray ray(tx_pos, rx_pos - tx_pos);
-            Interval interval{ 10 * Constant::EPSILON, glm::length(rx_pos - tx_pos) - 10 * Constant::EPSILON };
+            Interval interval{ Constant::EPSILON, glm::length(rx_pos - tx_pos) - Constant::EPSILON };
             IntersectRecord record{};
             if (!m_bvh->intersect(ray, interval, record)) {
                 ref_record.ref_points.emplace_back(rx_pos);
@@ -284,7 +285,8 @@ namespace signal_tracer {
                     if (tx_triangle->intersect(ray, interval, mirror_record)) {
                         glm::vec3 tx_reflective_point = mirror_record.get_point();
 
-                        ray = Ray{ rx_mirror_point, tx_mirror_point - rx_mirror_point };
+                        ray = Ray{ rx_mirror_point, tx_reflective_point - rx_mirror_point };
+                        interval = Interval{ 0.0f, glm::length(tx_reflective_point - rx_mirror_point) };
                         mirror_record.clear();
                         if (rx_triangle->intersect(ray, interval, mirror_record)) {
                             glm::vec3 rx_reflective_point = mirror_record.get_point();
@@ -341,25 +343,27 @@ namespace signal_tracer {
 
     private:
 
-        std::vector<std::shared_ptr<Triangle>> init_triangles(const std::vector<Mesh>& meshes) {
+        std::vector<std::shared_ptr<Triangle>> init_triangles(const std::vector<Model>& models) {
             std::vector<std::shared_ptr<Triangle>> triangles{};
             std::vector<Vertex> vertex_buffer;
             vertex_buffer.reserve(3);
             int triangle_count{ 0 };
             int vertex_count{ 0 };
-            for (const auto& mesh : meshes) {
-                for (const auto& idx : mesh.get_indices()) {
-                    vertex_count++;
-                    vertex_buffer.push_back(mesh.get_vertices()[idx]);
-                    triangle_count++;
-                    if (triangle_count == 3) {
-                        triangles.emplace_back(std::make_shared<Triangle>(
-                            vertex_buffer[0].position,
-                            vertex_buffer[1].position,
-                            vertex_buffer[2].position)
-                        );
-                        vertex_buffer.clear();
-                        triangle_count = 0;
+            for (const auto& model : models) {
+                for (const auto& mesh : model.get_meshes()) {
+                    for (const auto& idx : mesh.get_indices()) {
+                        vertex_count++;
+                        vertex_buffer.push_back(mesh.get_vertices()[idx]);
+                        triangle_count++;
+                        if (triangle_count == 3) {
+                            triangles.emplace_back(std::make_shared<Triangle>(
+                                vertex_buffer[0].position,
+                                vertex_buffer[1].position,
+                                vertex_buffer[2].position)
+                            );
+                            vertex_buffer.clear();
+                            triangle_count = 0;
+                        }
                     }
                 }
             }
