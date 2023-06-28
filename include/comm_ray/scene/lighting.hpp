@@ -9,7 +9,7 @@
 #include "cyGL.h"
 #include <string>
 
-namespace Lighting {
+namespace signal_tracer {
 
     class Light {
     public:
@@ -32,17 +32,17 @@ namespace Lighting {
             shader_program.SetUniform((m_name + ".specular").c_str(), m_specular * m_color);
         };
 
-        const glm::vec3 color() const { return m_color; }
-        float ambient() const { return m_ambient; }
-        float diffuse() const { return m_diffuse; }
-        float specular() const { return m_specular; }
-        const std::string name() const { return m_name; }
+        const glm::vec3 get_color() const { return m_color; }
+        float get_ambient() const { return m_ambient; }
+        float get_diffuse() const { return m_diffuse; }
+        float get_specular() const { return m_specular; }
+        const std::string get_name() const { return m_name; }
 
-        void color(const glm::vec3& color) { m_color = color; }
-        void ambient(const float ambient) { m_ambient = ambient; }
-        void diffuse(const float diffuse) { m_diffuse = diffuse; }
-        void specular(const float specular) { m_specular = specular; }
-        void name(const std::string& name) { m_name = name; }
+        void set_color(const glm::vec3& color) { m_color = color; }
+        void set_ambient(const float ambient) { m_ambient = ambient; }
+        void set_diffuse(const float diffuse) { m_diffuse = diffuse; }
+        void set_specular(const float specular) { m_specular = specular; }
+        void set_name(const std::string& name) { m_name = name; }
 
     protected:
         glm::vec3 m_color{};

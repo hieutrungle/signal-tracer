@@ -27,7 +27,7 @@
 #include <cmath>
 #pragma GCC diagnostic push 
 #pragma GCC diagnostic ignored "-Wshadow"
-#include "Cubesphere.h"
+#include "cubesphere.h"
 #include <glad/gl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>

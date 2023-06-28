@@ -129,6 +129,28 @@ namespace Utils {
             std::clog << "Execution time: " << h << " hours " << m << " minutes " << s << " seconds" << std::endl << std::endl;
         };
     };
+
+    // void show_FPS(std::vector<Model>& model_list, double& time, int& skip) {
+    //     double prev_time = time;
+    //     time = glfwGetTime();
+
+    //     float delta_time = (float) (time - prev_time);
+
+    //     ++skip; // Avoids std::cout slowing down the program too much. 
+    //     if (skip == 60) // 60 Is simply so that for VSync 60FPS it displays here once per second (Any number is OK)
+    //     {
+    //         skip = 0;
+    //         for (unsigned int i = 0; i < model_list.size(); ++i) {
+    //             if (model_list[i].draw_method == 0)
+    //                 std::cout << "   Draw method: Multiple Meshes --- Draw calls: " << model_list[i].num_meshes << " --- Model name : " << model_list[i].model_name << "\n";
+    //             if (model_list[i].draw_method == 1)
+    //                 std::cout << "   Draw method: 5VBO --- Draw calls: 1 --- Model name : " << model_list[i].model_name << "\n";
+    //             if (model_list[i].draw_method == 2)
+    //                 std::cout << "   Draw method: 1VBO --- Draw calls: 1 --- Model name : " << model_list[i].model_name << "\n";
+    //         }
+    //         std::cout << "   FPS: " << ((1.0f / 60) / delta_time) * 60 << "\n\n";
+    //     }
+    // }
 };
 
 
