@@ -9,6 +9,7 @@
 #include "drawable.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "reflection_record.hpp"
+#include <iostream>
 
 namespace signal_tracer {
     class Line : public Drawable {
@@ -98,6 +99,16 @@ namespace signal_tracer {
             glBindVertexArray(m_vao);
             glDrawArrays(GL_LINES, 0, m_points.size());
         };
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "Line: " << std::endl;
+            out << "Reflection Count: " << m_reflection_count << std::endl;
+            out << "Points: ";
+            for (auto& point : m_points) {
+                out << glm::to_string(point) << std::endl;
+            }
+            return out;
+        }
 
     protected:
         // Remember to activate the program before setting uniforms!
