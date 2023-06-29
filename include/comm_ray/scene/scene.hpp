@@ -11,12 +11,12 @@
 #include "glm/gtx/transform.hpp"
 #include "glm/glm.hpp"
 
-#include "cubesphere.h"
 #include "utils.hpp"
 #include "signal_tracer.hpp"
 #include "viewing.hpp"
 #include "callback.hpp"
 #include "program_container.hpp"
+#include "radio_station.hpp"
 
 #include <string>
 #include <iostream>
@@ -294,7 +294,7 @@ namespace signal_tracer {
 
         void render_step() {
             glm::mat4 view_mat = m_viewing_ptr->get_view_matrix();
-            glm::mat4 projection_mat = glm::perspective(glm::radians(m_viewing_ptr->get_camera_fov()), get_aspect_ratio(), 0.1f, 100.0f);
+            glm::mat4 projection_mat = glm::perspective(glm::radians(m_viewing_ptr->get_camera_fov()), get_aspect_ratio(), 1.0f, 100.0f);
 
             // Draw models from shader programs
             // ----------------------------------

@@ -3,6 +3,7 @@
 #ifndef REFLECTION_RECORD_HPP
 #define REFLECTION_RECORD_HPP
 
+#include <glm/gtx/string_cast.hpp>
 #include "glm/glm.hpp"
 #include <iostream>
 

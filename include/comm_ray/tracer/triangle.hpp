@@ -101,9 +101,9 @@ namespace signal_tracer {
         // }
 
         // cout
-        friend std::ostream& operator<<(std::ostream& os, const Triangle& triangle) {
-            os << "Triangle: [" << glm::to_string(triangle.m_a) << ", " << glm::to_string(triangle.m_b) << ", " << glm::to_string(triangle.m_c) << "]" << std::endl;
-            return os;
+        std::ostream& print(std::ostream& out) const override {
+            out << "Triangle: [" << glm::to_string(m_a) << ", " << glm::to_string(m_b) << ", " << glm::to_string(m_c) << "]" << std::endl;
+            return out;
         }
 
         const glm::vec3& a() const { return m_a; }
@@ -169,7 +169,7 @@ namespace signal_tracer {
                 return true;
             }
             return false;
-        }
+            }
 
     private:
         glm::vec3 m_a{};
@@ -187,7 +187,7 @@ namespace signal_tracer {
             m_normal = glm::normalize(glm::cross(m_edge_ab, m_edge_ac));
             m_aabb = AABB{ m_a, m_b, m_c };
         }
-    };
-}
+        };
+    }
 
 #endif // !TRIANGLE_HPP

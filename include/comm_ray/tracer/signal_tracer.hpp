@@ -4,14 +4,10 @@
 #define SIGNAL_TRACER_HPP
 
 #include "model.hpp"
-// #include "mesh.hpp"
 #include "bvh_map.hpp"
 #include "constant.hpp"
-#include "cubesphere.h"
-#include "line.hpp"
 #include "reflection_record.hpp"
 #include "triangle.hpp"
-#include "point_container.hpp"
 #include "glm/glm.hpp"
 #include <iostream>
 #include <memory>
@@ -19,118 +15,7 @@
 #include <vector>
 
 
-// // TODO: Setup world that contains all the objects' triangles similar to the HittableList class in Ray Tracing in One Weekend. This HittableList is a wrapper of all meshes from all models. The BVHMap is a wrapper of all triangles from all meshes. The BVHMap is used to accelerate the intersection test between a ray and the triangles. The HittableList is used to find the closest intersection point between a ray and the triangles.
-
-// // TODO: Setup a world.
-
-
-/*
-    HittableList model{};
-    auto material = make_shared<Material>(attributes);
-    model.add(make_shared<Triangle>(p1, p2, p3, material));
-
-    ------------------------------------------
-    BVH constructor
-    BVH(const std::vector<shared_ptr<Hittable>>& src_objects, size_t start, size_t end) { init BVH structure }
-    BVH(const HittableList& model) : BVH{ model.objects(), 0, model.objects().size() } {}
-
-    There are two ways to initialize a BVH:
-    1. Initialize a BVH with a HittableList object (a model).
-    2. Initialize a BVH with a vector of shared_ptr<Hittable> objects (shared pointers of all triangles).
-
-    we choose the first method. Initialize a model object with all triangles from all meshes. Then initialize a BVH with the model object.
-    ------------------------------------------
-
-    std::shared_ptr<BVH> bvh = std::make_shared<BVH>(model);
-
-    ------------------------------------------
-    There can be many model we want to render. We can store all models in a vector that is a member of the world object (a bigger HittableList).
-    HittableList member variable:
-    std::vector<shared_ptr<Hittable>> m_objects{};
-
-    Child class of Hittable:
-        class BVH : public
-        class Triangle : public
-        class HittableList : public
-    ------------------------------------------
-
-    HittableList model1{};
-    auto material1 = make_shared<Material>(attributes1);
-    model1.add(make_shared<Triangle>(p11, p12, p13, material1));
-
-    HittableList model2{};
-    auto material2 = make_shared<Material>(attributes2);
-    model2.add(make_shared<Triangle>(p21, p22, p23, material2));
-
-    std::shared_ptr<BVH> bvh1 = std::make_shared<BVH>(model1);
-    std::shared_ptr<BVH> bvh2 = std::make_shared<BVH>(model2);
-
-    std::vector<std::shared_ptr<Hittable>> models{};
-    models.push_back(bvh1);
-    models.push_back(bvh2);
-
-    HittalbeList world{};
-    world.add(models);
-
-    world.intersect(ray, interval, record);
-
-    ------------------------------------------
-    When calling world.intersect(), the world object will call the intersect() function of each model object. The model object, which is a BVH, will perform the intersection test between the ray and and its AABB.
-    If the ray intersects with the AABB, the BVH object will call the intersect() function of its left and right child nodes. The left and right child nodes are either BVH objects or Triangle objects (leaf nodes are triangles).
-    If the traversal arrives at a leaf node (a triangle) of the BVH structure, that Triangle object will call its intersect() function to record the intersection information to the IntersectRecord object.
-    ------------------------------------------
-*/
-
-/*
-    // TODO: Implement reflective paths based on mirror reflection.
-*/
-
-
 namespace signal_tracer {
-
-    enum class StationColor {
-        red,
-        green,
-        blue,
-        yellow,
-        cyan,
-        magenta,
-        orange,
-        purple,
-        pink,
-        brown,
-    };
-
-    constexpr auto operator+(StationColor color) noexcept {
-        return static_cast<std::underlying_type_t<StationColor>>(color);
-    }
-
-    const glm::vec3 get_station_color(StationColor color) {
-        switch (color) {
-        case StationColor::red:
-            return Constant::RED;
-        case StationColor::green:
-            return Constant::GREEN;
-        case StationColor::blue:
-            return Constant::BLUE;
-        case StationColor::yellow:
-            return Constant::YELLOW;
-        case StationColor::cyan:
-            return Constant::CYAN;
-        case StationColor::magenta:
-            return Constant::MAGENTA;
-        case StationColor::orange:
-            return Constant::ORANGE;
-        case StationColor::purple:
-            return Constant::PURPLE;
-        case StationColor::pink:
-            return Constant::PINK;
-        case StationColor::brown:
-            return Constant::BROWN;
-        default:
-            return Constant::DARK_GRAY;
-        }
-    }
 
     /*
         Instructions:
@@ -148,14 +33,14 @@ namespace signal_tracer {
     public:
         SignalTracer() = default;
         SignalTracer(const std::vector<Model>& models, int max_reflection = 2)
-            : m_triangles{ init_triangles(models) }
-            , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) }
-            , m_max_reflection{ max_reflection } {}
+            : m_max_reflection{ max_reflection }
+            , m_triangles{ init_triangles(models) }
+            , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) } {}
 
         SignalTracer(const std::vector<std::shared_ptr<Model>>& model_ptrs, int max_reflection = 2)
-            : m_triangles{ init_triangles(model_ptrs) }
-            , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) }
-            , m_max_reflection{ max_reflection } {}
+            : m_max_reflection{ max_reflection }
+            , m_triangles{ init_triangles(model_ptrs) }
+            , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) } {}
 
         const std::shared_ptr<BVH>& bvh() const { return m_bvh; }
         int max_reflection() const { return m_max_reflection; }
@@ -181,9 +66,6 @@ namespace signal_tracer {
             m_ref_records = signal_tracer.m_ref_records;
             m_is_direct_lighting = signal_tracer.m_is_direct_lighting;
             m_station_positions = signal_tracer.m_station_positions;
-            m_radio_object = signal_tracer.m_radio_object;
-            m_lines = signal_tracer.m_lines;
-            m_display_reflection_count = signal_tracer.m_display_reflection_count;
             return *this;
         }
 
@@ -195,20 +77,12 @@ namespace signal_tracer {
             m_ref_records = std::move(signal_tracer.m_ref_records);
             m_is_direct_lighting = std::move(signal_tracer.m_is_direct_lighting);
             m_station_positions = std::move(signal_tracer.m_station_positions);
-            m_radio_object = std::move(signal_tracer.m_radio_object);
-            m_lines = std::move(signal_tracer.m_lines);
-            m_display_reflection_count = std::move(signal_tracer.m_display_reflection_count);
             return *this;
         }
 
         void reset() {
             m_ref_records.clear();
-            m_lines.clear();
             m_is_direct_lighting = false;
-        }
-
-        void set_display_reflection_count(int reflection_count) {
-            m_display_reflection_count = reflection_count;
         }
 
         void set_station_positions(const glm::vec3& tx_pos, const glm::vec3& rx_pos) {
@@ -222,19 +96,23 @@ namespace signal_tracer {
         }
 
         void tracing(glm::vec3 tx_pos, glm::vec3 rx_pos) {
-            m_ref_records.clear();
-            m_lines.clear();
-            m_is_direct_lighting = false;
+            reset();
             set_station_positions(tx_pos, rx_pos);
             std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
 
             ReflectionRecord ref_record{ 0, std::vector<glm::vec3>{tx_pos} };
-            if (trace_direct(tx_pos, rx_pos, ref_record)) {
-                m_ref_records.emplace_back(ref_record);
+            if (m_max_reflection >= 0) {
+                if (trace_direct(tx_pos, rx_pos, ref_record)) {
+                    m_ref_records.emplace_back(ref_record);
+                }
             }
-            if (trace_single_reflect(tx_pos, rx_pos, m_ref_records)) {}
-            if (trace_double_reflect(tx_pos, rx_pos, m_ref_records)) {}
+            if (m_max_reflection >= 1) {
+                if (trace_single_reflect(tx_pos, rx_pos, m_ref_records)) {}
+            }
+            if (m_max_reflection >= 2) {
+                if (trace_double_reflect(tx_pos, rx_pos, m_ref_records)) {}
+            }
         }
 
         bool trace_direct(const glm::vec3& tx_pos, const glm::vec3& rx_pos, ReflectionRecord& ref_record) const {
@@ -312,33 +190,8 @@ namespace signal_tracer {
             return is_reflect;
         }
 
-        void init_draw() {
-            std::transform(m_ref_records.begin(), m_ref_records.end(), std::back_inserter(m_lines), [](const signal_tracer::ReflectionRecord& ref_record) {
-                return signal_tracer::Line{ ref_record };
-                });
-        }
-
-        void draw_radio_stations(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
-            shader_program.Bind();
-            for (std::size_t i = 0; i < m_station_positions.size(); ++i) {
-                // get color from StationColor enum class
-                StationColor color = static_cast<StationColor>(i);
-                shader_program.SetUniform("color", get_station_color(color));
-                m_radio_object.draw(shader_program, glm::translate(model, m_station_positions[i]), view, projection);
-            }
-        }
-
-        void draw(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
-            shader_program.Bind();
-            for (auto& line : m_lines) {
-                if (line.get_reflection_count() == m_display_reflection_count) {
-                    line.draw(shader_program, model, view, projection);
-                }
-            }
-        }
-
-        std::vector<signal_tracer::Line> get_lines() const {
-            return m_lines;
+        const std::vector<ReflectionRecord>& get_reflection_records() {
+            return m_ref_records;
         }
 
         bool is_direct_lighting() const { return m_is_direct_lighting; }
@@ -413,20 +266,14 @@ namespace signal_tracer {
 
     private:
         // Tracing
+        int m_max_reflection{ 2 };
         std::vector<std::shared_ptr<Triangle>> m_triangles{};
         std::shared_ptr<BVH> m_bvh{};
         std::vector<ReflectionRecord> m_ref_records{};
-        int m_max_reflection{ 1 };
         bool m_is_direct_lighting{ false };
         std::vector<glm::vec3> m_station_positions{};
 
-        // Drawing
-        Cubesphere m_radio_object{ 0.25f, 3, true };
-        std::vector<signal_tracer::Line> m_lines{};
-        int m_display_reflection_count{ 0 };
     };
 }
-
-
 
 #endif // !SIGNAL_TRACER_HPP

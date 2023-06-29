@@ -14,6 +14,13 @@ namespace signal_tracer {
     public:
         virtual bool intersect(const Ray& ray, const Interval& interval, IntersectRecord& record) const = 0;
         virtual AABB bounding_box() const = 0;
+
+        virtual std::ostream& print(std::ostream& out) const {
+            return out;
+        }
+        friend std::ostream& operator<<(std::ostream& out, const Hittable& hittable) {
+            return hittable.print(out);
+        }
     };
 }
 

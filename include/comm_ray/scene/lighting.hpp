@@ -55,11 +55,11 @@ namespace signal_tracer {
     class DirectionalLight : public Light {
     public:
         DirectionalLight(
-            const glm::vec3& direction,
-            const glm::vec3& color,
-            const float ambient,
-            const float diffuse,
-            const float specular,
+            const glm::vec3& direction = glm::vec3(0.0f, -1.0f, 0.0f),
+            const glm::vec3& color = glm::vec3(1.0f, 1.0f, 1.0f),
+            const float ambient = 0.2,
+            const float diffuse = 0.5,
+            const float specular = 0.5,
             const std::string& name = "directional_light")
             : Light(color, ambient, diffuse, specular, name)
             , m_direction(direction) {}
@@ -159,17 +159,17 @@ namespace signal_tracer {
     class FlashLight : public SpotLight {
     public:
         FlashLight(
-            const glm::vec3& position,
-            const glm::vec3& direction,
-            const glm::vec3& color,
-            const float ambient,
-            const float diffuse,
-            const float specular,
+            const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f),
+            const glm::vec3& direction = glm::vec3(0.0f, 0.0f, -1.0f),
+            const glm::vec3& color = glm::vec3(1.0f, 1.0f, 1.0f),
+            const float ambient = 0.1,
+            const float diffuse = 0.5,
+            const float specular = 0.5,
             float constant = 1.0f,
             float linear = 0.09f,
             float quadratic = 0.032f,
-            float inner_cut_off = glm::cos(glm::radians(12.5f)),
-            float outer_cut_off = glm::cos(glm::radians(15.0f)),
+            float inner_cut_off = glm::cos(glm::radians(10.0f)),
+            float outer_cut_off = glm::cos(glm::radians(30.0f)),
             const std::string& name = "flash_light")
             : SpotLight(position, direction, color, ambient, diffuse, specular, constant, linear, quadratic, inner_cut_off, outer_cut_off, name) {}
 
