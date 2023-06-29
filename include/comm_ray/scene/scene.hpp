@@ -293,30 +293,43 @@ namespace signal_tracer {
         }
 
         void render_step() {
-            glm::mat4 model_mat = glm::mat4(1.0f);
             glm::mat4 view_mat = m_viewing_ptr->get_view_matrix();
             glm::mat4 projection_mat = glm::perspective(glm::radians(m_viewing_ptr->get_camera_fov()), get_aspect_ratio(), 0.1f, 100.0f);
 
             // Draw models from shader programs
             // ----------------------------------
             for (auto& prog_ptr : m_prog_ptrs) {
+                int light_idx{ 0 };
                 for (const auto& light_ptr : prog_ptr->lights) {
-                    light_ptr->set_color(Constant::WHITE);
+                    light_ptr->set_color(prog_ptr->light_colors[light_idx]);
                     light_ptr->init(prog_ptr->program, view_mat);
+                    light_idx++;
                 }
+
+                int drawable_idx{ 0 };
                 for (const auto& drawable_ptr : prog_ptr->drawables) {
-                    drawable_ptr->draw(prog_ptr->program, model_mat, view_mat, projection_mat);
+                    if (prog_ptr->name == "line") {
+                        int display_ref_count = static_cast<Line*>(drawable_ptr.get())->get_reflection_count();
+                        if (display_ref_count == m_viewing_ptr->get_draw_reflection_mode()) {
+                            drawable_ptr->set_model_mat(prog_ptr->drawable_model_mats[drawable_idx]);
+                            drawable_ptr->draw(prog_ptr->program, drawable_ptr->get_model_mat(), view_mat, projection_mat);
+                        }
+                    }
+                    else {
+                        if (prog_ptr->name == "radio_object") {
+                            StationColor color = static_cast<StationColor>(drawable_idx);
+                            prog_ptr->program.SetUniform("color", get_station_color(color));
+                        }
+                        drawable_ptr->set_model_mat(prog_ptr->drawable_model_mats[drawable_idx]);
+                        drawable_ptr->draw(prog_ptr->program, drawable_ptr->get_model_mat(), view_mat, projection_mat);
+                        drawable_idx++;
+                    }
+
                 }
             }
-
-
         }
 
     private:
-        // int m_width{};
-        // int m_height{};
-        // std::string m_title{ "CommRay" };
-        // bool m_debug{ false };
         WindowParams m_window_params{};
         std::shared_ptr<Viewing> m_viewing_ptr{};
         GLFWwindow* m_window_ptr{};

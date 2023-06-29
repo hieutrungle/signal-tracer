@@ -152,6 +152,11 @@ namespace signal_tracer {
             , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) }
             , m_max_reflection{ max_reflection } {}
 
+        SignalTracer(const std::vector<std::shared_ptr<Model>>& model_ptrs, int max_reflection = 2)
+            : m_triangles{ init_triangles(model_ptrs) }
+            , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) }
+            , m_max_reflection{ max_reflection } {}
+
         const std::shared_ptr<BVH>& bvh() const { return m_bvh; }
         int max_reflection() const { return m_max_reflection; }
         const std::vector<ReflectionRecord>& get_reflection_records() const { return m_ref_records; }
@@ -206,17 +211,21 @@ namespace signal_tracer {
             m_display_reflection_count = reflection_count;
         }
 
-        void set_positions(const glm::vec3& tx_pos, const glm::vec3& rx_pos) {
+        void set_station_positions(const glm::vec3& tx_pos, const glm::vec3& rx_pos) {
             m_station_positions.clear();
             m_station_positions.emplace_back(tx_pos);
             m_station_positions.emplace_back(rx_pos);
+        }
+
+        std::vector<glm::vec3> get_station_positions() const {
+            return m_station_positions;
         }
 
         void tracing(glm::vec3 tx_pos, glm::vec3 rx_pos) {
             m_ref_records.clear();
             m_lines.clear();
             m_is_direct_lighting = false;
-            set_positions(tx_pos, rx_pos);
+            set_station_positions(tx_pos, rx_pos);
             std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
 
@@ -323,12 +332,13 @@ namespace signal_tracer {
             shader_program.Bind();
             for (auto& line : m_lines) {
                 if (line.get_reflection_count() == m_display_reflection_count) {
-                    // shader_program.SetUniformVec3("color", glm::vec3{ 0.0f, 0.0f, 1.0f });
                     line.draw(shader_program, model, view, projection);
                 }
-
-
             }
+        }
+
+        std::vector<signal_tracer::Line> get_lines() const {
+            return m_lines;
         }
 
         bool is_direct_lighting() const { return m_is_direct_lighting; }
@@ -351,6 +361,35 @@ namespace signal_tracer {
             int vertex_count{ 0 };
             for (const auto& model : models) {
                 for (const auto& mesh : model.get_meshes()) {
+                    for (const auto& idx : mesh.get_indices()) {
+                        vertex_count++;
+                        vertex_buffer.push_back(mesh.get_vertices()[idx]);
+                        triangle_count++;
+                        if (triangle_count == 3) {
+                            triangles.emplace_back(std::make_shared<Triangle>(
+                                vertex_buffer[0].position,
+                                vertex_buffer[1].position,
+                                vertex_buffer[2].position)
+                            );
+                            vertex_buffer.clear();
+                            triangle_count = 0;
+                        }
+                    }
+                }
+            }
+            std::cout << "Triangle count: " << triangles.size() << std::endl;
+            std::cout << "Vertex count: " << vertex_count << std::endl;
+            return triangles;
+        }
+
+        std::vector<std::shared_ptr<Triangle>> init_triangles(const std::vector<std::shared_ptr<Model>>& model_ptrs) {
+            std::vector<std::shared_ptr<Triangle>> triangles{};
+            std::vector<Vertex> vertex_buffer;
+            vertex_buffer.reserve(3);
+            int triangle_count{ 0 };
+            int vertex_count{ 0 };
+            for (const auto& model_ptr : model_ptrs) {
+                for (const auto& mesh : model_ptr->get_meshes()) {
                     for (const auto& idx : mesh.get_indices()) {
                         vertex_count++;
                         vertex_buffer.push_back(mesh.get_vertices()[idx]);

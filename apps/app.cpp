@@ -6,7 +6,6 @@
 
 #include "utils.hpp"
 #include "model.hpp"
-#include "scene_config.hpp"
 #include "lighting.hpp"
 #include "cyGL.h"
 #include "cubesphere.h"
@@ -14,7 +13,6 @@
 #include "ray.hpp"
 #include "line.hpp"
 #include "point_container.hpp"
-#include "callback.hpp"
 #include "triangle_draw.hpp"
 #include "viewing.hpp"
 #include "triangle.hpp"
@@ -83,12 +81,13 @@ int main(int argc, char* argv []) {
     auto city_model_ptr2{ std::make_shared<signal_tracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj") };
     city_model_ptr2->transform(glm::translate(glm::vec3{ 0.0f, 0.0f, -15.0f }));
 
+    std::vector<std::shared_ptr<signal_tracer::Model>> model_ptrs{ city_model_ptr };
     // Model city_model_ptr{ "/home/hieule/research/comm_ray/assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj" };
 
 
     // Lighting
     // ----------------------------------
-    auto directional_light{ std::make_shared<signal_tracer::DirectionalLight>(
+    auto directional_light_ptr{ std::make_shared<signal_tracer::DirectionalLight>(
         glm::vec3(0.0f, -1.0f, 0.0f), // direction
         glm::vec3(1.0f, 1.0f, 1.0f), // color
         0.2, // ambient
@@ -117,8 +116,7 @@ int main(int argc, char* argv []) {
     // ----------------------------------
     Utils::Timer timer{};
     timer.reset();
-    std::vector<signal_tracer::Model> models{ *city_model_ptr, *city_model_ptr2 };
-    auto sig_tracer{ std::make_shared<signal_tracer::SignalTracer>(models, 2) };
+    auto sig_tracer{ std::make_shared<signal_tracer::SignalTracer>(model_ptrs, 2) };
     timer.execution_time();
 
     timer.reset();
@@ -129,91 +127,57 @@ int main(int argc, char* argv []) {
 
     scene.set_signal_tracer(sig_tracer);
 
+    // set drawing for radio stations
+    // ----------------------------------
+    auto station_object_ptr{ std::make_shared<signal_tracer::Cubesphere>(0.25f, 3, true) };
+
+    std::vector<glm::mat4> station_model_mats{};
+    for (const auto& pos : sig_tracer->get_station_positions()) {
+        station_model_mats.push_back(glm::translate(glm::mat4{ 1.0f }, pos));
+    }
+
+    // drawing reflections
+    std::vector<std::shared_ptr<signal_tracer::Drawable>> lines{};
+    std::vector<glm::mat4> line_model_mats{};
+    for (auto& line : sig_tracer->get_lines()) {
+        lines.push_back(std::make_shared<signal_tracer::Line>(line));
+        line_model_mats.push_back(glm::mat4{ 1.0f });
+    }
+
+
     // Shader Programs
     // ----------------------------------
+
     auto shader_city_prog{ std::make_shared<signal_tracer::ShaderProgram>(
         "city",
         city_prog,
-        std::vector<std::shared_ptr<signal_tracer::Light>>{directional_light},
-        std::vector<std::shared_ptr<signal_tracer::Drawable>>{city_model_ptr, city_model_ptr2}) };
+        std::vector<std::shared_ptr<signal_tracer::Light>>{directional_light_ptr},
+        std::vector<glm::vec3>{glm::vec3{ 1.0f }},
+        std::vector<std::shared_ptr<signal_tracer::Drawable>>{city_model_ptr},
+        std::vector<glm::mat4>{glm::mat4{ 1.0f }}) };
 
-    // auto shader_radio_prog{ std::make_shared<signal_tracer::ShaderProgram>(
-    // "radio_object",
-    // radio_prog,
-    // std::vector<std::shared_ptr<signal_tracer::Light>>{directional_light},
-    // std::vector<std::shared_ptr<signal_tracer::Drawable>>{city_model_ptr, city_model_ptr2}) };
+    auto shader_radio_prog{ std::make_shared<signal_tracer::ShaderProgram>(
+        "radio_object",
+        radio_prog,
+        std::vector<std::shared_ptr<signal_tracer::Light>>{directional_light_ptr},
+        std::vector<glm::vec3>{glm::vec3{ 1.0f }},
+        std::vector<std::shared_ptr<signal_tracer::Drawable>>{station_object_ptr, station_object_ptr},
+        station_model_mats) };
+
+    auto shader_line_prog{ std::make_shared<signal_tracer::ShaderProgram>(
+        "line",
+        line_prog,
+        std::vector<std::shared_ptr<signal_tracer::Light>>{directional_light_ptr},
+        std::vector<glm::vec3>{glm::vec3{ 1.0f }},
+        lines,
+        line_model_mats) };
+
 
     scene.add_program(shader_city_prog);
+    scene.add_program(shader_radio_prog);
+    scene.add_program(shader_line_prog);
 
-    // delta time
-    // ----------------------------------
-    float accu_delta_time{};
-    int frame_count{ 0 };
-    float fps_last_time{ 0.0f };
-    float last_frame_time{ 0.0f };
-
-    // render loop
-    // ----------------------------------
-    while (!scene.should_close()) {
-
-        // FPS counter
-        // -------------------------
-        accu_delta_time += ((float) glfwGetTime() - fps_last_time);
-        fps_last_time = static_cast<float>(glfwGetTime());
-        frame_count++;
-        if (accu_delta_time >= 1.0) {
-            std::string fps = "FPS: " + std::to_string(frame_count);
-            std::string ms = Utils::round_to_string(1000.0 / (float) frame_count, 2) + "ms";
-            window_params.title = "CommRay | " + fps + " | " + ms;
-            scene.set_window_title(window_params.title);
-            frame_count = 0;
-            accu_delta_time = 0.0;
-        }
-
-        scene.clear();
-
-        glm::mat4 view{ 1.0f };
-        glm::mat4 projection{ 1.0f };
-        glm::mat4 model{ 1.0f };
-
-        // Camera
-        // -------------------------
-        view = viewing_ptr->get_view_matrix();
-        projection = glm::perspective(glm::radians(viewing_ptr->get_camera_fov()), scene.get_aspect_ratio(), 0.1f, 100.0f);
-
-        // Draw city model
-        // -------------------------
-        // directional_light->set_color(Constant::WHITE);
-        // directional_light->init(city_prog, view);
-        // city_model_ptr->draw(city_prog, glm::mat4{ 1.0f }, view, projection);
-        // city_model_ptr2->draw(city_prog, glm::mat4{ 1.0f }, view, projection);
-        scene.render_step();
-
-        // TODO: put in shader programs
-        // TODO: Tracer only does the tracing, not the drawing
-        // TODO: Put the drawing in shader programs
-        // Draw radio objects
-        // -------------------------
-        directional_light->set_color(Constant::WHITE);
-        directional_light->init(radio_prog, view);
-        sig_tracer->draw_radio_stations(radio_prog, glm::mat4{ 1.0f }, view, projection);
-
-        // Draw lines
-        // -------------------------
-        directional_light->set_color(Constant::BLACK);
-        directional_light->init(line_prog, view);
-        sig_tracer->set_display_reflection_count(viewing_ptr->get_draw_reflection_mode());
-        sig_tracer->draw(line_prog, glm::mat4{ 1.0f }, view, projection);
-
-        scene.swap_buffers();
-        scene.poll_events();
-
-        // Camera
-        // -------------------------
-        scene.set_delta_time(static_cast<float>(glfwGetTime()) - last_frame_time);
-        scene.move_camera_keys();
-        last_frame_time = (float) glfwGetTime();
-    }
+    scene.render();
 
     return 0;
 }
