@@ -6,8 +6,8 @@
 #include "ray.hpp"
 #include "constant.hpp"
 #include "glm/glm.hpp"
-#include <memory>
 #include <iostream>
+#include <memory>
 
 namespace SignalTracer {
     class Material;
@@ -21,10 +21,10 @@ namespace SignalTracer {
     class IntersectRecord {
     public:
         IntersectRecord() = default;
-        // IntersectRecord(glm::vec3 point, glm::vec3 normal, std::shared_ptr<Material> p_material, float t, bool front_face)
+        // IntersectRecord(glm::vec3 point, glm::vec3 normal, std::shared_ptr<Material> material_ptr, float t, bool front_face)
         //     : m_point(point)
         //     , m_normal(normal)
-        //     , m_p_material(p_material)
+        //     , m_material_ptr(material_ptr)
         //     , m_t(t)
         //     , m_front_face(front_face) {};
 
@@ -32,7 +32,7 @@ namespace SignalTracer {
         IntersectRecord(const IntersectRecord& record) {
             m_point = record.get_point();
             m_normal = record.get_normal();
-            m_p_material = record.get_material_ptr();
+            m_material_ptr = record.get_material_ptr();
             m_t = record.get_t();
             m_front_face = record.get_front_face();
         }
@@ -41,7 +41,7 @@ namespace SignalTracer {
         IntersectRecord& operator=(const IntersectRecord& record) {
             m_point = record.get_point();
             m_normal = record.get_normal();
-            m_p_material = record.get_material_ptr();
+            m_material_ptr = record.get_material_ptr();
             m_t = record.get_t();
             m_front_face = record.get_front_face();
             return *this;
@@ -51,7 +51,7 @@ namespace SignalTracer {
         IntersectRecord(IntersectRecord&& record) noexcept {
             m_point = std::move(record.get_point());
             m_normal = std::move(record.get_normal());
-            m_p_material = std::move(record.get_material_ptr());
+            m_material_ptr = std::move(record.get_material_ptr());
             m_t = std::move(record.get_t());
             m_front_face = std::move(record.get_front_face());
         }
@@ -60,7 +60,7 @@ namespace SignalTracer {
         IntersectRecord& operator=(IntersectRecord&& record) noexcept {
             m_point = std::move(record.get_point());
             m_normal = std::move(record.get_normal());
-            m_p_material = std::move(record.get_material_ptr());
+            m_material_ptr = std::move(record.get_material_ptr());
             m_t = std::move(record.get_t());
             m_front_face = std::move(record.get_front_face());
             return *this;
@@ -70,7 +70,7 @@ namespace SignalTracer {
         bool operator==(const IntersectRecord& record) const {
             return m_point == record.get_point() &&
                 m_normal == record.get_normal() &&
-                m_p_material == record.get_material_ptr() &&
+                m_material_ptr == record.get_material_ptr() &&
                 m_t == record.get_t() &&
                 m_front_face == record.get_front_face();
         }
@@ -82,13 +82,13 @@ namespace SignalTracer {
 
         const glm::vec3 get_point() const { return m_point; };
         const glm::vec3 get_normal() const { return m_normal; };
-        const std::shared_ptr<Material> get_material_ptr() const { return m_p_material; };
+        const std::shared_ptr<Material> get_material_ptr() const { return m_material_ptr; };
         float get_t() const { return m_t; };
         bool get_front_face() const { return m_front_face; };
 
         void set_point(glm::vec3 point) { m_point = point; };
         void set_normal(glm::vec3 normal) { m_normal = normal; };
-        void set_p_material(std::shared_ptr<Material> p_material) { m_p_material = p_material; };
+        void set_material_ptr(std::shared_ptr<Material> material_ptr) { m_material_ptr = material_ptr; };
         void set_t(float t) { m_t = t; };
         void set_front_face(bool front_face) { m_front_face = front_face; };
 
@@ -103,7 +103,7 @@ namespace SignalTracer {
         void clear() {
             m_point = glm::vec3{ Constant::INFINITY_NEG };
             m_normal = glm::vec3{};
-            m_p_material = nullptr;
+            m_material_ptr = nullptr;
             m_t = 0.0f;
             m_front_face = false;
         }
@@ -111,7 +111,7 @@ namespace SignalTracer {
     private:
         glm::vec3 m_point{ Constant::INFINITY_NEG };
         glm::vec3 m_normal{};
-        std::shared_ptr<Material> m_p_material{nullptr};
+        std::shared_ptr<Material> m_material_ptr{ nullptr };
         float m_t{ 0.0f };
         bool m_front_face{};
     };

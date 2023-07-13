@@ -20,14 +20,14 @@ namespace SignalTracer {
     public:
         Triangle() = default;
         Triangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, std::shared_ptr<Material> p_material = nullptr)
-            : m_a(a), m_b(b), m_c(c), m_p_material(p_material) {
+            : m_a(a), m_b(b), m_c(c), m_material_ptr(p_material) {
             update();
         }
 
         // copy constructor
         Triangle(const Triangle& rhs)
             : m_a(rhs.m_a), m_b(rhs.m_b), m_c(rhs.m_c)
-            , m_p_material(rhs.m_p_material) {
+            , m_material_ptr(rhs.m_material_ptr) {
             update();
         }
 
@@ -36,7 +36,7 @@ namespace SignalTracer {
             : m_a(std::move(rhs.m_a))
             , m_b(std::move(rhs.m_b))
             , m_c(std::move(rhs.m_c))
-            , m_p_material(std::move(rhs.m_p_material)) {
+            , m_material_ptr(std::move(rhs.m_material_ptr)) {
             update();
         }
 
@@ -52,7 +52,7 @@ namespace SignalTracer {
             m_edge_ac = rhs.m_edge_ac;
             m_normal = rhs.m_normal;
             m_aabb = rhs.m_aabb;
-            m_p_material = rhs.m_p_material;
+            m_material_ptr = rhs.m_material_ptr;
             return *this;
         }
 
@@ -68,7 +68,7 @@ namespace SignalTracer {
             m_edge_ac = std::move(rhs.m_edge_ac);
             m_normal = std::move(rhs.m_normal);
             m_aabb = std::move(rhs.m_aabb);
-            m_p_material = std::move(rhs.m_p_material);
+            m_material_ptr = std::move(rhs.m_material_ptr);
             return *this;
         }
 
@@ -78,11 +78,11 @@ namespace SignalTracer {
                     return false;
                 }
             }
-            return m_p_material == rhs.m_p_material;
+            return m_material_ptr == rhs.m_material_ptr;
         }
 
         bool operator!=(const Triangle& rhs) const {
-            return m_a != rhs.m_a || m_b != rhs.m_b || m_c != rhs.m_c || m_p_material != rhs.m_p_material;
+            return m_a != rhs.m_a || m_b != rhs.m_b || m_c != rhs.m_c || m_material_ptr != rhs.m_material_ptr;
         }
 
         // array subscript operator
@@ -111,12 +111,12 @@ namespace SignalTracer {
         const glm::vec3& c() const { return m_c; }
         const glm::vec3& normal() const { return m_normal; }
         AABB bounding_box() const override { return m_aabb; }
-        const std::shared_ptr<Material> p_material() const { return m_p_material; }
+        const std::shared_ptr<Material> p_material() const { return m_material_ptr; }
 
         void a(const glm::vec3& a) { m_a = a; update(); }
         void b(const glm::vec3& b) { m_b = b; update(); }
         void c(const glm::vec3& c) { m_c = c; update(); }
-        void p_material(std::shared_ptr<Material> p_material) { m_p_material = p_material; }
+        void p_material(std::shared_ptr<Material> p_material) { m_material_ptr = p_material; }
 
         glm::vec3 centroid() const {
             return (m_a + m_b + m_c) / 3.0f;
@@ -165,7 +165,7 @@ namespace SignalTracer {
                 record.set_t(t);
                 record.set_point(ray.point_at(t));
                 record.set_face_normal(ray, m_normal);
-                record.set_p_material(m_p_material);
+                record.set_material_ptr(m_material_ptr);
                 return true;
             }
             return false;
@@ -179,7 +179,7 @@ namespace SignalTracer {
         glm::vec3 m_edge_ac{};
         glm::vec3 m_normal{};
         AABB m_aabb{};
-        std::shared_ptr<Material> m_p_material{ nullptr };
+        std::shared_ptr<Material> m_material_ptr{ nullptr };
 
         void update() {
             m_edge_ab = m_b - m_a;
