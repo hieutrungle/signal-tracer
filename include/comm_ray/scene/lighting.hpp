@@ -9,7 +9,7 @@
 #include "cyGL.h"
 #include <string>
 
-namespace signal_tracer {
+namespace SignalTracer {
 
     class Light {
     public:

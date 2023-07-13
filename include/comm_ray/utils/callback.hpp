@@ -19,7 +19,7 @@
 // GLFW CALLBACKS
 //=============================================================================
 
-namespace signal_tracer {
+namespace SignalTracer {
     class GLFWCallback {
     public:
         GLFWCallback() = default;

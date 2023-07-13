@@ -6,7 +6,7 @@
 #include "glm/glm.hpp"
 #include "utils.hpp"
 
-namespace signal_tracer {
+namespace SignalTracer {
 
     // Station color
     enum class LineColor {

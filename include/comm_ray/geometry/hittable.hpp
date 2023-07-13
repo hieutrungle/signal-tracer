@@ -9,7 +9,7 @@
 #include "utils.hpp"
 #include <glm/glm.hpp>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class Hittable {
     public:
         virtual bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const = 0;

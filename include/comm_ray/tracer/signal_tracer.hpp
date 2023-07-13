@@ -15,7 +15,7 @@
 #include <vector>
 
 
-namespace signal_tracer {
+namespace SignalTracer {
 
     /*
         Instructions:

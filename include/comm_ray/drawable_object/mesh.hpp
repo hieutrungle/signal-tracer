@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace signal_tracer {
+namespace SignalTracer {
     struct Vertex {
         glm::vec3 position;
         glm::vec3 normal;

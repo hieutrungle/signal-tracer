@@ -14,7 +14,7 @@
 #include "glm/gtx/string_cast.hpp"
 #include <memory>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class Triangle : public Hittable {
 
     public:

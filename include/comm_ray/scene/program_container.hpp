@@ -12,7 +12,7 @@
 #include <vector>
 #include <memory>
 
-namespace signal_tracer {
+namespace SignalTracer {
 
     struct WindowParams {
         int width{};

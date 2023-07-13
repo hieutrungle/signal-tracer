@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class BVH : public Hittable {
     public:
         BVH() = default;

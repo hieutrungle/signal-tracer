@@ -8,7 +8,7 @@
 #include "cyGL.h"
 #include <iostream>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class Drawable {
     public:
         Drawable() = default;

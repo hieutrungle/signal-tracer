@@ -10,7 +10,7 @@
 #include "line.hpp"
 #include <vector>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class TracerDrawing {
     public:
         TracerDrawing() = default;
@@ -28,7 +28,7 @@ namespace signal_tracer {
 
     private:
         Cubesphere m_radio_object{ 0.25f, 3, true };
-        std::vector<signal_tracer::Line> m_lines{};
+        std::vector<SignalTracer::Line> m_lines{};
         int m_display_reflection_count{ 0 };
     };
 }

@@ -7,7 +7,7 @@
 #include "interval.hpp"
 #include "ray.hpp"
 
-namespace signal_tracer {
+namespace SignalTracer {
 
     template<typename T>
     class AABBT {

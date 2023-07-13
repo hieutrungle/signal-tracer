@@ -9,7 +9,7 @@
 #include <memory>
 #include <iostream>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class Material;
 
     /*

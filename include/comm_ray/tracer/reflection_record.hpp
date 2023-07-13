@@ -7,7 +7,7 @@
 #include "glm/glm.hpp"
 #include <iostream>
 
-namespace signal_tracer {
+namespace SignalTracer {
 
     struct ReflectionRecord {
         int reflection_count{};

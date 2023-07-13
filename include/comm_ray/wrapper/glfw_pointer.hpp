@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace signal_tracer {
+namespace SignalTracer {
     struct DestroyglfwWin {
         void operator()(GLFWwindow* ptr) {
             glfwDestroyWindow(ptr);

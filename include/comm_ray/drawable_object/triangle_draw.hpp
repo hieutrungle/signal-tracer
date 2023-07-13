@@ -10,7 +10,7 @@
 #include "glm/gtc/type_ptr.hpp"
 
 
-namespace signal_tracer {
+namespace SignalTracer {
     class TriangleDrawing {
     public:
         TriangleDrawing() = default;

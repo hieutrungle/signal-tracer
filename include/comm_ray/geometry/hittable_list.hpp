@@ -10,7 +10,7 @@
 using std::shared_ptr;
 using std::make_shared;
 
-namespace signal_tracer {
+namespace SignalTracer {
     class HittableList : public Hittable {
     public:
         HittableList() = default;

@@ -11,7 +11,7 @@
 #include "glm/gtx/string_cast.hpp"
 #include <iostream>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class Line : public Drawable {
     public:
         Line() = default;

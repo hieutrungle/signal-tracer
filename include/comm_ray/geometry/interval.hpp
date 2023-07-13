@@ -6,7 +6,7 @@
 #include "utils.hpp"
 #include "constant.hpp"
 
-namespace signal_tracer {
+namespace SignalTracer {
 
     /*
         Interval class

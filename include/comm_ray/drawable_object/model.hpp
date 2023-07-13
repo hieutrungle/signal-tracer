@@ -15,7 +15,7 @@
 #include "mesh.hpp"
 #include <string>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class Model : public Drawable {
     public:
         Model(const std::string& path) {

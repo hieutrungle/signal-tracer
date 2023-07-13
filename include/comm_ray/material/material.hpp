@@ -8,7 +8,7 @@
 #include "glm/glm.hpp"
 #include <cmath>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class IntersectRecord;
 
     class Material {

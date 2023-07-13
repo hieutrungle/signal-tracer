@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class Ray {
     public:
         Ray() = default;

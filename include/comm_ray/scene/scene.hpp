@@ -23,7 +23,7 @@
 #include <vector>
 #include <memory>
 
-namespace signal_tracer {
+namespace SignalTracer {
 
     /// @brief Handle the initilization of OpenGL, GLFW, and drawing
     class Scene {

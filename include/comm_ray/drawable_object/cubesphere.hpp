@@ -25,7 +25,7 @@
 #include "drawable.hpp"
 #include <iostream>
 
-namespace signal_tracer {
+namespace SignalTracer {
     class Cubesphere : public Drawable {
     public:
         // ctor/dtor
