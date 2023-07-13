@@ -19,7 +19,7 @@ namespace SignalTracer {
 
     public:
         Triangle() = default;
-        Triangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, std::shared_ptr<Material> p_material = nullptr)
+        Triangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, std::shared_ptr<Material> p_material = std::make_shared<Concrete>())
             : m_a(a), m_b(b), m_c(c), m_material_ptr(p_material) {
             update();
         }
@@ -103,6 +103,7 @@ namespace SignalTracer {
         // cout
         std::ostream& print(std::ostream& out) const override {
             out << "Triangle: [" << glm::to_string(m_a) << ", " << glm::to_string(m_b) << ", " << glm::to_string(m_c) << "]" << std::endl;
+            out << "Material: " << *m_material_ptr << std::endl;
             return out;
         }
 
@@ -179,7 +180,7 @@ namespace SignalTracer {
         glm::vec3 m_edge_ac{};
         glm::vec3 m_normal{};
         AABB m_aabb{};
-        std::shared_ptr<Material> m_material_ptr{ nullptr };
+        std::shared_ptr<Material> m_material_ptr{};
 
         void update() {
             m_edge_ab = m_b - m_a;

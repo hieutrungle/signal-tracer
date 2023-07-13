@@ -25,7 +25,7 @@ namespace SignalTracer {
             return out;
         }
         friend std::ostream& operator<<(std::ostream& out, const Material& material) {
-            return material.print(out) << "\tReal relative permittivity, a = " << material.get_real_relative_permittivity_a() << ", b = " << material.get_real_relative_permittivity_b() << "\n" << "\tConductivity, c = " << material.get_conductivity_c() << ", d = " << material.get_conductivity_d() << "\n";
+            return material.print(out) << "\tReal relative permittivity, a = " << material.get_real_relative_permittivity_a() << ", b = " << material.get_real_relative_permittivity_b() << "\n" << "\tConductivity, S/m, c = " << material.get_conductivity_c() << ", d = " << material.get_conductivity_d() << "\n";
         }
 
         virtual bool scatter(const Ray& UTILS_UNUSED_PARAM(ray_in), const IntersectRecord& UTILS_UNUSED_PARAM(record), glm::vec3& UTILS_UNUSED_PARAM(attenuation), Ray& UTILS_UNUSED_PARAM(scattered)) const {

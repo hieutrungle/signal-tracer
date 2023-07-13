@@ -13,7 +13,7 @@ namespace SignalTracer {
     struct ReflectionRecord {
         int reflection_count{};
         std::vector<glm::vec3> ref_points{};
-        std::vector<std::shared_ptr<Material>> ref_materials{};
+        std::vector<std::shared_ptr<Material>> ref_material_ptrs{};
 
         // cout overload
         friend std::ostream& operator<<(std::ostream& os, const ReflectionRecord& record) {
@@ -24,12 +24,12 @@ namespace SignalTracer {
                 os << "\t" << glm::to_string(point) << std::endl;
             }
             os << "Trace materials: " << std::endl;
-            for (const auto& material : record.ref_materials) {
-                if (material == nullptr) {
+            for (const auto& material_ptr : record.ref_material_ptrs) {
+                if (material_ptr == nullptr) {
                     os << "\t" << "nullptr" << std::endl;
                 }
                 else {
-                    os << "\t" << material << std::endl;
+                    os << "\t" << *material_ptr << std::endl;
                 }
             }
             return os;

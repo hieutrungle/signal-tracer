@@ -97,7 +97,7 @@ namespace SignalTracer {
             std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
 
-            ReflectionRecord ref_record{ 0, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{nullptr} };
+            ReflectionRecord ref_record{ 0, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{} };
             if (m_max_reflection >= 0) {
                 if (is_ray_direct(tx_pos, rx_pos, ref_record)) {
                     ref_records.emplace_back(ref_record);
@@ -123,7 +123,6 @@ namespace SignalTracer {
             IntersectRecord record{};
             if (!m_bvh->is_hit(ray, interval, record)) {
                 ref_record.ref_points.emplace_back(rx_pos);
-                ref_record.ref_materials.emplace_back(record.get_material_ptr());
                 return true;
             }
             return false;
@@ -144,7 +143,7 @@ namespace SignalTracer {
                 if (triangle->is_hit(ray, interval, record)) {
                     glm::vec3 reflective_point = record.get_point();
 
-                    ReflectionRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{record.get_material_ptr()} };
+                    ReflectionRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{nullptr, record.get_material_ptr()} };
                     if (is_ray_direct(tx_pos, reflective_point, ref_record) && is_ray_direct(reflective_point, rx_pos, ref_record)) {
                         ref_records.emplace_back(ref_record);
                         is_reflect = true;
@@ -176,17 +175,17 @@ namespace SignalTracer {
 
                     Ray ray{ tx_mirror_point, rx_mirror_point - tx_mirror_point };
                     Interval interval{ 0.0f, glm::length(rx_mirror_point - tx_mirror_point) };
-                    IntersectRecord mirror_record{};
-                    if (tx_triangle->is_hit(ray, interval, mirror_record)) {
-                        glm::vec3 tx_reflective_point = mirror_record.get_point();
+                    IntersectRecord tx_mirror_record{};
+                    if (tx_triangle->is_hit(ray, interval, tx_mirror_record)) {
+                        glm::vec3 tx_reflective_point = tx_mirror_record.get_point();
 
                         ray = Ray{ rx_mirror_point, tx_reflective_point - rx_mirror_point };
                         interval = Interval{ 0.0f, glm::length(tx_reflective_point - rx_mirror_point) };
-                        mirror_record.clear();
-                        if (rx_triangle->is_hit(ray, interval, mirror_record)) {
-                            glm::vec3 rx_reflective_point = mirror_record.get_point();
+                        IntersectRecord rx_mirror_record{};
+                        if (rx_triangle->is_hit(ray, interval, rx_mirror_record)) {
+                            glm::vec3 rx_reflective_point = rx_mirror_record.get_point();
 
-                            ReflectionRecord ref_record{ 2, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{nullptr} };
+                            ReflectionRecord ref_record{ 2, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{ tx_mirror_record.get_material_ptr(), rx_mirror_record.get_material_ptr()} };
                             if (is_ray_direct(tx_pos, tx_reflective_point, ref_record) && is_ray_direct(tx_reflective_point, rx_reflective_point, ref_record) && is_ray_direct(rx_reflective_point, rx_pos, ref_record)) {
                                 ref_records.emplace_back(ref_record);
                                 is_reflect = true;
