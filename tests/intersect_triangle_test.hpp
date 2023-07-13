@@ -27,14 +27,14 @@ TEST_F(IntersectionTest, RayTriangle1) {
     signal_tracer::Ray ray17{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{1.0f, 1.0f, 0.0f}};
     signal_tracer::Ray ray18{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
 
-    bool hit11 = triangle.intersect(ray11, interval, record);
-    bool hit12 = triangle.intersect(ray12, interval, record);
-    bool hit13 = triangle.intersect(ray13, interval, record);
-    bool hit14 = triangle.intersect(ray14, interval, record);
-    bool hit15 = triangle.intersect(ray15, interval, record);
-    bool hit16 = triangle.intersect(ray16, interval, record);
-    bool hit17 = triangle.intersect(ray17, interval, record);
-    bool hit18 = triangle.intersect(ray18, interval, record);
+    bool hit11 = triangle.is_hit(ray11, interval, record);
+    bool hit12 = triangle.is_hit(ray12, interval, record);
+    bool hit13 = triangle.is_hit(ray13, interval, record);
+    bool hit14 = triangle.is_hit(ray14, interval, record);
+    bool hit15 = triangle.is_hit(ray15, interval, record);
+    bool hit16 = triangle.is_hit(ray16, interval, record);
+    bool hit17 = triangle.is_hit(ray17, interval, record);
+    bool hit18 = triangle.is_hit(ray18, interval, record);
 
     EXPECT_TRUE(hit11);
     EXPECT_FALSE(hit12);
@@ -54,12 +54,12 @@ TEST_F(IntersectionTest, RayTriangle2) {
     signal_tracer::Ray ray25{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{1.0f, 0.0f, 0.0f}};
     signal_tracer::Ray ray26{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{-1.0f, 0.0f, 0.0f}};
     signal_tracer::Triangle triangle(p1, p2, p4, p_material);
-    bool hit21 = triangle.intersect(ray21, interval, record);
-    bool hit22 = triangle.intersect(ray22, interval, record);
-    bool hit23 = triangle.intersect(ray23, interval, record);
-    bool hit24 = triangle.intersect(ray24, interval, record);
-    bool hit25 = triangle.intersect(ray25, interval, record);
-    bool hit26 = triangle.intersect(ray26, interval, record);
+    bool hit21 = triangle.is_hit(ray21, interval, record);
+    bool hit22 = triangle.is_hit(ray22, interval, record);
+    bool hit23 = triangle.is_hit(ray23, interval, record);
+    bool hit24 = triangle.is_hit(ray24, interval, record);
+    bool hit25 = triangle.is_hit(ray25, interval, record);
+    bool hit26 = triangle.is_hit(ray26, interval, record);
     EXPECT_TRUE(hit21);
     EXPECT_FALSE(hit22);
     EXPECT_FALSE(hit23);
@@ -80,14 +80,14 @@ TEST_F(IntersectionTest, RayTriangle3ShortInterval) {
     signal_tracer::Ray ray77{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{1.0f, 1.0f, 0.0f}};
     signal_tracer::Ray ray88{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
 
-    bool hit11 = triangle.intersect(ray11, interval, record);
-    bool hit12 = triangle.intersect(ray22, interval, record);
-    bool hit13 = triangle.intersect(ray33, interval, record);
-    bool hit14 = triangle.intersect(ray44, interval, record);
-    bool hit15 = triangle.intersect(ray55, interval, record);
-    bool hit16 = triangle.intersect(ray66, interval, record);
-    bool hit17 = triangle.intersect(ray77, interval, record);
-    bool hit18 = triangle.intersect(ray88, interval, record);
+    bool hit11 = triangle.is_hit(ray11, interval, record);
+    bool hit12 = triangle.is_hit(ray22, interval, record);
+    bool hit13 = triangle.is_hit(ray33, interval, record);
+    bool hit14 = triangle.is_hit(ray44, interval, record);
+    bool hit15 = triangle.is_hit(ray55, interval, record);
+    bool hit16 = triangle.is_hit(ray66, interval, record);
+    bool hit17 = triangle.is_hit(ray77, interval, record);
+    bool hit18 = triangle.is_hit(ray88, interval, record);
 
     EXPECT_FALSE(hit11);
     EXPECT_FALSE(hit12);

@@ -24,7 +24,7 @@ TEST_F(IntersectionTest, RayAABB1) {
     bool hit11 = triangle.bounding_box().intersect(ray11, interval1);
     EXPECT_TRUE(hit11);
     if (hit11) {
-        bool hit12 = triangle.intersect(ray11, interval1, record);
+        bool hit12 = triangle.is_hit(ray11, interval1, record);
         EXPECT_TRUE(hit12);
     }
 
@@ -33,7 +33,7 @@ TEST_F(IntersectionTest, RayAABB1) {
     bool hit21 = triangle.bounding_box().intersect(ray22, interval2);
     EXPECT_FALSE(hit21);
     if (hit21) {
-        bool hit22 = triangle.intersect(ray22, interval2, record);
+        bool hit22 = triangle.is_hit(ray22, interval2, record);
         EXPECT_FALSE(hit22);
     }
 
@@ -42,7 +42,7 @@ TEST_F(IntersectionTest, RayAABB1) {
     bool hit31 = triangle.bounding_box().intersect(ray33, interval3);
     EXPECT_TRUE(hit31);
     if (hit31) {
-        bool hit32 = triangle.intersect(ray33, interval3, record);
+        bool hit32 = triangle.is_hit(ray33, interval3, record);
         EXPECT_TRUE(hit32);
     }
 
@@ -51,7 +51,7 @@ TEST_F(IntersectionTest, RayAABB1) {
     bool hit41 = triangle.bounding_box().intersect(ray44, interval4);
     EXPECT_TRUE(hit41);
     if (hit41) {
-        bool hit42 = triangle.intersect(ray44, interval4, record);
+        bool hit42 = triangle.is_hit(ray44, interval4, record);
         EXPECT_TRUE(hit42);
     }
 
@@ -60,7 +60,7 @@ TEST_F(IntersectionTest, RayAABB1) {
     bool hit51 = triangle.bounding_box().intersect(ray55, interval5);
     EXPECT_TRUE(hit51);
     if (hit51) {
-        bool hit52 = triangle.intersect(ray55, interval5, record);
+        bool hit52 = triangle.is_hit(ray55, interval5, record);
         EXPECT_TRUE(hit52);
     }
 
@@ -69,7 +69,7 @@ TEST_F(IntersectionTest, RayAABB1) {
     bool hit61 = triangle.bounding_box().intersect(ray66, interval6);
     EXPECT_TRUE(hit61);
     if (hit61) {
-        bool hit62 = triangle.intersect(ray66, interval6, record);
+        bool hit62 = triangle.is_hit(ray66, interval6, record);
         EXPECT_TRUE(hit62);
     }
 
@@ -78,7 +78,7 @@ TEST_F(IntersectionTest, RayAABB1) {
     bool hit71 = triangle.bounding_box().intersect(ray77, interval7);
     EXPECT_FALSE(hit71);
     if (hit71) {
-        bool hit72 = triangle.intersect(ray77, interval7, record);
+        bool hit72 = triangle.is_hit(ray77, interval7, record);
         EXPECT_FALSE(hit72);
     }
 
@@ -87,7 +87,7 @@ TEST_F(IntersectionTest, RayAABB1) {
     bool hit81 = triangle.bounding_box().intersect(ray88, interval8);
     EXPECT_FALSE(hit81);
     if (hit81) {
-        bool hit82 = triangle.intersect(ray88, interval8, record);
+        bool hit82 = triangle.is_hit(ray88, interval8, record);
         EXPECT_FALSE(hit82);
     }
 
@@ -96,7 +96,7 @@ TEST_F(IntersectionTest, RayAABB1) {
     bool hit91 = triangle.bounding_box().intersect(ray9, interval99);
     EXPECT_FALSE(hit91);
     if (hit91) {
-        bool hit92 = triangle.intersect(ray9, interval99, record);
+        bool hit92 = triangle.is_hit(ray9, interval99, record);
         EXPECT_FALSE(hit92);
     }
 
@@ -105,7 +105,7 @@ TEST_F(IntersectionTest, RayAABB1) {
     bool hit101 = triangle.bounding_box().intersect(ray10, interval1010);
     EXPECT_TRUE(hit101);
     if (hit101) {
-        bool hit102 = triangle.intersect(ray10, interval1010, record);
+        bool hit102 = triangle.is_hit(ray10, interval1010, record);
         EXPECT_TRUE(hit102);
     }
 }
@@ -115,7 +115,7 @@ TEST_F(IntersectionTest, RayAABB2) {
     signal_tracer::Ray ray{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
     bool hit1 = triangle.bounding_box().intersect(ray, interval);
     if (hit1) {
-        bool hit2 = triangle.intersect(ray, interval, record);
+        bool hit2 = triangle.is_hit(ray, interval, record);
         EXPECT_FALSE(hit2);
     }
     else {
