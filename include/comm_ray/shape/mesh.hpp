@@ -83,13 +83,6 @@ namespace signal_tracer {
             return *this;
         }
 
-        ~Mesh() {
-            glDeleteVertexArrays(1, &m_vao);
-            glDeleteBuffers(1, &m_vbo);
-            glDeleteBuffers(1, &m_ebo);
-        }
-
-
         void draw(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) const override;
 
         const std::vector<Vertex>& get_vertices() const { return m_vertices; }

@@ -11,8 +11,8 @@
 // UPDATED: 2022-12-19
 ///////////////////////////////////////////////////////////////////////////////
 #pragma once
-#ifndef GEOMETRY_CUBESPHERE_H
-#define GEOMETRY_CUBESPHERE_H
+#ifndef GEOMETRY_CUBESPHERE_HPP
+#define GEOMETRY_CUBESPHERE_HPP
 
 #pragma GCC diagnostic push 
 #pragma GCC diagnostic ignored "-Wshadow"
@@ -23,17 +23,13 @@
 #include <glm/glm.hpp>
 #include <cyGL.h>
 #include "drawable.hpp"
+#include <iostream>
 
 namespace signal_tracer {
     class Cubesphere : public Drawable {
     public:
         // ctor/dtor
         Cubesphere(float radius = 1.0f, int subdivision = 3, bool smooth = true);
-        ~Cubesphere() {
-            glDeleteVertexArrays(1, &m_vao);
-            glDeleteBuffers(1, &m_vbo);
-            glDeleteBuffers(1, &m_ebo);
-        }
 
         // getters/setters
         float getRadius() const { return radius; }

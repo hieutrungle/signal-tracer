@@ -6,6 +6,7 @@
 #include "glad/gl.h"
 #include "glm/glm.hpp"
 #include "cyGL.h"
+#include <iostream>
 
 namespace signal_tracer {
     class Drawable {
