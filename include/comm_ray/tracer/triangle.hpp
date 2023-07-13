@@ -127,7 +127,7 @@ namespace signal_tracer {
             return mirror_point;
         }
 
-        bool intersect(const Ray& ray, const Interval& interval, IntersectRecord& record) const override {
+        bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const override {
             // Tomas Moller and Ben Trumbore Algorithm
             glm::vec3 pvec = glm::cross(ray.direction(), m_edge_ac);
             float det = glm::dot(m_edge_ab, pvec);
@@ -169,7 +169,7 @@ namespace signal_tracer {
                 return true;
             }
             return false;
-            }
+        }
 
     private:
         glm::vec3 m_a{};
@@ -187,7 +187,7 @@ namespace signal_tracer {
             m_normal = glm::normalize(glm::cross(m_edge_ab, m_edge_ac));
             m_aabb = AABB{ m_a, m_b, m_c };
         }
-        };
-    }
+    };
+}
 
 #endif // !TRIANGLE_HPP

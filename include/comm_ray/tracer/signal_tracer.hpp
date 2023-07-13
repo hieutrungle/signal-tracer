@@ -44,7 +44,6 @@ namespace signal_tracer {
 
         const std::shared_ptr<BVH>& bvh() const { return m_bvh; }
         int max_reflection() const { return m_max_reflection; }
-        const std::vector<ReflectionRecord>& get_reflection_records() const { return m_ref_records; }
 
         virtual ~SignalTracer() = default;
 
@@ -63,7 +62,6 @@ namespace signal_tracer {
             m_triangles = signal_tracer.m_triangles;
             m_bvh = signal_tracer.m_bvh;
             m_max_reflection = signal_tracer.m_max_reflection;
-            m_ref_records = signal_tracer.m_ref_records;
             m_is_direct_lighting = signal_tracer.m_is_direct_lighting;
             m_station_positions = signal_tracer.m_station_positions;
             return *this;
@@ -74,14 +72,12 @@ namespace signal_tracer {
             m_triangles = std::move(signal_tracer.m_triangles);
             m_bvh = std::move(signal_tracer.m_bvh);
             m_max_reflection = std::move(signal_tracer.m_max_reflection);
-            m_ref_records = std::move(signal_tracer.m_ref_records);
             m_is_direct_lighting = std::move(signal_tracer.m_is_direct_lighting);
             m_station_positions = std::move(signal_tracer.m_station_positions);
             return *this;
         }
 
         void reset() {
-            m_ref_records.clear();
             m_is_direct_lighting = false;
         }
 
@@ -95,7 +91,7 @@ namespace signal_tracer {
             return m_station_positions;
         }
 
-        void tracing(glm::vec3 tx_pos, glm::vec3 rx_pos) {
+        void tracing(glm::vec3& tx_pos, glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) {
             reset();
             set_station_positions(tx_pos, rx_pos);
             std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
@@ -103,41 +99,41 @@ namespace signal_tracer {
 
             ReflectionRecord ref_record{ 0, std::vector<glm::vec3>{tx_pos} };
             if (m_max_reflection >= 0) {
-                if (trace_direct(tx_pos, rx_pos, ref_record)) {
-                    m_ref_records.emplace_back(ref_record);
+                if (is_ray_direct(tx_pos, rx_pos, ref_record)) {
+                    ref_records.emplace_back(ref_record);
                 }
             }
             if (m_max_reflection >= 1) {
-                if (trace_single_reflect(tx_pos, rx_pos, m_ref_records)) {}
+                if (is_ray_reflected(tx_pos, rx_pos, ref_records)) {}
             }
             if (m_max_reflection >= 2) {
-                if (trace_double_reflect(tx_pos, rx_pos, m_ref_records)) {}
+                if (is_ray_double_reflect(tx_pos, rx_pos, ref_records)) {}
             }
         }
 
-        bool trace_direct(const glm::vec3& tx_pos, const glm::vec3& rx_pos, ReflectionRecord& ref_record) const {
+        bool is_ray_direct(const glm::vec3& tx_pos, const glm::vec3& rx_pos, ReflectionRecord& ref_record) const {
             Ray ray(tx_pos, rx_pos - tx_pos);
             Interval interval{ Constant::EPSILON, glm::length(rx_pos - tx_pos) - Constant::EPSILON };
             IntersectRecord record{};
-            if (!m_bvh->intersect(ray, interval, record)) {
+            if (!m_bvh->is_hit(ray, interval, record)) {
                 ref_record.ref_points.emplace_back(rx_pos);
                 return true;
             }
             return false;
         }
 
-        bool trace_single_reflect(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
+        bool is_ray_reflected(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
             bool is_reflect = false;
             for (const auto& triangle : m_triangles) {
                 glm::vec3 mirror_point = triangle->get_mirror_point(tx_pos);
                 Ray ray{ mirror_point, rx_pos - mirror_point };
                 Interval interval{ Constant::EPSILON, glm::length(rx_pos - mirror_point) - Constant::EPSILON };
                 IntersectRecord record{};
-                if (triangle->intersect(ray, interval, record)) {
+                if (triangle->is_hit(ray, interval, record)) {
                     glm::vec3 reflective_point = record.get_point();
 
                     ReflectionRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos} };
-                    if (trace_direct(tx_pos, reflective_point, ref_record) && trace_direct(reflective_point, rx_pos, ref_record)) {
+                    if (is_ray_direct(tx_pos, reflective_point, ref_record) && is_ray_direct(reflective_point, rx_pos, ref_record)) {
                         ref_records.emplace_back(ref_record);
                         is_reflect = true;
                     }
@@ -146,7 +142,7 @@ namespace signal_tracer {
             return is_reflect;
         }
 
-        bool trace_double_reflect(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
+        bool is_ray_double_reflect(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
             bool is_reflect = false;
             // Setup mirror points of tx and rx
             std::vector<glm::vec3> tx_mirror_points{};
@@ -169,17 +165,17 @@ namespace signal_tracer {
                     Ray ray{ tx_mirror_point, rx_mirror_point - tx_mirror_point };
                     Interval interval{ 0.0f, glm::length(rx_mirror_point - tx_mirror_point) };
                     IntersectRecord mirror_record{};
-                    if (tx_triangle->intersect(ray, interval, mirror_record)) {
+                    if (tx_triangle->is_hit(ray, interval, mirror_record)) {
                         glm::vec3 tx_reflective_point = mirror_record.get_point();
 
                         ray = Ray{ rx_mirror_point, tx_reflective_point - rx_mirror_point };
                         interval = Interval{ 0.0f, glm::length(tx_reflective_point - rx_mirror_point) };
                         mirror_record.clear();
-                        if (rx_triangle->intersect(ray, interval, mirror_record)) {
+                        if (rx_triangle->is_hit(ray, interval, mirror_record)) {
                             glm::vec3 rx_reflective_point = mirror_record.get_point();
 
                             ReflectionRecord ref_record{ 2, std::vector<glm::vec3>{tx_pos} };
-                            if (trace_direct(tx_pos, tx_reflective_point, ref_record) && trace_direct(tx_reflective_point, rx_reflective_point, ref_record) && trace_direct(rx_reflective_point, rx_pos, ref_record)) {
+                            if (is_ray_direct(tx_pos, tx_reflective_point, ref_record) && is_ray_direct(tx_reflective_point, rx_reflective_point, ref_record) && is_ray_direct(rx_reflective_point, rx_pos, ref_record)) {
                                 ref_records.emplace_back(ref_record);
                                 is_reflect = true;
                             }
@@ -190,18 +186,35 @@ namespace signal_tracer {
             return is_reflect;
         }
 
-        const std::vector<ReflectionRecord>& get_reflection_records() {
-            return m_ref_records;
+        /// @brief Calculate the free space loss in dB using the Friss formula
+        /// @param distance Meters
+        /// @param frequency Frequency in Hz
+        /// @return Free space loss in dB
+        float calc_free_space_loss(float distance, float frequency) const {
+            // constant 10*log((4*pi/c)^2) = -147.55221677811664
+            return 20.0f * std::log10(distance) + 20.0f * std::log10(frequency) - 147.55221677811664f;
+        }
+
+        /// @brief Calculate the received power in dBm using the Friss formula
+        /// @param tx_power Power of transmitter in dBm
+        /// @param tx_gain Gain of transmitter in dB
+        /// @param rx_gain Gain of receiver in dB
+        /// @param distance Distance between transmitter and receiver in meters
+        /// @param frequency Frequency in Hz
+        /// @return Received power in dBm
+        float calc_received_power_freespace(float tx_power, float tx_gain, float rx_gain, float distance, float frequency) const {
+            float free_space_loss = calc_free_space_loss(distance, frequency);
+            return tx_power + tx_gain + rx_gain - free_space_loss;
         }
 
         bool is_direct_lighting() const { return m_is_direct_lighting; }
 
-        friend std::ostream& operator<<(std::ostream& os, const SignalTracer& signal_tracer) {
-            os << "SignalTracer: " << std::endl;
-            for (const auto& ref_record : signal_tracer.m_ref_records) {
-                os << ref_record;
-            }
-            return os;
+        virtual std::ostream& print(std::ostream& out) const {
+            out << "Signal Tracing: \n ";
+            return out;
+        }
+        friend std::ostream& operator<<(std::ostream& out, const SignalTracer& signal_tracer) {
+            return signal_tracer.print(out);
         }
 
     private:
@@ -265,11 +278,9 @@ namespace signal_tracer {
         }
 
     private:
-        // Tracing
         int m_max_reflection{ 2 };
         std::vector<std::shared_ptr<Triangle>> m_triangles{};
         std::shared_ptr<BVH> m_bvh{};
-        std::vector<ReflectionRecord> m_ref_records{};
         bool m_is_direct_lighting{ false };
         std::vector<glm::vec3> m_station_positions{};
 

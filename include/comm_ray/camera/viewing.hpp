@@ -3,7 +3,7 @@
 #ifndef VIEWING_HPP
 #define VIEWING_HPP
 
-#include "base_camera.hpp"
+#include "camera.hpp"
 #include "config.hpp"
 #include "utils.hpp"
 #include "glad/gl.h"
@@ -14,9 +14,9 @@
 
 class Viewing {
 public:
-    Viewing(std::shared_ptr<BaseCamera> camera_ptr
+    Viewing(Camera camera
     )
-        : m_camera_ptr{ camera_ptr }
+        : m_camera{ camera }
         , m_first_mouse{ true }
         , m_mouse_left_down{ false }
         , m_mouse_right_down{ false }
@@ -24,7 +24,7 @@ public:
 
     // Copy constructor
     Viewing(const Viewing& viewing)
-        : m_camera_ptr{ viewing.m_camera_ptr }
+        : m_camera{ viewing.m_camera }
         , m_first_mouse{ viewing.m_first_mouse }
         , m_mouse_left_down{ viewing.m_mouse_left_down }
         , m_mouse_right_down{ viewing.m_mouse_right_down }
@@ -37,7 +37,7 @@ public:
 
     // Move constructor
     Viewing(Viewing&& viewing) noexcept
-        : m_camera_ptr{ std::move(viewing.m_camera_ptr) }
+        : m_camera{ std::move(viewing.m_camera) }
         , m_first_mouse{ std::move(viewing.m_first_mouse) }
         , m_mouse_left_down{ std::move(viewing.m_mouse_left_down) }
         , m_mouse_right_down{ std::move(viewing.m_mouse_right_down) }
@@ -53,7 +53,7 @@ public:
         if (this == &viewing) {
             return *this;
         }
-        m_camera_ptr = viewing.m_camera_ptr;
+        m_camera = viewing.m_camera;
         m_first_mouse = viewing.m_first_mouse;
         m_mouse_left_down = viewing.m_mouse_left_down;
         m_mouse_right_down = viewing.m_mouse_right_down;
@@ -71,7 +71,7 @@ public:
         if (this == &viewing) {
             return *this;
         }
-        m_camera_ptr = std::move(viewing.m_camera_ptr);
+        m_camera = std::move(viewing.m_camera);
         m_first_mouse = std::move(viewing.m_first_mouse);
         m_mouse_left_down = std::move(viewing.m_mouse_left_down);
         m_mouse_right_down = std::move(viewing.m_mouse_right_down);
@@ -87,7 +87,7 @@ public:
     ~Viewing() = default;
 
     void reset() {
-        m_camera_ptr->reset();
+        m_camera.reset();
         m_first_mouse = true;
         m_mouse_left_down = false;
         m_mouse_right_down = false;
@@ -147,7 +147,7 @@ public:
 
     void process_keyboard(CameraMovement direction, float delta_time) {
         float velocity = m_move_speed * delta_time;
-        m_camera_ptr->process_keyboard(direction, velocity);
+        m_camera.process_keyboard(direction, velocity);
     }
 
     void process_mouse_scroll(float yoffset) {
@@ -157,50 +157,18 @@ public:
     void pan(float xoffset, float yoffset, GLboolean constrain_pitch = true) {
         xoffset = xoffset * m_mouse_sensitivity;
         yoffset = yoffset * m_mouse_sensitivity;
-        m_camera_ptr->pan(xoffset, yoffset, constrain_pitch);
+        m_camera.pan(xoffset, yoffset, constrain_pitch);
     }
 
     void arcball_rotate(float xoffset, float yoffset) {
         xoffset = xoffset * m_mouse_sensitivity;
         yoffset = yoffset * m_mouse_sensitivity;
-        m_camera_ptr->arcball_rotate(xoffset, yoffset);
+        m_camera.arcball_rotate(xoffset, yoffset);
     }
 
     void zoom(float yoffset) {
         yoffset = yoffset * m_move_speed * m_delta_time;
-        m_camera_ptr->zoom(yoffset);
-    }
-
-    void set_camera_ptr(std::shared_ptr<BaseCamera> camera_ptr) {
-        m_camera_ptr = camera_ptr;
-    }
-
-    void set_first_mouse(bool first_mouse) {
-        m_first_mouse = first_mouse;
-    }
-
-    void set_mouse_left_down(bool mouse_left_down) {
-        m_mouse_left_down = mouse_left_down;
-    }
-
-    void set_mouse_right_down(bool mouse_right_down) {
-        m_mouse_right_down = mouse_right_down;
-    }
-
-    void set_mouse_middle_down(bool mouse_middle_down) {
-        m_mouse_middle_down = mouse_middle_down;
-    }
-
-    void set_mouse_sensitivity(float mouse_sensitivity) {
-        m_mouse_sensitivity = mouse_sensitivity;
-    }
-
-    void set_mouse_move_speed(float mouse_move_speed) {
-        m_move_speed = mouse_move_speed;
-    }
-
-    void set_delta_time(float delta_time) {
-        m_delta_time = delta_time;
+        m_camera.zoom(yoffset);
     }
 
     void set_draw_mode(int draw_mode) {
@@ -212,27 +180,7 @@ public:
     }
 
     void set_camera_fov(float fov) {
-        m_camera_ptr->set_fov(fov);
-    }
-
-    [[nodiscard]] std::shared_ptr<BaseCamera> get_camera_ptr() const {
-        return m_camera_ptr;
-    }
-
-    [[nodiscard]] bool get_first_mouse() const {
-        return m_first_mouse;
-    }
-
-    [[nodiscard]] bool get_mouse_left_down() const {
-        return m_mouse_left_down;
-    }
-
-    [[nodiscard]] bool get_mouse_right_down() const {
-        return m_mouse_right_down;
-    }
-
-    [[nodiscard]] bool get_mouse_middle_down() const {
-        return m_mouse_middle_down;
+        m_camera.set_fov(fov);
     }
 
     [[nodiscard]] float get_delta_time() const {
@@ -240,47 +188,11 @@ public:
     }
 
     [[nodiscard]] glm::mat4 get_view_matrix() const {
-        return m_camera_ptr->get_view_matrix();
+        return m_camera.get_view_matrix();
     }
 
     [[nodiscard]] float get_camera_fov() const {
-        return m_camera_ptr->get_fov();
-    }
-
-    [[nodiscard]] glm::vec3 get_position() const {
-        return m_camera_ptr->get_position();
-    }
-
-    [[nodiscard]] glm::vec3 get_front() const {
-        return m_camera_ptr->get_front();
-    }
-
-    [[nodiscard]] glm::vec3 get_up() const {
-        return m_camera_ptr->get_up();
-    }
-
-    [[nodiscard]] glm::vec3 get_right() const {
-        return m_camera_ptr->get_right();
-    }
-
-    [[nodiscard]] float get_yaw() const {
-        return m_camera_ptr->get_yaw();
-    }
-
-    [[nodiscard]] float get_pitch() const {
-        return m_camera_ptr->get_pitch();
-    }
-
-    // [[nodiscard]] float get_roll() const {
-    //     return m_camera_ptr->get_roll();
-    // }
-
-    [[nodiscard]] float get_mouse_sensitivity() const {
-        return m_mouse_sensitivity;
-    }
-
-    [[nodiscard]] float get_move_speed() const {
-        return m_move_speed;
+        return m_camera.get_fov();
     }
 
     [[nodiscard]] int get_draw_mode() const {
@@ -295,7 +207,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Viewing& viewing) {
         os << "viewing info: " << std::endl;
         os << "camera info: " << std::endl;
-        os << *viewing.m_camera_ptr << std::endl;
+        os << viewing.m_camera << std::endl;
         os << "first_mouse: " << viewing.m_first_mouse << std::endl;
         os << "mouse_left_down: " << viewing.m_mouse_left_down << std::endl;
         os << "mouse_right_down: " << viewing.m_mouse_right_down << std::endl;
@@ -305,7 +217,7 @@ public:
 
 private:
     // camera ptr
-    std::shared_ptr<BaseCamera> m_camera_ptr{};
+    Camera m_camera{};
     // movement
     float m_last_x{};
     float m_last_y{};

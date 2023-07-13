@@ -25,8 +25,13 @@
 
 namespace signal_tracer {
 
+    /// @brief Handle the initilization of OpenGL, GLFW, and drawing
     class Scene {
     public:
+
+        /// @brief Initialization with window parameters and a viewing camera
+        /// @param window_params all necessary parameters for window initilization
+        /// @param viewing_ptr encapsulates a camera object, 
         Scene(WindowParams& window_params, std::shared_ptr<Viewing>& viewing_ptr)
             : m_window_params{ window_params }
             , m_viewing_ptr{ viewing_ptr }
@@ -43,10 +48,9 @@ namespace signal_tracer {
             : m_window_params{ other.m_window_params }
             , m_viewing_ptr{ other.m_viewing_ptr }
             , m_window_ptr{ other.m_window_ptr }
-            , m_prog_ptrs{ std::move(other.m_prog_ptrs) }
-            , m_signal_tracer_ptr{ std::move(other.m_signal_tracer_ptr) }
+            , m_callback{ std::move(other.m_callback) }
             , m_delta_time{ other.m_delta_time }
-            , m_callback{ std::move(other.m_callback) } {
+            , m_prog_ptrs{ std::move(other.m_prog_ptrs) } {
             other.m_window_ptr = nullptr;
         }
 
@@ -55,16 +59,16 @@ namespace signal_tracer {
 
         // Move assignment
         Scene& operator=(Scene&& other) noexcept {
-            if (this != &other) {
-                m_window_params = other.m_window_params;
-                m_viewing_ptr = other.m_viewing_ptr;
-                m_window_ptr = other.m_window_ptr;
-                m_prog_ptrs = std::move(other.m_prog_ptrs);
-                m_signal_tracer_ptr = std::move(other.m_signal_tracer_ptr);
-                m_delta_time = other.m_delta_time;
-                m_callback = std::move(other.m_callback);
-                other.m_window_ptr = nullptr;
+            if (this == &other) {
+                return *this;
             }
+            m_window_params = other.m_window_params;
+            m_viewing_ptr = other.m_viewing_ptr;
+            m_window_ptr = other.m_window_ptr;
+            m_callback = std::move(other.m_callback);
+            m_delta_time = other.m_delta_time;
+            m_prog_ptrs = std::move(other.m_prog_ptrs);
+            other.m_window_ptr = nullptr;
             return *this;
         }
 
@@ -234,15 +238,6 @@ namespace signal_tracer {
             m_prog_ptrs.insert(m_prog_ptrs.end(), programs.begin(), programs.end());
         }
 
-        /*
-            ---------------------------------
-            SIGNAL TRACER
-            ---------------------------------
-        */
-        void set_signal_tracer(const std::shared_ptr<SignalTracer>& sig_tracer) {
-            m_signal_tracer_ptr = sig_tracer;
-        }
-
         void set_delta_time(float delta_time) {
             m_delta_time = delta_time;
         }
@@ -311,6 +306,8 @@ namespace signal_tracer {
                     if (prog_ptr->name == "line") {
                         int display_ref_count = static_cast<Line*>(drawable_ptr.get())->get_reflection_count();
                         if (display_ref_count == m_viewing_ptr->get_draw_reflection_mode()) {
+                            LineColor color = static_cast<LineColor>(display_ref_count);
+                            prog_ptr->program.SetUniform("color", get_station_color(color) * 1.5f);
                             drawable_ptr->set_model_mat(prog_ptr->drawable_model_mats[drawable_idx]);
                             drawable_ptr->draw(prog_ptr->program, drawable_ptr->get_model_mat(), view_mat, projection_mat);
                         }
@@ -324,19 +321,21 @@ namespace signal_tracer {
                         drawable_ptr->draw(prog_ptr->program, drawable_ptr->get_model_mat(), view_mat, projection_mat);
                         drawable_idx++;
                     }
-
                 }
             }
         }
 
     private:
+        // Set up OpenGL and GLFW
         WindowParams m_window_params{};
         std::shared_ptr<Viewing> m_viewing_ptr{};
         GLFWwindow* m_window_ptr{};
-        std::vector<std::shared_ptr<ShaderProgram>> m_prog_ptrs{};
-        std::shared_ptr<SignalTracer> m_signal_tracer_ptr{};
-        float m_delta_time{ 0.0f };
         GLFWCallback m_callback{};
+        float m_delta_time{ 0.0f };
+
+        // Shader programs
+        std::vector<std::shared_ptr<ShaderProgram>> m_prog_ptrs{};
+
     };
 }
 

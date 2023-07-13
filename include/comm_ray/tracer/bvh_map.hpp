@@ -84,13 +84,13 @@ namespace signal_tracer {
             return *this;
         }
 
-        bool intersect(const Ray& ray, const Interval& interval, IntersectRecord& record) const override {
+        bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const override {
             if (!m_box.intersect(ray, interval)) {
                 return false;
             }
 
-            const auto hit_left = m_left->intersect(ray, interval, record);
-            const auto hit_right = m_right->intersect(ray, Interval{ interval.min(), hit_left ? record.get_t() : interval.max() }, record);
+            const auto hit_left = m_left->is_hit(ray, interval, record);
+            const auto hit_right = m_right->is_hit(ray, Interval{ interval.min(), hit_left ? record.get_t() : interval.max() }, record);
 
             return hit_left || hit_right;
         }

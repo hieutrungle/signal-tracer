@@ -30,14 +30,14 @@ namespace signal_tracer {
             m_box = AABB{ m_box, object->bounding_box() };
         };
 
-        bool intersect(const Ray& r, const Interval& interval, IntersectRecord& rec) const override {
+        bool is_hit(const Ray& r, const Interval& interval, IntersectRecord& rec) const override {
             IntersectRecord temp_rec{};
             bool is_intersect{ false };
             auto closest_so_far{ interval.max() };
 
             for (const auto& object : m_objects) {
                 Interval interval_tmp(interval.min(), closest_so_far);
-                if (object->intersect(r, interval_tmp, temp_rec)) {
+                if (object->is_hit(r, interval_tmp, temp_rec)) {
                     is_intersect = true;
                     closest_so_far = temp_rec.get_t();
                     rec = temp_rec;

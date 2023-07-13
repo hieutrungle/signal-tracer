@@ -34,8 +34,6 @@ namespace CameraDefaultParam {
 
 class BaseCamera {
 public:
-    // constructor with vectors
-    BaseCamera() = default;
 
     BaseCamera(
         glm::vec3 position = CameraDefaultParam::position,
@@ -49,51 +47,12 @@ public:
         , m_fov{ fov } {}
 
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
-    virtual glm::mat4 get_view_matrix() {
+    virtual glm::mat4 get_view_matrix() const {
         return glm::lookAt(m_position, m_position + m_cam_front, m_cam_up);
-    }
-
-    [[nodiscard]] glm::vec3 get_position() const {
-        return m_position;
-    }
-
-    [[nodiscard]] glm::vec3 get_target() const {
-        return m_target;
-    }
-
-    [[nodiscard]] glm::vec3 get_up() const {
-        return m_cam_up;
-    }
-
-    [[nodiscard]] glm::vec3 get_right() const {
-        return m_cam_right;
-    }
-
-    [[nodiscard]] glm::vec3 get_front() const {
-        return m_cam_front;
     }
 
     [[nodiscard]] float get_fov() const {
         return m_fov;
-    }
-
-    [[nodiscard]] float get_yaw() const {
-        return m_yaw;
-    }
-
-    [[nodiscard]] float get_pitch() const {
-        return m_pitch;
-    }
-
-    void set_position(const glm::vec3& position) {
-        m_position = position;
-    }
-    void set_front(const glm::vec3& front) {
-        m_cam_front = front;
-    }
-
-    void set_target(const glm::vec3& target) {
-        m_target = target;
     }
 
     void set_fov(float fov) {

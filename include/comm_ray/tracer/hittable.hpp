@@ -12,7 +12,7 @@
 namespace signal_tracer {
     class Hittable {
     public:
-        virtual bool intersect(const Ray& ray, const Interval& interval, IntersectRecord& record) const = 0;
+        virtual bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const = 0;
         virtual AABB bounding_box() const = 0;
 
         virtual std::ostream& print(std::ostream& out) const {
