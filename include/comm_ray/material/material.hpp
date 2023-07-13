@@ -21,6 +21,13 @@ namespace SignalTracer {
         // Material& operator=(Material&& other) = delete;
         virtual ~Material() = default;
 
+        virtual std::ostream& print(std::ostream& out) const {
+            return out;
+        }
+        friend std::ostream& operator<<(std::ostream& out, const Material& material) {
+            return material.print(out) << "\tReal relative permittivity, a = " << material.get_real_relative_permittivity_a() << ", b = " << material.get_real_relative_permittivity_b() << "\n" << "\tConductivity, c = " << material.get_conductivity_c() << ", d = " << material.get_conductivity_d() << "\n";
+        }
+
         virtual bool scatter(const Ray& UTILS_UNUSED_PARAM(ray_in), const IntersectRecord& UTILS_UNUSED_PARAM(record), glm::vec3& UTILS_UNUSED_PARAM(attenuation), Ray& UTILS_UNUSED_PARAM(scattered)) const {
             return false;
         }
@@ -100,6 +107,11 @@ namespace SignalTracer {
             set_conductivity_c(0.0f);
             set_conductivity_d(0.0f);
         }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "Air.\n";
+            return out;
+        }
     };
 
     /// @brief Material properties for concrete with frequency being in the range of [1, 100] GHz.
@@ -110,6 +122,11 @@ namespace SignalTracer {
             set_real_relative_permittivity_b(0.0f);
             set_conductivity_c(0.0326f);
             set_conductivity_d(0.8095f);
+        }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "Concrete.\n";
+            return out;
         }
     };
 
@@ -122,6 +139,11 @@ namespace SignalTracer {
             set_conductivity_c(0.038f);
             set_conductivity_d(0.0f);
         }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "Brick.\n";
+            return out;
+        }
     };
 
     /// @brief Material properties for glass with frequency being in the range of [1, 100] GHz.
@@ -132,6 +154,11 @@ namespace SignalTracer {
             set_real_relative_permittivity_b(0.0f);
             set_conductivity_c(0.0116f);
             set_conductivity_d(0.7076f);
+        }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "Plasterboard.\n";
+            return out;
         }
     };
 
@@ -144,6 +171,11 @@ namespace SignalTracer {
             set_conductivity_c(0.0047f);
             set_conductivity_d(1.0718f);
         }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "Wood.\n";
+            return out;
+        }
     };
 
     /// @brief Material properties for glass with frequency being in the range of [0.01, 100] GHz.
@@ -154,6 +186,11 @@ namespace SignalTracer {
             set_real_relative_permittivity_b(0.0f);
             set_conductivity_c(0.0043f);
             set_conductivity_d(1.1925f);
+        }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "Glass.\n";
+            return out;
         }
     };
 
@@ -166,6 +203,11 @@ namespace SignalTracer {
             set_conductivity_c(0.0005f);
             set_conductivity_d(1.1634f);
         }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "CeilingBoard.\n";
+            return out;
+        }
     };
 
     /// @brief Material properties for chipboard with frequency being in the range of [1, 100] GHz.
@@ -176,6 +218,11 @@ namespace SignalTracer {
             set_real_relative_permittivity_b(0.0f);
             set_conductivity_c(0.0217f);
             set_conductivity_d(0.78f);
+        }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "Chipboard.\n";
+            return out;
         }
     };
 
@@ -188,6 +235,11 @@ namespace SignalTracer {
             set_conductivity_c(0.0044f);
             set_conductivity_d(1.3515f);
         }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "Floorboard.\n";
+            return out;
+        }
     };
 
     /// @brief Material properties for glass with frequency being in the range of [1, 100] GHz.
@@ -198,6 +250,11 @@ namespace SignalTracer {
             set_real_relative_permittivity_b(0.0f);
             set_conductivity_c(1.0e7f);
             set_conductivity_d(0.0f);
+        }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "Metal.\n";
+            return out;
         }
     };
 
@@ -210,6 +267,11 @@ namespace SignalTracer {
             set_conductivity_c(0.00015f);
             set_conductivity_d(2.52f);
         }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "VeryDryGround.\n";
+            return out;
+        }
     };
 
     /// @brief Material properties for glass with frequency being in the range of [1, 10] GHz.
@@ -221,6 +283,11 @@ namespace SignalTracer {
             set_conductivity_c(0.035f);
             set_conductivity_d(1.63f);
         }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "MediumDryGround.\n";
+            return out;
+        }
     };
 
     /// @brief Material properties for glass with frequency being in the range of [1, 10] GHz.
@@ -231,6 +298,11 @@ namespace SignalTracer {
             set_real_relative_permittivity_b(-0.4f);
             set_conductivity_c(0.15f);
             set_conductivity_d(1.30f);
+        }
+
+        std::ostream& print(std::ostream& out) const override {
+            out << "WetGround.\n";
+            return out;
         }
     };
 }
