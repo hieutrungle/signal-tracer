@@ -8,29 +8,24 @@
 #include "glm/glm.hpp"
 #include "cyGL.h"
 #include "glm/gtc/type_ptr.hpp"
-#include "point_container.hpp"
 
 
 namespace signal_tracer {
     class TriangleDrawing {
-
     public:
         TriangleDrawing() = default;
-        TriangleDrawing(const ReflectionRecord& ref_record) : m_ref_record(ref_record) {
+        TriangleDrawing(const std::vector<glm::vec3>& points) : m_points(points) {
             setup_draw();
         }
 
         void draw(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
             shader_program.Bind();
-            glm::mat4 normal_matrix = glm::transpose(glm::inverse(view * model));
-            shader_program.SetUniformMatrix4("view", glm::value_ptr(view), 1, false);
-            shader_program.SetUniformMatrix4("projection", glm::value_ptr(projection), 1, false);
-            shader_program.SetUniformMatrix4("model", glm::value_ptr(model), 1, false);
-            shader_program.SetUniformMatrix4("view_model", glm::value_ptr(view * model), 1, false);
-            shader_program.SetUniformMatrix4("mvp", glm::value_ptr(projection * view * model), 1, false);
-            shader_program.SetUniformMatrix4("normal_matrix", glm::value_ptr(normal_matrix), 1, false);
+            glm::mat3 normal_matrix{ glm::mat3(glm::transpose(glm::inverse(view * model))) };
+            shader_program.SetUniformMatrix4("model_view", glm::value_ptr(view * model), 1, false);
+            shader_program.SetUniformMatrix4("model_view_projection", glm::value_ptr(projection * view * model), 1, false);
+            shader_program.SetUniformMatrix3("normal_matrix", glm::value_ptr(normal_matrix), 1, false);
             glBindVertexArray(m_vao);
-            glDrawArrays(GL_TRIANGLES, 0, m_ref_record.ref_points.size());
+            glDrawArrays(GL_TRIANGLES, 0, m_points.size());
         };
 
     private:
@@ -41,7 +36,7 @@ namespace signal_tracer {
 
             glGenBuffers(1, &m_vbo);
             glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-            glBufferData(GL_ARRAY_BUFFER, m_ref_record.ref_points.size() * sizeof(glm::vec3), &m_ref_record.ref_points[0], GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, m_points.size() * sizeof(glm::vec3), &m_points[0], GL_STATIC_DRAW);
 
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
@@ -52,7 +47,7 @@ namespace signal_tracer {
         }
 
     private:
-        ReflectionRecord m_ref_record;
+        std::vector<glm::vec3> m_points;
         unsigned int m_vao{}, m_vbo{}, m_ebo{};
     };
 }
