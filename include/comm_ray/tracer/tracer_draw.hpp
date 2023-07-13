@@ -8,7 +8,6 @@
 #include "cubesphere.h"
 #include "drawable.hpp"
 #include "line.hpp"
-#include "program_container.hpp"
 #include <vector>
 
 namespace signal_tracer {

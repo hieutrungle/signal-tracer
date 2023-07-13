@@ -3,8 +3,6 @@
 #define BASE_CAMERA_HPP
 
 
-#include "constant.hpp"
-#include "config.hpp"
 #include "glad/gl.h"
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"

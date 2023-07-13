@@ -4,8 +4,6 @@
 #define VIEWING_HPP
 
 #include "camera.hpp"
-#include "config.hpp"
-#include "utils.hpp"
 #include "glad/gl.h"
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"

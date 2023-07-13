@@ -3,11 +3,10 @@
 #define ORBIT_CAMERA_HPP
 
 #include "base_camera.hpp"
-#include "config.hpp"
+#include "glad/gl.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 #include <cmath>
-#include <glad/gl.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
 
