@@ -27,7 +27,7 @@
 #include <cmath>
 #pragma GCC diagnostic push 
 #pragma GCC diagnostic ignored "-Wshadow"
-#include "cubesphere.h"
+#include "cubesphere.hpp"
 #include <glad/gl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -157,13 +157,10 @@ namespace signal_tracer {
     ///////////////////////////////////////////////////////////////////////////////
     void Cubesphere::draw(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) const {
         shader_program.Bind();
-        glm::mat4 normal_matrix = glm::transpose(glm::inverse(view * model));
-        shader_program.SetUniformMatrix4("view", glm::value_ptr(view), 1, false);
-        shader_program.SetUniformMatrix4("projection", glm::value_ptr(projection), 1, false);
-        shader_program.SetUniformMatrix4("model", glm::value_ptr(model), 1, false);
-        shader_program.SetUniformMatrix4("view_model", glm::value_ptr(view * model), 1, false);
-        shader_program.SetUniformMatrix4("mvp", glm::value_ptr(projection * view * model), 1, false);
-        shader_program.SetUniformMatrix4("normal_matrix", glm::value_ptr(normal_matrix), 1, false);
+        glm::mat3 normal_matrix{ glm::mat3(glm::transpose(glm::inverse(view * model))) };
+        shader_program.SetUniformMatrix4("model_view", glm::value_ptr(view * model), 1, false);
+        shader_program.SetUniformMatrix4("model_view_projection", glm::value_ptr(projection * view * model), 1, false);
+        shader_program.SetUniformMatrix3("normal_matrix", glm::value_ptr(normal_matrix), 1, false);
         glBindVertexArray(m_vao);
         glDrawElements(GL_TRIANGLES, getIndexCount(), GL_UNSIGNED_INT, 0);
     }
