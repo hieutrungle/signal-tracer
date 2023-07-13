@@ -39,7 +39,6 @@ namespace Constant {
     const inline glm::vec3 PINK = glm::vec3(1.0f, 0.0f, 0.5f);
     const inline glm::vec3 BROWN = glm::vec3(0.5f, 0.25f, 0.0f);
     const inline glm::vec3 GRAY = glm::vec3(0.5f, 0.5f, 0.5f);
-    const inline glm::vec3 LIGHT_GRAY = glm::vec3(0.75f, 0.75f, 0.75f);
     const inline glm::vec3 DARK_GRAY = glm::vec3(0.25f, 0.25f, 0.25f);
     const inline glm::vec3 MAROON = glm::vec3(0.5f, 0.0f, 0.0f);
     const inline glm::vec3 NAVY = glm::vec3(0.0f, 0.0f, 0.5f);
@@ -56,12 +55,29 @@ namespace Constant {
     const inline glm::vec3 SALMON = glm::vec3(1.0f, 0.5f, 0.5f);
     const inline glm::vec3 LIME = glm::vec3(0.75f, 1.0f, 0.0f);
     const inline glm::vec3 INDIGO = glm::vec3(0.25f, 0.0f, 0.75f);
+
     const inline glm::vec3 DARK_RED = glm::vec3(0.5f, 0.0f, 0.0f);
     const inline glm::vec3 DARK_GREEN = glm::vec3(0.0f, 0.5f, 0.0f);
     const inline glm::vec3 DARK_BLUE = glm::vec3(0.0f, 0.0f, 0.5f);
     const inline glm::vec3 DARK_YELLOW = glm::vec3(0.5f, 0.5f, 0.0f);
     const inline glm::vec3 DARK_CYAN = glm::vec3(0.0f, 0.5f, 0.5f);
     const inline glm::vec3 DARK_MAGENTA = glm::vec3(0.5f, 0.0f, 0.5f);
+    const inline glm::vec3 DARK_ORANGE = glm::vec3(0.5f, 0.25f, 0.0f);
+    const inline glm::vec3 DARK_PURPLE = glm::vec3(0.25f, 0.0f, 0.25f);
+    const inline glm::vec3 DARK_PINK = glm::vec3(0.5f, 0.0f, 0.25f);
+    const inline glm::vec3 DARK_BROWN = glm::vec3(0.25f, 0.125f, 0.0f);
+
+    const inline glm::vec3 LIGHT_RED = glm::vec3(1.0f, 0.5f, 0.5f);
+    const inline glm::vec3 LIGHT_GREEN = glm::vec3(0.5f, 1.0f, 0.5f);
+    const inline glm::vec3 LIGHT_BLUE = glm::vec3(0.5f, 0.5f, 1.0f);
+    const inline glm::vec3 LIGHT_YELLOW = glm::vec3(1.0f, 1.0f, 0.5f);
+    const inline glm::vec3 LIGHT_CYAN = glm::vec3(0.5f, 1.0f, 1.0f);
+    const inline glm::vec3 LIGHT_MAGENTA = glm::vec3(1.0f, 0.5f, 1.0f);
+    const inline glm::vec3 LIGHT_ORANGE = glm::vec3(1.0f, 0.75f, 0.5f);
+    const inline glm::vec3 LIGHT_PURPLE = glm::vec3(0.75f, 0.5f, 0.75f);
+    const inline glm::vec3 LIGHT_PINK = glm::vec3(1.0f, 0.5f, 0.75f);
+    const inline glm::vec3 LIGHT_BROWN = glm::vec3(0.75f, 0.625f, 0.5f);
+    const inline glm::vec3 LIGHT_GRAY = glm::vec3(0.75f, 0.75f, 0.75f);
 
     const inline glm::vec3 WHITE = glm::vec3(1.0f, 1.0f, 1.0f);
     const inline glm::vec3 BLACK = glm::vec3(0.0f, 0.0f, 0.0f);
