@@ -4,22 +4,21 @@
 #define LINE_HPP
 
 #include "glad/gl.h"
-#include "glm/glm.hpp"
 #include "cyGL.h"
 #include "drawable.hpp"
+#include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "reflection_record.hpp"
+#include "glm/gtx/string_cast.hpp"
 #include <iostream>
 
 namespace signal_tracer {
     class Line : public Drawable {
-
     public:
         Line() = default;
-        Line(const ReflectionRecord& ref_record)
+        Line(const std::vector<glm::vec3>& ref_points, const int& reflection_count)
             : Drawable{}
-            , m_points{ init_points(ref_record) }
-            , m_reflection_count{ ref_record.reflection_count } {
+            , m_points{ init_points(ref_points) }
+            , m_reflection_count{ reflection_count } {
             setup_draw();
         }
 
@@ -61,22 +60,22 @@ namespace signal_tracer {
 
         ~Line() {}
 
-        std::vector<glm::vec3> init_points(ReflectionRecord ref_record) const {
+        std::vector<glm::vec3> init_points(const std::vector<glm::vec3>& ref_points) const {
             std::vector<glm::vec3> points{};
-            for (std::size_t i = 0; i < ref_record.ref_points.size(); ++i) {
-                if (i != 0 && i != ref_record.ref_points.size() - 1) {
-                    points.push_back(ref_record.ref_points[i]);
-                    points.push_back(ref_record.ref_points[i]);
+            for (std::size_t i = 0; i < ref_points.size(); ++i) {
+                if (i != 0 && i != ref_points.size() - 1) {
+                    points.push_back(ref_points[i]);
+                    points.push_back(ref_points[i]);
                 }
                 else {
-                    points.push_back(ref_record.ref_points[i]);
+                    points.push_back(ref_points[i]);
                 }
             }
             return points;
         }
 
-        void update_points(const ReflectionRecord& ref_record) {
-            m_points = init_points(ref_record);
+        void update_points(const std::vector<glm::vec3>& ref_points) {
+            m_points = init_points(ref_points);
             setup_draw();
         }
 
