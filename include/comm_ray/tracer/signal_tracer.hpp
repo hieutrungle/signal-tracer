@@ -144,7 +144,7 @@ namespace SignalTracer {
                 if (triangle->is_hit(ray, interval, record)) {
                     glm::vec3 reflective_point = record.get_point();
 
-                    ReflectionRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{nullptr, record.get_material_ptr()} };
+                    ReflectionRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{record.get_material_ptr()} };
                     if (is_ray_direct(tx_pos, reflective_point, ref_record) && is_ray_direct(reflective_point, rx_pos, ref_record)) {
                         ref_records.emplace_back(ref_record);
                         is_reflect = true;

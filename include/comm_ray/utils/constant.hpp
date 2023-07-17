@@ -14,6 +14,8 @@ namespace Constant {
     const T INFINITY_NEG_T = -std::numeric_limits<T>::infinity();
     const double PI = std::numbers::pi;
 
+    const float LIGHT_SPEED = 299792458.0;
+
     const float INFINITY_POS = INFINITY_POS_T<float>;
     const float INFINITY_NEG = INFINITY_NEG_T<float>;
 
