@@ -185,15 +185,15 @@ namespace SignalTracer {
         void calc_all_propagation_properties(std::vector<ReflectionRecord>& ref_records) {
             for (auto& ref_record : ref_records) {
 
-                std::vector<float> material_permittivities{ setup_permittivity(m_frequency, ref_record.ref_material_ptrs) };
+                std::vector<float> material_permittivities{ setup_permittivity(m_frequency, ref_record.get_ref_material_ptrs()) };
 
-                ref_record.signal_loss = calc_reflection_loss(m_frequency, ref_record.ref_points, material_permittivities, m_tx_permittivity, m_polarization);
-                ref_record.signal_strength = m_tx_power + m_tx_gain + m_rx_gain - ref_record.signal_loss;
-                ref_record.transmitting_distance = calc_transmitting_distance(ref_record.ref_points);
+                ref_record.set_signal_loss(calc_reflection_loss(m_frequency, ref_record.get_ref_points(), material_permittivities, m_tx_permittivity, m_polarization));
+                ref_record.set_signal_strength(m_tx_power + m_tx_gain + m_rx_gain - ref_record.get_signal_loss());
+                ref_record.set_transmitting_distance(calc_transmitting_distance(ref_record.get_ref_points()));
 
                 // tranmission speed is affected by the medium's permittivity, air_permittivity = 1
-                ref_record.signal_delay = calc_signal_delay(ref_record.transmitting_distance, m_tranmission_speed);
-                ref_record.signal_phase = calc_signal_phase(ref_record.signal_delay, m_frequency);
+                ref_record.set_signal_delay(calc_signal_delay(ref_record.get_transmitting_distance(), m_tranmission_speed));
+                ref_record.set_signal_phase(calc_signal_phase(ref_record.get_signal_delay(), m_frequency));
             }
         }
 
@@ -203,6 +203,15 @@ namespace SignalTracer {
             signal_strength = m_tx_power + m_tx_gain + m_rx_gain - signal_loss;
             signal_delay = calc_signal_delay(ray_path);
 
+        }
+
+        float calc_total_receiving_power(const std::vector<ReflectionRecord>& ref_records) const {
+            float total_power{ 0.0f };
+            // using accumulate
+            total_power = std::accumulate(ref_records.begin(), ref_records.end(), 0.0f, [](float sum, const ReflectionRecord& record) {
+                return sum + Utils::dB_to_linear(record.get_signal_strength());
+                });
+            return Utils::linear_to_dB(total_power);
         }
 
         friend std::ostream& operator<<(std::ostream& os, const PropagationModel& prop_model) {
