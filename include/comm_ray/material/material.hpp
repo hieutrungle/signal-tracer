@@ -6,6 +6,7 @@
 #include "ray.hpp"
 #include "utils.hpp"
 #include "glm/glm.hpp"
+#include "intersect_record.hpp"
 #include <cmath>
 
 namespace SignalTracer {
@@ -29,8 +30,19 @@ namespace SignalTracer {
             // << "\tReal relative permittivity, a = " << material.get_real_relative_permittivity_a() << ", b = " << material.get_real_relative_permittivity_b() << "\n" << "\tConductivity, S/m, c = " << material.get_conductivity_c() << ", d = " << material.get_conductivity_d() << "\n";
         }
 
-        virtual bool scatter(const Ray& UTILS_UNUSED_PARAM(ray_in), const IntersectRecord& UTILS_UNUSED_PARAM(record), glm::vec3& UTILS_UNUSED_PARAM(attenuation), Ray& UTILS_UNUSED_PARAM(scattered)) const {
-            return false;
+        // perfect reflection
+        virtual bool is_scattering(const Ray& ray_in, const IntersectRecord& record, glm::vec3& attenuation, Ray& scattered_ray) const {
+            attenuation = glm::vec3{ 1.0, 1.0, 1.0 };
+
+            glm::vec3 normal{ record.get_normal() };
+            glm::vec3 scattered_direction{ reflect(ray_in.get_direction(), normal) };
+
+            scattered_ray = Ray(record.get_point(), scattered_direction);
+            return true;
+        }
+
+        glm::vec3 reflect(const glm::vec3& v, const glm::vec3& n) const {
+            return v - 2 * glm::dot(v, n) * n;
         }
 
         void set_real_relative_permittivity_a(float real_relative_permittivity_a) {
