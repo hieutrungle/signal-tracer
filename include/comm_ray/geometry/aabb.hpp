@@ -111,19 +111,19 @@ namespace SignalTracer {
                 m_intervals[2].surrounds(point.z);
         }
 
-        bool intersect(const Ray& ray, IntervalT<T> ray_interval) const {
-            if (ray.direction() == glm::vec3(0.0f)) {
+        bool is_hit(const Ray& ray, IntervalT<T> ray_interval) const {
+            if (ray.get_direction() == glm::vec3(0.0f)) {
                 std::cout << "Ray direction is zero vector." << std::endl;
-                return contains(ray.origin());
+                return contains(ray.get_origin());
             }
-            const auto inv_direction = 1.0f / ray.direction();
+            const auto inv_direction = 1.0f / ray.get_direction();
 
             for (std::size_t i = 0; i < m_intervals.size(); i++) {
-                if (std::fabs(ray.direction()[i]) <= 1e-6) {
+                if (std::fabs(ray.get_direction()[i]) <= 1e-6) {
                     continue;
                 }
-                T t0 = (m_intervals[i].min() - ray.origin()[i]) * inv_direction[i];
-                T t1 = (m_intervals[i].max() - ray.origin()[i]) * inv_direction[i];
+                T t0 = (m_intervals[i].min() - ray.get_origin()[i]) * inv_direction[i];
+                T t1 = (m_intervals[i].max() - ray.get_origin()[i]) * inv_direction[i];
 
                 if (inv_direction[i] < 0.0f) std::swap<T>(t0, t1);
 
@@ -137,7 +137,7 @@ namespace SignalTracer {
         }
 
     private:
-        std::array<IntervalT<T>, 3> m_intervals{{
+        std::array<IntervalT<T>, 3> m_intervals{ {
                 IntervalT(Constant::INFINITY_POS, Constant::INFINITY_NEG),
                     IntervalT(Constant::INFINITY_POS, Constant::INFINITY_NEG),
                     IntervalT(Constant::INFINITY_POS, Constant::INFINITY_NEG)

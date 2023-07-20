@@ -87,7 +87,7 @@ namespace SignalTracer {
         bool get_front_face() const { return m_front_face; };
 
         void set_point(glm::vec3 point) { m_point = point; };
-        void set_normal(glm::vec3 normal) { m_normal = normal; };
+        void set_normal(glm::vec3 normal) { m_normal = glm::normalize(normal); };
         void set_material_ptr(std::shared_ptr<Material> material_ptr) { m_material_ptr = material_ptr; };
         void set_t(float t) { m_t = t; };
         void set_front_face(bool front_face) { m_front_face = front_face; };
@@ -95,8 +95,16 @@ namespace SignalTracer {
         // r: incomming Ray
         // outward_normal: normal vector of the surface
         inline void set_face_normal(const Ray& ray, const glm::vec3& outward_normal) {
-            m_front_face = glm::dot(ray.direction(), outward_normal) < 0;
+            m_front_face = glm::dot(ray.get_direction(), outward_normal) < 0;
             m_normal = m_front_face ? outward_normal : -outward_normal;
+        }
+
+        // cout
+        friend std::ostream& operator<<(std::ostream& os, const IntersectRecord& record) {
+            os << "IntersectRecord: " << glm::to_string(record.get_point()) << std::endl;
+
+            // " " << glm::to_string(record.get_normal()) << " " << record.get_t() << std::endl;
+            return os;
         }
 
         // clear the record
@@ -112,7 +120,7 @@ namespace SignalTracer {
         glm::vec3 m_point{ Constant::INFINITY_NEG };
         glm::vec3 m_normal{};
         std::shared_ptr<Material> m_material_ptr{ nullptr };
-        float m_t{ 0.0f };
+        float m_t{ Constant::INFINITY_POS };
         bool m_front_face{};
     };
 }

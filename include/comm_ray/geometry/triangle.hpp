@@ -130,7 +130,7 @@ namespace SignalTracer {
 
         bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const override {
             // Tomas Moller and Ben Trumbore Algorithm
-            glm::vec3 pvec = glm::cross(ray.direction(), m_edge_ac);
+            glm::vec3 pvec = glm::cross(ray.get_direction(), m_edge_ac);
             float det = glm::dot(m_edge_ab, pvec);
 #if defined(CULLING)
             // if the determinant is negative, the triangle is 'back facing.'
@@ -145,14 +145,14 @@ namespace SignalTracer {
 #endif
             float inv_det = 1.0f / det;
 
-            glm::vec3 tvec = ray.origin() - m_a;
+            glm::vec3 tvec = ray.get_origin() - m_a;
             float u = glm::dot(tvec, pvec) * inv_det;
             if (u < 0.0f || u > 1.0f) {
                 return false;
             }
 
             glm::vec3 qvec = glm::cross(tvec, m_edge_ab);
-            float v = glm::dot(ray.direction(), qvec) * inv_det;
+            float v = glm::dot(ray.get_direction(), qvec) * inv_det;
             if (v < 0.0f || u + v > 1.0f) {
                 return false;
             }

@@ -85,7 +85,7 @@ namespace SignalTracer {
         }
 
         bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const override {
-            if (!m_box.intersect(ray, interval)) {
+            if (!m_box.is_hit(ray, interval)) {
                 return false;
             }
 
