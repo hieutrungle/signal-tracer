@@ -44,7 +44,7 @@
 // ctor
 // The radius is circumscribed sphere
 ///////////////////////////////////////////////////////////////////////////////
-namespace signal_tracer {
+namespace SignalTracer {
     Cubesphere::Cubesphere(float radius, int sub, bool smooth)
         : Drawable{}
         , radius(radius), subdivision(sub), smooth(smooth), interleavedStride(32) {
