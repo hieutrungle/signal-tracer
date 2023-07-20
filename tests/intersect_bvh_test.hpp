@@ -42,7 +42,7 @@ TEST_F(IntersectionTest, RayBVH3) {
 
 TEST_F(IntersectionTest, RayBVHHittableList1) {
     bool hit_bvh_1 = bvh->is_hit(ray1, interval, record);
-    signal_tracer::IntersectRecord hittablelist_record{};
+    SignalTracer::IntersectRecord hittablelist_record{};
     bool hit_hittablelist_1 = model1.is_hit(ray1, interval, hittablelist_record);
     EXPECT_EQ(hit_bvh_1, hit_hittablelist_1);
     EXPECT_EQ(record, hittablelist_record);
@@ -50,7 +50,7 @@ TEST_F(IntersectionTest, RayBVHHittableList1) {
 
 TEST_F(IntersectionTest, RayBVHHittableList2) {
     bool hit_bvh_2 = bvh->is_hit(ray2, interval, record);
-    signal_tracer::IntersectRecord hittablelist_record{};
+    SignalTracer::IntersectRecord hittablelist_record{};
     bool hit_hittablelist_2 = model1.is_hit(ray2, interval, hittablelist_record);
     EXPECT_EQ(hit_bvh_2, hit_hittablelist_2);
     EXPECT_EQ(record, hittablelist_record);
@@ -58,15 +58,15 @@ TEST_F(IntersectionTest, RayBVHHittableList2) {
 
 TEST_F(IntersectionTest, RayBVHHittableList3) {
     bool hit_bvh_3 = bvh->is_hit(ray3, interval, record);
-    signal_tracer::IntersectRecord hittablelist_record{};
+    SignalTracer::IntersectRecord hittablelist_record{};
     bool hit_hittablelist_3 = model1.is_hit(ray3, interval, hittablelist_record);
     EXPECT_EQ(hit_bvh_3, hit_hittablelist_3);
     EXPECT_EQ(record, hittablelist_record);
 }
 
 TEST_F(IntersectionTest, EmptyBVH) {
-    signal_tracer::HittableList empty_list{};
-    std::shared_ptr<signal_tracer::BVH> empty_bvh = std::make_shared<signal_tracer::BVH>(empty_list);
+    SignalTracer::HittableList empty_list{};
+    std::shared_ptr<SignalTracer::BVH> empty_bvh = std::make_shared<SignalTracer::BVH>(empty_list);
     bool hit_empty_bvh = empty_bvh->is_hit(ray1, interval, record);
     EXPECT_FALSE(hit_empty_bvh);
 }

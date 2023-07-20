@@ -12,49 +12,49 @@
     ----------------------------------------
 */
 TEST(RayTest, RayConstructor) {
-    glm::vec3 origin{1.0f, 2.0f, 3.0f};
-    glm::vec3 direction{4.0f, 5.0f, 6.0f};
-    signal_tracer::Ray ray{origin, direction};
-    EXPECT_EQ(ray.origin(), origin);
-    EXPECT_EQ(ray.direction(), direction);
+    glm::vec3 origin{ 1.0f, 2.0f, 3.0f };
+    glm::vec3 direction{ 4.0f, 5.0f, 6.0f };
+    SignalTracer::Ray ray{ origin, direction };
+    EXPECT_EQ(ray.get_origin(), origin);
+    EXPECT_EQ(ray.get_direction(), direction);
 }
 
 TEST(RayTest, RayCopyConstructor) {
-    glm::vec3 origin{1.0f, 2.0f, 3.0f};
-    glm::vec3 direction{4.0f, 5.0f, 6.0f};
-    signal_tracer::Ray ray1{origin, direction};
-    signal_tracer::Ray ray2{ray1};
-    EXPECT_EQ(ray1.origin(), ray2.origin());
-    EXPECT_EQ(ray1.direction(), ray2.direction());
+    glm::vec3 origin{ 1.0f, 2.0f, 3.0f };
+    glm::vec3 direction{ 4.0f, 5.0f, 6.0f };
+    SignalTracer::Ray ray1{ origin, direction };
+    SignalTracer::Ray ray2{ ray1 };
+    EXPECT_EQ(ray1.get_origin(), ray2.get_origin());
+    EXPECT_EQ(ray1.get_direction(), ray2.get_direction());
 }
 
 TEST(RayTest, RayMoveConstructor) {
-    glm::vec3 origin{1.0f, 2.0f, 3.0f};
-    glm::vec3 direction{4.0f, 5.0f, 6.0f};
-    signal_tracer::Ray ray1{origin, direction};
-    signal_tracer::Ray ray2{std::move(ray1)};
-    EXPECT_EQ(ray2.origin(), origin);
-    EXPECT_EQ(ray2.direction(), direction);
+    glm::vec3 origin{ 1.0f, 2.0f, 3.0f };
+    glm::vec3 direction{ 4.0f, 5.0f, 6.0f };
+    SignalTracer::Ray ray1{ origin, direction };
+    SignalTracer::Ray ray2{ std::move(ray1) };
+    EXPECT_EQ(ray2.get_origin(), origin);
+    EXPECT_EQ(ray2.get_direction(), direction);
 }
 
 TEST(RayTest, RayAssignmentOperator) {
-    glm::vec3 origin{1.0f, 2.0f, 3.0f};
-    glm::vec3 direction{4.0f, 5.0f, 6.0f};
-    signal_tracer::Ray ray1{origin, direction};
-    signal_tracer::Ray ray2{};
+    glm::vec3 origin{ 1.0f, 2.0f, 3.0f };
+    glm::vec3 direction{ 4.0f, 5.0f, 6.0f };
+    SignalTracer::Ray ray1{ origin, direction };
+    SignalTracer::Ray ray2{};
     ray2 = ray1;
-    EXPECT_EQ(ray2.origin(), origin);
-    EXPECT_EQ(ray2.direction(), direction);
+    EXPECT_EQ(ray2.get_origin(), origin);
+    EXPECT_EQ(ray2.get_direction(), direction);
 }
 
 TEST(RayTest, RayMoveAssignmentOperator) {
-    glm::vec3 origin{1.0f, 2.0f, 3.0f};
-    glm::vec3 direction{4.0f, 5.0f, 6.0f};
-    signal_tracer::Ray ray1{origin, direction};
-    signal_tracer::Ray ray2{};
+    glm::vec3 origin{ 1.0f, 2.0f, 3.0f };
+    glm::vec3 direction{ 4.0f, 5.0f, 6.0f };
+    SignalTracer::Ray ray1{ origin, direction };
+    SignalTracer::Ray ray2{};
     ray2 = std::move(ray1);
-    EXPECT_EQ(ray2.origin(), origin);
-    EXPECT_EQ(ray2.direction(), direction);
+    EXPECT_EQ(ray2.get_origin(), origin);
+    EXPECT_EQ(ray2.get_direction(), direction);
 }
 
 

@@ -17,15 +17,15 @@
 */
 
 TEST_F(IntersectionTest, RayTriangle1) {
-    signal_tracer::Triangle triangle(p1, p2, p3, p_material);
-    signal_tracer::Ray ray11{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
-    signal_tracer::Ray ray12{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, 1.0f}};
-    signal_tracer::Ray ray13{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 1.0f, 0.0f}};
-    signal_tracer::Ray ray14{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, -1.0f, 0.0f}};
-    signal_tracer::Ray ray15{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{1.0f, 0.0f, 0.0f}};
-    signal_tracer::Ray ray16{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{-1.0f, 0.0f, 0.0f}};
-    signal_tracer::Ray ray17{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{1.0f, 1.0f, 0.0f}};
-    signal_tracer::Ray ray18{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
+    SignalTracer::Triangle triangle(p1, p2, p3, p_material);
+    SignalTracer::Ray ray11{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
+    SignalTracer::Ray ray12{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, 1.0f}};
+    SignalTracer::Ray ray13{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 1.0f, 0.0f}};
+    SignalTracer::Ray ray14{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, -1.0f, 0.0f}};
+    SignalTracer::Ray ray15{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{1.0f, 0.0f, 0.0f}};
+    SignalTracer::Ray ray16{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{-1.0f, 0.0f, 0.0f}};
+    SignalTracer::Ray ray17{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{1.0f, 1.0f, 0.0f}};
+    SignalTracer::Ray ray18{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
 
     bool hit11 = triangle.is_hit(ray11, interval, record);
     bool hit12 = triangle.is_hit(ray12, interval, record);
@@ -47,13 +47,13 @@ TEST_F(IntersectionTest, RayTriangle1) {
 }
 
 TEST_F(IntersectionTest, RayTriangle2) {
-    signal_tracer::Ray ray21{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
-    signal_tracer::Ray ray22{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, 1.0f}};
-    signal_tracer::Ray ray23{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 1.0f, 0.0f}};
-    signal_tracer::Ray ray24{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, -1.0f, 0.0f}};
-    signal_tracer::Ray ray25{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{1.0f, 0.0f, 0.0f}};
-    signal_tracer::Ray ray26{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{-1.0f, 0.0f, 0.0f}};
-    signal_tracer::Triangle triangle(p1, p2, p4, p_material);
+    SignalTracer::Ray ray21{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
+    SignalTracer::Ray ray22{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, 1.0f}};
+    SignalTracer::Ray ray23{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 1.0f, 0.0f}};
+    SignalTracer::Ray ray24{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, -1.0f, 0.0f}};
+    SignalTracer::Ray ray25{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{1.0f, 0.0f, 0.0f}};
+    SignalTracer::Ray ray26{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{-1.0f, 0.0f, 0.0f}};
+    SignalTracer::Triangle triangle(p1, p2, p4, p_material);
     bool hit21 = triangle.is_hit(ray21, interval, record);
     bool hit22 = triangle.is_hit(ray22, interval, record);
     bool hit23 = triangle.is_hit(ray23, interval, record);
@@ -69,16 +69,16 @@ TEST_F(IntersectionTest, RayTriangle2) {
 }
 
 TEST_F(IntersectionTest, RayTriangle3ShortInterval) {
-    interval = signal_tracer::Interval{ 5.0f, 6.0f };
-    signal_tracer::Triangle triangle(p1, p2, p3, p_material);
-    signal_tracer::Ray ray11{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
-    signal_tracer::Ray ray22{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, 1.0f}};
-    signal_tracer::Ray ray33{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 1.0f, 0.0f}};
-    signal_tracer::Ray ray44{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, -1.0f, 0.0f}};
-    signal_tracer::Ray ray55{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{1.0f, 0.0f, 0.0f}};
-    signal_tracer::Ray ray66{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{-1.0f, 0.0f, 0.0f}};
-    signal_tracer::Ray ray77{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{1.0f, 1.0f, 0.0f}};
-    signal_tracer::Ray ray88{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
+    interval = SignalTracer::Interval{ 5.0f, 6.0f };
+    SignalTracer::Triangle triangle(p1, p2, p3, p_material);
+    SignalTracer::Ray ray11{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
+    SignalTracer::Ray ray22{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 0.0f, 1.0f}};
+    SignalTracer::Ray ray33{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, 1.0f, 0.0f}};
+    SignalTracer::Ray ray44{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{0.0f, -1.0f, 0.0f}};
+    SignalTracer::Ray ray55{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{1.0f, 0.0f, 0.0f}};
+    SignalTracer::Ray ray66{glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec3{-1.0f, 0.0f, 0.0f}};
+    SignalTracer::Ray ray77{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{1.0f, 1.0f, 0.0f}};
+    SignalTracer::Ray ray88{glm::vec3{0.5f, 0.5f, 1.0f}, glm::vec3{0.0f, 0.0f, -1.0f}};
 
     bool hit11 = triangle.is_hit(ray11, interval, record);
     bool hit12 = triangle.is_hit(ray22, interval, record);
