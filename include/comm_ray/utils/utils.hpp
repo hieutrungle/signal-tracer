@@ -151,6 +151,14 @@ namespace Utils {
     //         std::cout << "   FPS: " << ((1.0f / 60) / delta_time) * 60 << "\n\n";
     //     }
     // }
+
+    inline float dB_to_linear(float dB) {
+        return std::pow(10.0f, dB / 10.0f);
+    }
+
+    inline float linear_to_dB(float linear) {
+        return 10.0f * std::log10(linear);
+    }
 };
 
 
