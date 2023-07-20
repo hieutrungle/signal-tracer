@@ -177,6 +177,10 @@ public:
         m_draw_reflection_mode = draw_reflection_mode;
     }
 
+    void set_max_reflection_mode(int max_reflection_mode) {
+        m_max_reflection_mode = max_reflection_mode;
+    }
+
     void set_camera_fov(float fov) {
         m_camera.set_fov(fov);
     }
@@ -199,6 +203,10 @@ public:
 
     [[nodiscard]] int get_draw_reflection_mode() const {
         return m_draw_reflection_mode;
+    }
+
+    [[nodiscard]] int get_maxreflection_mode() const {
+        return m_max_reflection_mode;
     }
 
 
@@ -234,6 +242,7 @@ private:
     int m_draw_mode{ 0 };
     // draw reflections
     int m_draw_reflection_mode{ 0 };
+    int m_max_reflection_mode{ 0 };
 };
 
 
