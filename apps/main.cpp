@@ -31,7 +31,7 @@
 
 int main(int argc, char* argv []) {
 
-    signal_tracer::WindowParams window_params{ 1280, 720, "CommRay", true };
+    SignalTracer::WindowParams window_params{ 1280, 720, "CommRay", true };
 
     // Process terminal arguments
     // ----------------------------------
@@ -61,7 +61,7 @@ int main(int argc, char* argv []) {
         |            Scene               |
         ----------------------------------
     */
-    signal_tracer::Scene scene{ window_params, viewing_ptr };
+    SignalTracer::Scene scene{ window_params, viewing_ptr };
 
     // Create and compile our GLSL program from the shaders
     // ----------------------------------
@@ -83,7 +83,7 @@ int main(int argc, char* argv []) {
 
     // Lighting
     // ----------------------------------
-    signal_tracer::DirectionalLight directional_light(
+    SignalTracer::DirectionalLight directional_light(
         glm::vec3(0.0f, -1.0f, 0.0f), // direction
         glm::vec3(1.0f, 1.0f, 1.0f), // color
         0.2, // ambient
@@ -92,7 +92,7 @@ int main(int argc, char* argv []) {
         "directional_light"
     );
 
-    signal_tracer::FlashLight flash_light(
+    SignalTracer::FlashLight flash_light(
         glm::vec3(0.0f, 0.0f, 0.0f), // position
         glm::vec3(0.0f, 0.0f, -1.0f), // direction
         glm::vec3(1.0f, 1.0f, 1.0f), // color
@@ -112,7 +112,7 @@ int main(int argc, char* argv []) {
     // ----------------------------------
     Utils::Timer timer{};
     timer.reset();
-    signal_tracer::SignalTracer sig_tracer{ city_model_ptr->get_meshes(), 1 };
+    SignalTracer::SignalTracer sig_tracer{ city_model_ptr->get_meshes(), 1 };
     timer.execution_time();
 
     timer.reset();
