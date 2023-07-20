@@ -113,7 +113,12 @@ namespace SignalTracer {
                 }
             }
             else if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-                m_viewing_ptr->set_draw_reflection_mode((m_viewing_ptr->get_draw_reflection_mode() + 1) % 3);
+                m_viewing_ptr->set_draw_reflection_mode((m_viewing_ptr->get_draw_reflection_mode() + 1) % 22);
+                std::clog << "draw_reflection_mode: " << m_viewing_ptr->get_draw_reflection_mode() << std::endl;
+            }
+            else if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+                m_viewing_ptr->set_draw_reflection_mode(0);
+                std::clog << "draw_reflection_mode: " << m_viewing_ptr->get_draw_reflection_mode() << std::endl;
             }
             else if (key == GLFW_KEY_H && action == GLFW_PRESS)
                 m_viewing_ptr->reset();
