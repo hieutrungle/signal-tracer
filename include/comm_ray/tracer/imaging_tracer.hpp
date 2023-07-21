@@ -72,7 +72,7 @@ namespace SignalTracer {
             m_is_direct_lighting = false;
         }
 
-        void trace_rays(glm::vec3& tx_pos, glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) override {
+        void trace_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) override {
             reset();
             std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;

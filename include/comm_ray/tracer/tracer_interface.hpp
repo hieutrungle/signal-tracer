@@ -24,7 +24,7 @@ namespace SignalTracer {
         TracerInterface& operator=(TracerInterface&&) = delete;
 
         virtual void reset() = 0;
-        virtual void trace_rays(glm::vec3& tx_pos, glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) = 0;
+        virtual void trace_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) = 0;
 
         virtual std::ostream& print(std::ostream& out) const {
             out << "Signal Tracing: \n ";
