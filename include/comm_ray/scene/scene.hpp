@@ -12,7 +12,6 @@
 #include "glm/glm.hpp"
 
 #include "utils.hpp"
-#include "signal_tracer.hpp"
 #include "viewing.hpp"
 #include "callback.hpp"
 #include "program_container.hpp"
