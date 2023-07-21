@@ -18,10 +18,12 @@
 #include "glm/gtx/transform.hpp"
 
 #include <functional>
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
+#include <thread>
 
 namespace SignalTracer {
 
@@ -64,8 +66,9 @@ namespace SignalTracer {
 
         void reset() override {}
 
-        void trace_rays(glm::vec3& tx_pos, glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) override {
+        void trace_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) override {
             reset();
+            std::clog << "Running in sequential mode" << std::endl;
             std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
             glm::vec3 up{ 0.0f, 1.0f, 0.0f };
@@ -83,6 +86,50 @@ namespace SignalTracer {
                 }
             }
         };
+
+        void trace_rays_parallel(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) {
+            reset();
+            std::clog << "Running in parallel mode" << std::endl;
+            std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
+            std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
+            glm::vec3 up{ 0.0f, 1.0f, 0.0f };
+            glm::vec3 right{ 1.0f, 0.0f, 0.0f };
+            // const int num_threads = std::thread::hardware_concurrency();
+            const int num_threads = 360.0f / m_angular_interval;
+            std::vector<std::thread> threads{};
+            std::vector<std::vector<ReflectionRecord>> ref_records_vec(num_threads);
+            for (float i = 0.0; i < 360.0; i += m_angular_interval) {
+                threads.emplace_back(std::thread(&RayCastingTracer::trace_vertial_rays, this, tx_pos, rx_pos, std::ref(ref_records_vec[round(i / m_angular_interval)]), i));
+            }
+
+            for (auto& thread : threads) {
+                if (thread.joinable()) {
+                    thread.join();
+                }
+            }
+
+            for (auto& tmp_ref_records : ref_records_vec) {
+                // using std::copy_if
+                std::copy_if(tmp_ref_records.begin(), tmp_ref_records.end(), std::back_inserter(ref_records), [](const ReflectionRecord& ref_record) {
+                    return !ref_record.is_empty();
+                    });
+            }
+
+        };
+
+        // function for concurrency, thread
+        void trace_vertial_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records, const float& yaw_angle) {
+            for (float j = 0; j < 360; j += m_angular_interval) {
+                glm::vec3 direction = spherical2cartesian(yaw_angle, j);
+                Ray ray{ tx_pos, direction };
+                ReflectionRecord ref_record{};
+                ref_record.add_point(tx_pos);
+                trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, ref_record);
+                if (!ref_record.is_empty()) {
+                    ref_records.emplace_back(ref_record);
+                }
+            }
+        }
 
         void trace_ray(const Ray& ray, const glm::vec3& rx_pos, const float& rx_radius, int depth, ReflectionRecord& ref_record) {
 
