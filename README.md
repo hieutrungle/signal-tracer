@@ -31,6 +31,8 @@ This project is a simulation of ray tracing for wireless communication. It is ba
 - [x] GLM
 - [x] Assimp
 - [x] stb_image
+- [ ] spdlog: Logging for C++
+- [ ] Boost.Asio: Network Programming for C++
 - [ ] Dear ImGui: GUI for C++
 - [ ] FreeType: Font for OpenGL
 - [ ] irrKlang: Audio and Sound for C++
@@ -109,6 +111,17 @@ Release run:
 ## Results
 
 ### Basic Demo
+
+Execution time:
+
+- Imaging method: 0.5 seconds
+- Ray Casting method:
+
+  - Building BVH: 0.5 seconds
+  - Signal Tracing, 20 reflections, 0.1 angle step:
+
+    - Sequential: 1 minute 16 seconds
+    - Parallel: 11 seconds
 
 #### Basic Direct Path
 
