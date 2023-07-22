@@ -173,36 +173,35 @@ Execution time:
 
 ##### Reflection
 
-**Direct:**
+- Direct:
 
 ![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_direct.png)
 
-**1 Reflection:**
+- 1 Reflection:
 
 ![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_1_reflection.png)
 
-
-**2 Reflections:**
+- 2 Reflections:
 
 ![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_2_reflections.png)
 
-**3 Reflections:**
+- 3 Reflections:
 
 ![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_3_reflections.png)
 
-**4 Reflections:**
+- 4 Reflections:
 
 ![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_4_reflections.png)
 
-**6 Reflections:**
+- 6 Reflections:
 
 ![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_6_reflections.png)
 
-**7 Reflections:**
+- 7 Reflections:
 
 ![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_7_reflections.png)
 
-**19 Reflection:**
+- 19 Reflection:
 
 ![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_19_reflections.png)
 
