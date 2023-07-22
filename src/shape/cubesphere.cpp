@@ -47,7 +47,7 @@
 namespace SignalTracer {
     Cubesphere::Cubesphere(float radius, int sub, bool smooth)
         : Drawable{}
-        , radius(radius), subdivision(sub), smooth(smooth), interleavedStride(32) {
+        , m_radius(radius), subdivision(sub), smooth(smooth), interleavedStride(32) {
         vertexCountPerRow = (unsigned int) pow(2, sub) + 1;
         vertexCountPerFace = vertexCountPerRow * vertexCountPerRow;
 
@@ -65,7 +65,7 @@ namespace SignalTracer {
     // setters
     ///////////////////////////////////////////////////////////////////////////////
     void Cubesphere::setRadius(float radius) {
-        this->radius = radius;
+        this->m_radius = radius;
         if (smooth)
             buildVerticesSmooth();
         else
@@ -140,7 +140,7 @@ namespace SignalTracer {
     void Cubesphere::printSelf() const {
 
         std::cout << "===== Cubesphere =====\n"
-            << "        Radius: " << radius << "\n"
+            << "        Radius: " << m_radius << "\n"
             << "   Side Length: " << getSideLength() << "\n"
             << "   Subdivision: " << subdivision << "\n"
             << "    Smoothness: " << (smooth ? "true" : "false") << "\n"
@@ -340,10 +340,10 @@ namespace SignalTracer {
                 Cubesphere::computeFaceNormal(v1, v2, v3, n);
 
                 // resize vertices by sphere radius
-                Cubesphere::scaleVertex(v1, radius);
-                Cubesphere::scaleVertex(v2, radius);
-                Cubesphere::scaleVertex(v3, radius);
-                Cubesphere::scaleVertex(v4, radius);
+                Cubesphere::scaleVertex(v1, m_radius);
+                Cubesphere::scaleVertex(v2, m_radius);
+                Cubesphere::scaleVertex(v3, m_radius);
+                Cubesphere::scaleVertex(v4, m_radius);
 
                 // compute horizontal tex coords
                 t1[0] = t2[0] = (float) j / (vertexCountPerRow - 1);
@@ -488,7 +488,7 @@ namespace SignalTracer {
                 y = unitVertices[k + 1];
                 z = unitVertices[k + 2];
                 s = (float) j / (vertexCountPerRow - 1);
-                addVertex(x * radius, y * radius, z * radius);
+                addVertex(x * m_radius, y * m_radius, z * m_radius);
                 addNormal(x, y, z);
                 addTexCoord(s, t);
 
