@@ -129,11 +129,11 @@ Execution time:
 
 #### Basic Reflect Path
 
-**Single reflection:**
+Single reflection:
 
 ![Reflect Path - 1 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/basic_demo/reflect1.png)
 
-**Double reflection:**
+Double reflection:
 
 ![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/basic_demo/reflect2.png)
 
@@ -153,11 +153,11 @@ Execution time:
 
 ##### City Reflect Path
 
-**Single reflection:**
+Single reflection:
 
 ![Reflect Path - 1 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/imaging/reflect1.png)
 
-**Double reflection:**
+Double reflection:
 
 ![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/imaging/reflect2.png)
 
