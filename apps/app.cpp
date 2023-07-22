@@ -9,6 +9,8 @@
 
 #include "imaging_tracer.hpp"
 #include "ray_casting_tracer.hpp"
+#include "receiver.hpp"
+#include "transmitter.hpp"
 
 #include "scene.hpp"
 #include "viewing.hpp"
@@ -65,13 +67,19 @@ int main(int argc, char* argv []) {
 
     // Load models
     // ----------------------------------
-    auto city_model_ptr{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj") };
-    glm::vec3 tx_pos{ 5.0f, 2.5f, 5.0f };
+    // auto city_model_ptr{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj") };
+
+    // glm::vec3 tx_pos{ 5.0f, 2.5f, 5.0f };
+    // glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
+
+    auto city_model_ptr{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj") };
+    glm::vec3 tx_pos{ 0.0f, 2.5f, 20.0f };
     glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
 
-    // auto city_model_ptr{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj") };
-    // glm::vec3 tx_pos{ 0.0f, 2.5f, 20.0f };
-    // glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
+    SignalTracer::Transmitter tx0{ 0, tx_pos, prop_params.frequency, prop_params.tx_power, prop_params.tx_gain };
+    SignalTracer::Receiver rx0{ 0, rx_pos, prop_params.rx_gain };
+
+    std::vector<std::reference_wrapper<SignalTracer::Receiver>> receivers_ref{ std::ref(rx0) };
 
     // Signal tracer
     // ----------------------------------
@@ -83,17 +91,28 @@ int main(int argc, char* argv []) {
     // SignalTracer::ImagingTracer sig_tracer{ models, 2 };
     timer.execution_time();
     timer.reset();
-    std::vector<SignalTracer::ReflectionRecord> ref_records{};
-    sig_tracer.trace_rays(tx_pos, rx_pos, ref_records);
+    {
+        std::vector<SignalTracer::ReflectionRecord> ref_records{};
+        sig_tracer.trace_rays(tx0.get_position(), rx0.get_position(), ref_records);
+        rx0.add_reflection_records(tx0.get_id(), ref_records);
+    }
+
     timer.execution_time();
+
+    std::cout << "Number of reflections: " << rx0.get_reflection_records().at(tx0.get_id()).size() << std::endl;
 
     // Signal Propagation Calculation
     // ----------------------------------
     SignalTracer::PropagationModel prop_model{ prop_params };
     std::cout << prop_model << std::endl;
-    prop_model.calc_all_propagation_properties(ref_records);
+    {
+        auto ref_records{ rx0.get_reflection_records().at(tx0.get_id()) };
+        prop_model.calc_all_propagation_properties(ref_records);
 
-    std::cout << "Total receiving power: " << prop_model.calc_total_receiving_power(ref_records) << " dB" << std::endl;
+        std::cout << "Total receiving power: " << prop_model.calc_total_receiving_power(ref_records) << " dB" << std::endl;
+
+        rx0.add_reflection_records(tx0.get_id(), ref_records);
+    }
 
     /*
         ----------------------------------
@@ -140,6 +159,7 @@ int main(int argc, char* argv []) {
 
     // set drawing for radio stations
     // ----------------------------------
+    // TODO: replace this with tx, rx class objects
     auto station_object_ptr{ std::make_shared<SignalTracer::Cubesphere>(0.25f, 3, true) };
     std::vector<std::shared_ptr<SignalTracer::Drawable>> station_objects{ };
     std::vector<glm::mat4> station_model_mats{};
@@ -156,16 +176,22 @@ int main(int argc, char* argv []) {
         station_objects,
         station_model_mats) };
 
+    // TODO: to here
+
     // drawing reflections
     //     ----------------------------------
     std::vector<std::shared_ptr<SignalTracer::Drawable>> lines{};
     std::vector<glm::mat4> line_model_mats{};
 
-    for (const auto& ref_record : ref_records) {
-        // std::cout << ref_record << std::endl;
-        lines.push_back(std::make_shared<SignalTracer::Line>(ref_record.get_ref_points(), ref_record.get_reflection_count()));
-        line_model_mats.push_back(glm::mat4{ 1.0f });
+    for (auto& receiver : receivers_ref) {
+        for (const auto& [transmitter_id, ref_records] : receiver.get().get_reflection_records()) {
+            for (const auto& ref_record : ref_records) {
+                lines.push_back(std::make_shared<SignalTracer::Line>(ref_record.get_ref_points(), ref_record.get_reflection_count()));
+                line_model_mats.push_back(glm::mat4{ 1.0f });
+            }
+        }
     }
+
     auto shader_line_prog{ std::make_shared<SignalTracer::ShaderProgram>(
         "line",
         radio_prog,
