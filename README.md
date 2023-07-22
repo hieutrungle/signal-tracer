@@ -142,7 +142,28 @@ Execution time:
 Execution time:
 
 - Building BVH: 57 seconds
+
+#### Imaging Method
+
 - Image Tracing: 50 seconds
+
+##### City Direct Path
+
+![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/imaging/direct.png)
+
+##### City Reflect Path
+
+**Single reflection:**
+
+![Reflect Path - 1 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/imaging/reflect1.png)
+
+**Double reflection:**
+
+![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/imaging/reflect2.png)
+
+
+#### Ray Casting Method
+
 - Ray Casting:
 
   - Signal Tracing, 20 reflections, 0.1 angle step:
@@ -150,19 +171,45 @@ Execution time:
     - Sequential: N/A
     - Parallel (12 cores): 28 seconds
 
-#### City Direct Path
+##### Reflection
 
-![Direct Path](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/direct.png)
+**Direct:**
 
-#### City Reflect Path
+![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_direct.png)
 
-**Single reflection:**
+**1 Reflection:**
 
-![Reflect Path - 1 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/reflect1.png)
+![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_1_reflection.png)
 
-**Double reflection:**
 
-![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/reflect2.png)
+**2 Reflections:**
+
+![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_2_reflections.png)
+
+**3 Reflections:**
+
+![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_3_reflections.png)
+
+**4 Reflections:**
+
+![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_4_reflections.png)
+
+**6 Reflections:**
+
+![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_6_reflections.png)
+
+**7 Reflections:**
+
+![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_7_reflections.png)
+
+**19 Reflection:**
+
+![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_19_reflections.png)
+
+
+## In Progress
+
+
 
 ## Tips
 
