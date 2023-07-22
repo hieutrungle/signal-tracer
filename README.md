@@ -6,7 +6,8 @@ This project is a simulation of ray tracing for wireless communication. It is ba
 
 ## Features
 
-- [x] Ray tracing
+- [x] Ray tracing (multi-threading)
+- [ ] Ray tracing (CUDA)
 - [x] Reflection
 - [ ] Refraction
 - [ ] Diffraction
@@ -161,7 +162,6 @@ Execution time:
 
 ![Reflect Path - 2 reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/imaging/reflect2.png)
 
-
 #### Ray Casting Method
 
 - Ray Casting:
@@ -205,10 +205,13 @@ Execution time:
 
 ![1 Reflection](https://github.com/hieutrungle/signal-tracer/blob/main/assets/images/city_demo/ray_casting/ray_casting_city_demo_19_reflections.png)
 
-
 ## In Progress
 
-
+- [ ] Parallelize BVH Initialization (CUDA and multi-threading)
+- [ ] Parallelize Ray Tracing (CUDA)
+- [ ] Reflection coefficient using Fresnel equations (currently following Recommendation ITU-R P.2040-2, only works for 'TM' or 'TE' polarization)
+- [ ] Refraction coefficient using Fresnel equations (currently following Recommendation ITU-R P.2040-2, only works for 'TM' or 'TE' polarization)
+- [ ] Diffraction Ray Tracing
 
 ## Tips
 
@@ -245,12 +248,9 @@ equal to
 shader_program.SetUniform("texture0", 0);
 ```
 
-
-
 <!-- // // TODO: Setup world that contains all the objects' triangles similar to the HittableList class in Ray Tracing in One Weekend. This HittableList is a wrapper of all meshes from all models. The BVHMap is a wrapper of all triangles from all meshes. The BVHMap is used to accelerate the intersection test between a ray and the triangles. The HittableList is used to find the closest intersection point between a ray and the triangles.
 
 // // TODO: Setup a world.
-
 
 /*
     HittableList model{};
