@@ -114,14 +114,14 @@ Release run:
 
 Execution time:
 
+- Building BVH: 0.5 seconds
 - Imaging method: 0.5 seconds
 - Ray Casting method:
 
-  - Building BVH: 0.5 seconds
   - Signal Tracing, 20 reflections, 0.1 angle step:
 
     - Sequential: 1 minute 16 seconds
-    - Parallel: 11 seconds
+    - Parallel(12 cores): 11 seconds
 
 #### Basic Direct Path
 
@@ -141,8 +141,14 @@ Execution time:
 
 Execution time:
 
-- Building BVH: 48 seconds
-- Signal Tracing: 50 seconds
+- Building BVH: 57 seconds
+- Image Tracing: 50 seconds
+- Ray Casting:
+
+  - Signal Tracing, 20 reflections, 0.1 angle step:
+
+    - Sequential: N/A
+    - Parallel (12 cores): 28 seconds
 
 #### City Direct Path
 
