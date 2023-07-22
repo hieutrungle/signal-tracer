@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef RADIO_STATION_HPP
-#define RADIO_STATION_HPP
+#ifndef RADIO_STATION_UTILS_HPP
+#define RADIO_STATION_UTILS_HPP
 
 #include "glm/glm.hpp"
 #include "utils.hpp"
@@ -99,4 +99,4 @@ namespace SignalTracer {
     }
 }
 
-#endif // !RADIO_STATION_HPP
+#endif // !RADIO_STATION_UTILS_HPP

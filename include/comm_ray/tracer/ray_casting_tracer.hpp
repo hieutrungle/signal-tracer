@@ -66,25 +66,30 @@ namespace SignalTracer {
 
         void reset() override {}
 
+        void tmp_trace_rays() {
+
+        }
+
         void trace_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) override {
             reset();
-            std::clog << "Running in sequential mode" << std::endl;
-            std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
-            std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
-            glm::vec3 up{ 0.0f, 1.0f, 0.0f };
-            glm::vec3 right{ 1.0f, 0.0f, 0.0f };
-            for (float i = 0; i < 360; i += m_angular_interval) {
-                for (float j = 0; j < 360; j += m_angular_interval) {
-                    glm::vec3 direction = spherical2cartesian(i, j);
-                    Ray ray{ tx_pos, direction };
-                    ReflectionRecord ref_record{};
-                    ref_record.add_point(tx_pos);
-                    trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, ref_record);
-                    if (!ref_record.is_empty()) {
-                        ref_records.emplace_back(ref_record);
-                    }
-                }
-            }
+            // std::clog << "Running in sequential mode" << std::endl;
+            // std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
+            // std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
+            // glm::vec3 up{ 0.0f, 1.0f, 0.0f };
+            // glm::vec3 right{ 1.0f, 0.0f, 0.0f };
+            // for (float i = 0; i < 360; i += m_angular_interval) {
+            //     for (float j = 0; j < 360; j += m_angular_interval) {
+            //         glm::vec3 direction = spherical2cartesian(i, j);
+            //         Ray ray{ tx_pos, direction };
+            //         ReflectionRecord ref_record{};
+            //         ref_record.add_point(tx_pos);
+            //         trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, ref_record);
+            //         if (!ref_record.is_empty()) {
+            //             ref_records.emplace_back(ref_record);
+            //         }
+            //     }
+            // }
+            trace_rays_parallel(tx_pos, rx_pos, ref_records);
         };
 
         void trace_rays_parallel(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) {
@@ -94,8 +99,7 @@ namespace SignalTracer {
             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
             glm::vec3 up{ 0.0f, 1.0f, 0.0f };
             glm::vec3 right{ 1.0f, 0.0f, 0.0f };
-            // const int num_threads = std::thread::hardware_concurrency();
-            const int num_threads = 360.0f / m_angular_interval;
+            const int num_threads{ static_cast<int>(round(360.0f / m_angular_interval)) };
             std::vector<std::thread> threads{};
             std::vector<std::vector<ReflectionRecord>> ref_records_vec(num_threads);
             for (float i = 0.0; i < 360.0; i += m_angular_interval) {
@@ -109,7 +113,6 @@ namespace SignalTracer {
             }
 
             for (auto& tmp_ref_records : ref_records_vec) {
-                // using std::copy_if
                 std::copy_if(tmp_ref_records.begin(), tmp_ref_records.end(), std::back_inserter(ref_records), [](const ReflectionRecord& ref_record) {
                     return !ref_record.is_empty();
                     });

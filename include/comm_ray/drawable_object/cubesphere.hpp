@@ -32,9 +32,9 @@ namespace SignalTracer {
         Cubesphere(float radius = 1.0f, int subdivision = 3, bool smooth = true);
 
         // getters/setters
-        float getRadius() const { return radius; }
+        float get_radius() const { return m_radius; }
         void setRadius(float radius);
-        float getSideLength() const { return radius * 2 / sqrt(3.0f); }
+        float getSideLength() const { return m_radius * 2 / sqrt(3.0f); }
         void setSideLength(float side);
         int getSubdivision() const { return subdivision; }
         void setSubdivision(int subdivision);
@@ -119,7 +119,7 @@ namespace SignalTracer {
 
 
         // memeber vars
-        float radius;                           // circumscribed radius
+        float m_radius;                           // circumscribed radius
         int subdivision;
         bool smooth;
         std::vector<float> vertices;

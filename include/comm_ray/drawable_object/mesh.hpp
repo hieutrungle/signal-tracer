@@ -6,7 +6,6 @@
 #include "glm/glm.hpp"
 #include "cyGL.h"
 #include "drawable.hpp"
-#include "utils.hpp"
 #include <string>
 #include <vector>
 
