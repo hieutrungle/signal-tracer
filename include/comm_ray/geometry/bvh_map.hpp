@@ -12,17 +12,20 @@
 #include <vector>
 
 namespace SignalTracer {
-    class BVH : public Hittable {
+    class OldBVH : public Hittable {
     public:
-        BVH() = default;
+        OldBVH() = default;
 
-        BVH(const HittableList& obj_container) : BVH{ obj_container.objects(), 0, obj_container.objects().size(), 0 } {}
+        OldBVH(const HittableList& obj_container) : OldBVH{ obj_container.objects(), 0, obj_container.objects().size(), 0 } {}
 
-        template<typename HittableType>
-        BVH(const std::vector<shared_ptr<HittableType>>& src_objects, size_t start, size_t end, size_t level = 0) {
+        OldBVH(const std::vector<shared_ptr<Hittable>>& src_objects, size_t start, size_t end, size_t level = 0) {
+            partition(src_objects, start, end, level);
+        }
+
+        void partition(const std::vector<shared_ptr<Hittable>>& src_objects, size_t start, size_t end, size_t level = 0) {
             m_level = level;
             // create a copy of pointers to source objects
-            auto objects = src_objects;
+            std::vector<shared_ptr<Hittable>> objects{ std::vector<shared_ptr<Hittable>>(&src_objects[start],&src_objects[end]) };
 
             // const int axis = random_int(0, 2);
             const auto axis = level % 3;
@@ -30,31 +33,31 @@ namespace SignalTracer {
                 : (axis == 1) ? box_y_compare
                 : box_z_compare;
 
-            const auto object_span = end - start;
+            const auto object_span = objects.size();
 
             if (src_objects.empty() || 0 >= object_span) {
                 std::cerr << "No objects in BVH constructor." << std::endl;
                 return;
             }
             else if (object_span == 1) {
-                m_left = m_right = objects[start];
+                m_left = m_right = objects[0];
             }
             else if (object_span == 2) {
-                if (comparator(objects[start], objects[start + 1])) {
-                    m_left = objects[start];
-                    m_right = objects[start + 1];
+                if (comparator(objects[0], objects[1])) {
+                    m_left = objects[0];
+                    m_right = objects[1];
                 }
                 else {
-                    m_left = objects[start + 1];
-                    m_right = objects[start];
+                    m_left = objects[1];
+                    m_right = objects[0];
                 }
             }
             else {
-                std::sort(objects.begin() + start, objects.begin() + end, comparator);
+                std::sort(objects.begin(), objects.end(), comparator);
 
-                const auto mid = start + object_span / 2;
-                m_left = make_shared<BVH>(objects, start, mid, level + 1);
-                m_right = make_shared<BVH>(objects, mid, end, level + 1);
+                const std::size_t mid = object_span / 2;
+                m_left = make_shared<OldBVH>(objects, 0, mid, level + 1);
+                m_right = make_shared<OldBVH>(objects, mid, objects.size(), level + 1);
             }
 
             const auto box_left = m_left->bounding_box();
@@ -62,14 +65,58 @@ namespace SignalTracer {
             m_box = AABB(box_left, box_right);
         }
 
+        // template<typename HittableType>
+        // OldBVH(const std::vector<shared_ptr<HittableType>>& src_objects, size_t start, size_t end, size_t level = 0) {
+        //     m_level = level;
+        //     // create a copy of pointers to source objects
+        //     auto objects = src_objects;
+
+        //     // const int axis = random_int(0, 2);
+        //     const auto axis = level % 3;
+        //     const auto comparator = (axis == 0) ? box_x_compare
+        //         : (axis == 1) ? box_y_compare
+        //         : box_z_compare;
+
+        //     const auto object_span = end - start;
+
+        //     if (src_objects.empty() || 0 >= object_span) {
+        //         std::cerr << "No objects in BVH constructor." << std::endl;
+        //         return;
+        //     }
+        //     else if (object_span == 1) {
+        //         m_left = m_right = objects[start];
+        //     }
+        //     else if (object_span == 2) {
+        //         if (comparator(objects[start], objects[start + 1])) {
+        //             m_left = objects[start];
+        //             m_right = objects[start + 1];
+        //         }
+        //         else {
+        //             m_left = objects[start + 1];
+        //             m_right = objects[start];
+        //         }
+        //     }
+        //     else {
+        //         std::sort(objects.begin() + start, objects.begin() + end, comparator);
+
+        //         const auto mid = start + object_span / 2;
+        //         m_left = make_shared<OldBVH>(objects, start, mid, level + 1);
+        //         m_right = make_shared<OldBVH>(objects, mid, end, level + 1);
+        //     }
+
+        //     const auto box_left = m_left->bounding_box();
+        //     const auto box_right = m_right->bounding_box();
+        //     m_box = AABB(box_left, box_right);
+        // }
+
         // copy constructor
-        BVH(const BVH& bvh) : m_left{ bvh.m_left }, m_right{ bvh.m_right }, m_box{ bvh.m_box } {}
+        OldBVH(const OldBVH& bvh) : m_left{ bvh.m_left }, m_right{ bvh.m_right }, m_box{ bvh.m_box } {}
 
         // move constructor
-        BVH(BVH&& bvh) noexcept : m_left{ bvh.m_left }, m_right{ bvh.m_right }, m_box{ bvh.m_box } {}
+        OldBVH(OldBVH&& bvh) noexcept : m_left{ bvh.m_left }, m_right{ bvh.m_right }, m_box{ bvh.m_box } {}
 
         // assignment operator
-        BVH& operator=(const BVH& bvh) {
+        OldBVH& operator=(const OldBVH& bvh) {
             m_left = bvh.m_left;
             m_right = bvh.m_right;
             m_box = bvh.m_box;
@@ -77,7 +124,7 @@ namespace SignalTracer {
         }
 
         // move assignment operator
-        BVH& operator=(BVH&& bvh) noexcept {
+        OldBVH& operator=(OldBVH&& bvh) noexcept {
             m_left = bvh.m_left;
             m_right = bvh.m_right;
             m_box = bvh.m_box;

@@ -112,7 +112,8 @@ namespace Utils {
         }
 
         void execution_time() {
-            auto sec = static_cast<int>(elapsed());
+
+            auto sec = elapsed();
             auto h = static_cast<double>(sec) / 3600.0;
             if (h < 1.0) {
                 auto m = static_cast<double>(sec) / 60.0;
@@ -120,12 +121,12 @@ namespace Utils {
                     std::clog << "Execution time: " << sec << " seconds" << std::endl << std::endl;
                     return;
                 }
-                auto s = static_cast<double>(sec % 60);
+                auto s = static_cast<double>(static_cast<int>(sec) % 60);
                 std::clog << "Execution time: " << static_cast<int>(m) << " minutes " << s << " seconds" << std::endl << std::endl;
                 return;
             }
-            auto m = static_cast<double>(sec % 3600) / 60.0;
-            auto s = static_cast<double>((sec % 3600) % 60);
+            auto m = static_cast<double>(static_cast<int>(sec) % 3600) / 60.0;
+            auto s = static_cast<double>((static_cast<int>(sec) % 3600) % 60);
             std::clog << "Execution time: " << static_cast<int>(h) << " hours " << static_cast<int>(m) << " minutes " << s << " seconds" << std::endl << std::endl;
         };
     };

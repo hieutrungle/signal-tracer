@@ -74,7 +74,12 @@ namespace SignalTracer {
             return m_min < x && x < m_max;
         }
 
-        IntervalT expand(T delta) const {
+        void expand(const IntervalT<T>& interval) {
+            m_min = std::min(m_min, interval.m_min);
+            m_max = std::max(m_max, interval.m_max);
+        }
+
+        IntervalT pad_edges(T delta) const {
             const auto padding = delta / 2;
             return IntervalT(m_min - padding, m_max + padding);
         }

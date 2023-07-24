@@ -116,7 +116,9 @@ namespace SignalTracer {
         bool is_ray_reflected(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
             bool is_reflect = false;
             for (const auto& triangle : m_triangles) {
-                glm::vec3 mirror_point = triangle->get_mirror_point(tx_pos);
+                // cast to triangle
+                std::shared_ptr<Triangle> triangle_ptr{ std::static_pointer_cast<Triangle>(triangle) };
+                glm::vec3 mirror_point = triangle_ptr->get_mirror_point(tx_pos);
                 Ray ray{ mirror_point, rx_pos - mirror_point };
                 Interval interval{ Constant::EPSILON, glm::length(rx_pos - mirror_point) - Constant::EPSILON };
                 IntersectRecord record{};
@@ -139,19 +141,21 @@ namespace SignalTracer {
             std::vector<glm::vec3> tx_mirror_points{};
             std::vector<glm::vec3> rx_mirror_points{};
             for (const auto& triangle : m_triangles) {
-                tx_mirror_points.emplace_back(triangle->get_mirror_point(tx_pos));
-                rx_mirror_points.emplace_back(triangle->get_mirror_point(rx_pos));
+                std::shared_ptr<Triangle> triangle_ptr{ std::static_pointer_cast<Triangle>(triangle) };
+                tx_mirror_points.emplace_back(triangle_ptr->get_mirror_point(tx_pos));
+                rx_mirror_points.emplace_back(triangle_ptr->get_mirror_point(rx_pos));
             }
 
             // Find the first reflection point
             for (std::size_t i = 0; i < m_triangles.size(); ++i) {
+
                 glm::vec3 tx_mirror_point = tx_mirror_points[i];
-                std::shared_ptr<Triangle> tx_triangle{ m_triangles[i] };
+                std::shared_ptr<Triangle> tx_triangle{ std::static_pointer_cast<Triangle>(m_triangles[i]) };
 
                 for (std::size_t j = 0; j < m_triangles.size(); ++j) {
                     if (i == j) continue;
                     glm::vec3 rx_mirror_point = rx_mirror_points[j];
-                    std::shared_ptr<Triangle> rx_triangle{ m_triangles[j] };
+                    std::shared_ptr<Triangle> rx_triangle{ std::static_pointer_cast<Triangle>(m_triangles[j]) };
 
                     Ray ray{ tx_mirror_point, rx_mirror_point - tx_mirror_point };
                     Interval interval{ 0.0f, glm::length(rx_mirror_point - tx_mirror_point) };
@@ -236,14 +240,14 @@ namespace SignalTracer {
 //         SignalTracer(const std::vector<Model>& models, int max_reflection = 2)
 //             : m_max_reflection{ max_reflection }
 //             , m_triangles{ init_triangles(models) }
-//             , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) } {}
+//             , m_bvh{ std::make_shared<OldBVH>(m_triangles, 0, m_triangles.size()) } {}
 
 //         SignalTracer(const std::vector<std::shared_ptr<Model>>& model_ptrs, int max_reflection = 2)
 //             : m_max_reflection{ max_reflection }
 //             , m_triangles{ init_triangles(model_ptrs) }
-//             , m_bvh{ std::make_shared<BVH>(m_triangles, 0, m_triangles.size()) } {}
+//             , m_bvh{ std::make_shared<OldBVH>(m_triangles, 0, m_triangles.size()) } {}
 
-//         const std::shared_ptr<BVH>& bvh() const { return m_bvh; }
+//         const std::shared_ptr<OldBVH>& bvh() const { return m_bvh; }
 //         int max_reflection() const { return m_max_reflection; }
 
 //         virtual ~SignalTracer() = default;
@@ -464,7 +468,7 @@ namespace SignalTracer {
 //     private:
 //         int m_max_reflection{ 2 };
 //         std::vector<std::shared_ptr<Triangle>> m_triangles{};
-//         std::shared_ptr<BVH> m_bvh{};
+//         std::shared_ptr<OldBVH> m_bvh{};
 //         bool m_is_direct_lighting{ false };
 //     };
 // }

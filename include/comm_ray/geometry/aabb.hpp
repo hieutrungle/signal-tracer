@@ -89,6 +89,12 @@ namespace SignalTracer {
             return os;
         }
 
+        void expand(const AABBT<T>& box) {
+            m_intervals[0].expand(box[0]);
+            m_intervals[1].expand(box[1]);
+            m_intervals[2].expand(box[2]);
+        }
+
         const glm::vec3 length() const {
             return glm::vec3(m_intervals[0].length(), m_intervals[1].length(), m_intervals[2].length());
         }

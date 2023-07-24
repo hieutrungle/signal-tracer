@@ -37,7 +37,7 @@ protected:
         triangle2 = std::make_shared<Triangle>(p4, p2, p3, p_material);
         std::vector<std::shared_ptr<Triangle>> trangles {{triangle1, triangle2}};
         model1 = SignalTracer::HittableList(trangles);
-        bvh = std::make_shared<SignalTracer::BVH>(model1);
+        bvh = std::make_shared<SignalTracer::OldBVH>(model1);
     }
 
     glm::vec3 p1{};
@@ -50,7 +50,7 @@ protected:
     SignalTracer::HittableList model1{};
     SignalTracer::IntersectRecord record{};
     SignalTracer::Interval interval{0.0f, 100.0f};
-    std::shared_ptr<SignalTracer::BVH> bvh{};
+    std::shared_ptr<SignalTracer::OldBVH> bvh{};
 
     SignalTracer::Ray ray1{ glm::vec3{0.0f, 0.0f, 2.0f}, glm::vec3{0.0f, 0.0f, -1.0f} };
     SignalTracer::Ray ray2{ glm::vec3{2.0f, 0.0f, 0.0f}, glm::vec3{-1.0f, 0.0f, 0.0f} };

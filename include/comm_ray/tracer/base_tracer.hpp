@@ -18,12 +18,12 @@ namespace SignalTracer {
         BaseTracer(const std::vector<Model>& models, int max_reflection = 2)
             : m_max_reflection{ max_reflection }
             , m_triangles{ init_triangles(models) }
-            , m_bvh{ BVH{ m_triangles, 0, m_triangles.size() } } {}
+            , m_bvh{ OldBVH{ m_triangles, 0, m_triangles.size() } } {}
 
         BaseTracer(const std::vector<std::reference_wrapper<Model>>& models, int max_reflection = 2)
             : m_max_reflection{ max_reflection }
             , m_triangles{ init_triangles(models) }
-            , m_bvh{ BVH{ m_triangles, 0, m_triangles.size() } } {}
+            , m_bvh{ OldBVH{ m_triangles, 0, m_triangles.size() } } {}
 
         virtual ~BaseTracer() = default;
 
@@ -59,8 +59,8 @@ namespace SignalTracer {
         // void trace_rays(glm::vec3& tx_pos, glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) override;
 
     protected:
-        std::vector<std::shared_ptr<Triangle>> init_triangles(const std::vector<Model>& models) override {
-            std::vector<std::shared_ptr<Triangle>> triangles{};
+        std::vector<std::shared_ptr<Hittable>> init_triangles(const std::vector<Model>& models) override {
+            std::vector<std::shared_ptr<Hittable>> triangles{};
             std::vector<Vertex> vertex_buffer;
             vertex_buffer.reserve(3);
             int triangle_count{ 0 };
@@ -88,8 +88,8 @@ namespace SignalTracer {
             return triangles;
         };
 
-        std::vector<std::shared_ptr<Triangle>> init_triangles(const std::vector<std::reference_wrapper<Model>>& models) override {
-            std::vector<std::shared_ptr<Triangle>> triangles{};
+        std::vector<std::shared_ptr<Hittable>> init_triangles(const std::vector<std::reference_wrapper<Model>>& models) override {
+            std::vector<std::shared_ptr<Hittable>> triangles{};
             std::vector<Vertex> vertex_buffer;
             vertex_buffer.reserve(3);
             int triangle_count{ 0 };
@@ -119,8 +119,8 @@ namespace SignalTracer {
 
     protected:
         int m_max_reflection{ 2 };
-        std::vector<std::shared_ptr<Triangle>> m_triangles{};
-        BVH m_bvh{};
+        std::vector<std::shared_ptr<Hittable>> m_triangles{};
+        OldBVH m_bvh{};
     };
 }
 

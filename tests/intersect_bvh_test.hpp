@@ -66,7 +66,7 @@ TEST_F(IntersectionTest, RayBVHHittableList3) {
 
 TEST_F(IntersectionTest, EmptyBVH) {
     SignalTracer::HittableList empty_list{};
-    std::shared_ptr<SignalTracer::BVH> empty_bvh = std::make_shared<SignalTracer::BVH>(empty_list);
+    std::shared_ptr<SignalTracer::OldBVH> empty_bvh = std::make_shared<SignalTracer::OldBVH>(empty_list);
     bool hit_empty_bvh = empty_bvh->is_hit(ray1, interval, record);
     EXPECT_FALSE(hit_empty_bvh);
 }

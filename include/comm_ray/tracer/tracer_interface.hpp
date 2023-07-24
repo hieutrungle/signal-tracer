@@ -35,8 +35,8 @@ namespace SignalTracer {
         }
 
     protected:
-        virtual std::vector<std::shared_ptr<Triangle>> init_triangles(const std::vector<Model>& models) = 0;
-        virtual std::vector<std::shared_ptr<Triangle>> init_triangles(const std::vector<std::reference_wrapper<Model>>& models) = 0;
+        virtual std::vector<std::shared_ptr<Hittable>> init_triangles(const std::vector<Model>& models) = 0;
+        virtual std::vector<std::shared_ptr<Hittable>> init_triangles(const std::vector<std::reference_wrapper<Model>>& models) = 0;
     };
 }
 
