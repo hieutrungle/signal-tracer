@@ -51,7 +51,7 @@ namespace SignalTracer {
             m_edge_ab = rhs.m_edge_ab;
             m_edge_ac = rhs.m_edge_ac;
             m_normal = rhs.m_normal;
-            m_aabb = rhs.m_aabb;
+            m_box = rhs.m_box;
             m_material_ptr = rhs.m_material_ptr;
             return *this;
         }
@@ -67,7 +67,7 @@ namespace SignalTracer {
             m_edge_ab = std::move(rhs.m_edge_ab);
             m_edge_ac = std::move(rhs.m_edge_ac);
             m_normal = std::move(rhs.m_normal);
-            m_aabb = std::move(rhs.m_aabb);
+            m_box = std::move(rhs.m_box);
             m_material_ptr = std::move(rhs.m_material_ptr);
             return *this;
         }
@@ -111,7 +111,7 @@ namespace SignalTracer {
         const glm::vec3& b() const { return m_b; }
         const glm::vec3& c() const { return m_c; }
         const glm::vec3& normal() const { return m_normal; }
-        AABB bounding_box() const override { return m_aabb; }
+        AABB bounding_box() const override { return m_box; }
         const std::shared_ptr<Material> p_material() const { return m_material_ptr; }
 
         void a(const glm::vec3& a) { m_a = a; update(); }
@@ -179,14 +179,14 @@ namespace SignalTracer {
         glm::vec3 m_edge_ab{};
         glm::vec3 m_edge_ac{};
         glm::vec3 m_normal{};
-        AABB m_aabb{};
+        AABB m_box{};
         std::shared_ptr<Material> m_material_ptr{};
 
         void update() {
             m_edge_ab = m_b - m_a;
             m_edge_ac = m_c - m_a;
             m_normal = glm::normalize(glm::cross(m_edge_ab, m_edge_ac));
-            m_aabb = AABB{ m_a, m_b, m_c };
+            m_box = AABB{ m_a, m_b, m_c };
         }
     };
 }
