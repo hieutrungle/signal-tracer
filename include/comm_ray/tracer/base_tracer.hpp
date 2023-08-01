@@ -18,12 +18,12 @@ namespace SignalTracer {
         BaseTracer(const std::vector<Model>& models, int max_reflection = 2)
             : m_max_reflection{ max_reflection }
             , m_triangles{ init_triangles(models) }
-            , m_bvh{ OldBVH{ m_triangles, 0, m_triangles.size() } } {}
+            , m_bvh{ BVHAccel{ m_triangles, 0, m_triangles.size() } } {}
 
         BaseTracer(const std::vector<std::reference_wrapper<Model>>& models, int max_reflection = 2)
             : m_max_reflection{ max_reflection }
             , m_triangles{ init_triangles(models) }
-            , m_bvh{ OldBVH{ m_triangles, 0, m_triangles.size() } } {}
+            , m_bvh{ BVHAccel{ m_triangles, 0, m_triangles.size() } } {}
 
         virtual ~BaseTracer() = default;
 
@@ -120,7 +120,7 @@ namespace SignalTracer {
     protected:
         int m_max_reflection{ 2 };
         std::vector<std::shared_ptr<Hittable>> m_triangles{};
-        OldBVH m_bvh{};
+        BVHAccel m_bvh{};
     };
 }
 

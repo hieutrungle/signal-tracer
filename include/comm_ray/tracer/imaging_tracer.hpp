@@ -240,14 +240,14 @@ namespace SignalTracer {
 //         SignalTracer(const std::vector<Model>& models, int max_reflection = 2)
 //             : m_max_reflection{ max_reflection }
 //             , m_triangles{ init_triangles(models) }
-//             , m_bvh{ std::make_shared<OldBVH>(m_triangles, 0, m_triangles.size()) } {}
+//             , m_bvh{ std::make_shared<BVHAccel>(m_triangles, 0, m_triangles.size()) } {}
 
 //         SignalTracer(const std::vector<std::shared_ptr<Model>>& model_ptrs, int max_reflection = 2)
 //             : m_max_reflection{ max_reflection }
 //             , m_triangles{ init_triangles(model_ptrs) }
-//             , m_bvh{ std::make_shared<OldBVH>(m_triangles, 0, m_triangles.size()) } {}
+//             , m_bvh{ std::make_shared<BVHAccel>(m_triangles, 0, m_triangles.size()) } {}
 
-//         const std::shared_ptr<OldBVH>& bvh() const { return m_bvh; }
+//         const std::shared_ptr<BVHAccel>& bvh() const { return m_bvh; }
 //         int max_reflection() const { return m_max_reflection; }
 
 //         virtual ~SignalTracer() = default;
@@ -468,7 +468,7 @@ namespace SignalTracer {
 //     private:
 //         int m_max_reflection{ 2 };
 //         std::vector<std::shared_ptr<Triangle>> m_triangles{};
-//         std::shared_ptr<OldBVH> m_bvh{};
+//         std::shared_ptr<BVHAccel> m_bvh{};
 //         bool m_is_direct_lighting{ false };
 //     };
 // }
