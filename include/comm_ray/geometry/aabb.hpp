@@ -12,124 +12,170 @@ namespace SignalTracer {
     template<typename T>
     class AABBT {
     public:
-        AABBT() = default;
 
-        // Initialize an AABB with three intervals
-        AABBT(const IntervalT<T>& x, const IntervalT<T>& y, const IntervalT<T>& z)
-            : m_intervals{ x, y, z } {}
+        /**
+         * Constructor.
+         * The default constructor creates a new bounding box which contains no
+         * points.
+         */
+        AABBT() : m_min{ Constant::INFINITY_NEG_T<T> }, m_max{ Constant::INFINITY_POS_T<T> }, m_extent{ m_max - m_min } {};
 
-        // Initialize an AABB with two points
+        /**
+         * Constructor.
+         * Creates a bounding box with given boxes.
+         * \param b1 box 1
+         * \param b2 box 2
+         */
+        AABBT(const AABBT<T>& b1, const AABBT<T>& b2)
+            : m_min{ glm::min(b1.m_min, b2.m_min) }
+            , m_max{ glm::max(b1.m_max, b2.m_max) }
+            , m_extent{ m_max - m_min } {}
+
+        /**
+         * Constructor.
+         * Creates a bounding box with given boxes.
+         * \param b1 box 1
+         * \param b2 box 2
+         * \param b3 box 3
+         */
+        AABBT(const AABBT<T>& b1, const AABBT<T>& b2, const AABBT<T>& b3) : AABBT(b1, b2) {
+            *this = AABBT(*this, b3);
+        }
+
+
+
+        /**
+         * Constructor.
+         * Creates a bounding box that includes a single point.
+         */
+        AABBT(const glm::vec3& p)
+            : m_min{ p }, m_max{ p }, m_extent{ m_max - m_min } {}
+
+        /**
+         * Constructor.
+         * Creates a bounding box with given 2 points.
+         * \param p1 point 1
+         * \param p2 point 2
+         */
         AABBT(const glm::vec3& p1, const glm::vec3& p2)
-            : m_intervals{
-                IntervalT<T>(std::fmin(p1.x, p2.x), std::fmax(p1.x, p2.x)) ,
-                IntervalT<T>(std::fmin(p1.y, p2.y), std::fmax(p1.y, p2.y)),
-                IntervalT<T>(std::fmin(p1.z, p2.z), std::fmax(p1.z, p2.z)) } {}
+            : m_min{ glm::min(p1, p2) }, m_max{ glm::max(p1, p2) }, m_extent{ m_max - m_min } {}
 
-        AABBT(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3) : AABBT(p1, p2) {
-            AABBT<T> box(p2, p3);
-            *this = AABBT(*this, box);
-        }
+        AABBT(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3)
+            : m_min{ glm::min(p1, glm::min(p2, p3)) }
+            , m_max{ glm::max(p1, glm::max(p2, p3)) }
+            , m_extent{ m_max - m_min } {}
 
-        AABBT(const AABBT<T>& box, const glm::vec3 p) : AABBT(box) {
-            auto min_coord = glm::vec3(box[0].min(), box[1].min(), box[2].min());
-            auto max_coord = glm::vec3(box[0].max(), box[1].max(), box[2].max());
-            *this = AABBT(min_coord, max_coord, p);
-        }
+        /**
+         * Constructor.
+         * Creates a bounding box with given bounds (component wise).
+         */
+        AABBT(const double min_x, const double min_y, const double min_z, const double max_x, const double max_y, const double max_z)
+            : m_min{ min_x, min_y, min_z }
+            , m_max{ max_x, max_y, max_z }
+            , m_extent{ m_max - m_min } {}
 
-        // union of two AABBs
-        AABBT(const AABBT<T>& box1, const AABBT<T>& box2)
-            : m_intervals{
-                IntervalT<T>::get_union_interval(box1[0], box2[0]),
-                IntervalT<T>::get_union_interval(box1[1], box2[1]),
-                IntervalT<T>::get_union_interval(box1[2], box2[2]) } {}
-
-        AABBT(const AABBT<T>& box1, const AABBT<T>& box2, const AABBT<T>& box3)
-            : AABBT(AABBT(box1, box2), box3) {}
-
-        // copy constructor
-        AABBT(const AABBT<T>& box)
-            : m_intervals{ box.m_intervals } {}
-
-        // move constructor
-        AABBT(AABBT<T>&& box) noexcept
-            : m_intervals{ box.m_intervals } {}
-
-        // assignment operator
-        AABBT<T>& operator=(const AABBT<T>& box) {
-            m_intervals = box.m_intervals;
-            return *this;
-        }
-
-        // move assignment operator
-        AABBT<T>& operator=(AABBT<T>&& box) noexcept {
-            m_intervals = box.m_intervals;
-            return *this;
-        }
-
+        // equality operator
         bool operator==(const AABBT<T>& box) const {
-            return m_intervals[0] == box.m_intervals[0] &&
-                m_intervals[1] == box.m_intervals[1] &&
-                m_intervals[2] == box.m_intervals[2];
+            return m_min == box.m_min && m_max == box.m_max;
         }
 
+        // inequality operator
         bool operator!=(const AABBT<T>& box) const {
-            return m_intervals[0] != box.m_intervals[0] ||
-                m_intervals[1] != box.m_intervals[1] ||
-                m_intervals[2] != box.m_intervals[2];
-        }
-
-        // array subscript operator
-        const IntervalT<T>& operator[](int i) const {
-            return m_intervals[i];
+            return m_min != box.m_min || m_max != box.m_max;
         }
 
         // cout
         friend std::ostream& operator<<(std::ostream& os, const AABBT<T>& box) {
-            os << "{" << box.m_intervals[0] << ", " << box.m_intervals[1] << ", " << box.m_intervals[2] << "}";
+            os << "{" << glm::to_string(box.m_min) << ", " << glm::to_string(box.m_max) << "}";
             return os;
         }
 
+        /**
+         * Expand the bounding box to include another (union).
+         * If the given bounding box is contained within *this*, nothing happens.
+         * Otherwise *this* is expanded to the minimum volume that contains the
+         * given input.
+         * \param box the bounding box to be included
+         */
         void expand(const AABBT<T>& box) {
-            m_intervals[0].expand(box[0]);
-            m_intervals[1].expand(box[1]);
-            m_intervals[2].expand(box[2]);
+            m_min = glm::min(m_min, box.m_min);
+            m_max = glm::max(m_max, box.m_max);
+            m_extent = m_max - m_min;
         }
 
-        const glm::vec3 length() const {
-            return glm::vec3(m_intervals[0].length(), m_intervals[1].length(), m_intervals[2].length());
+        /**
+         * Expand the bounding box to include a new point in space.
+         * If the given point is already inside *this*, nothing happens.
+         * Otherwise *this* is expanded to a minimum volume that contains the given
+         * point.
+         * \param p the point to be included
+         */
+        void expand(const glm::vec3& p) {
+            m_min = glm::min(m_min, p);
+            m_max = glm::max(m_max, p);
+            m_extent = m_max - m_min;
         }
 
+        /**
+         * Get the minimum corner of the bounding box.
+         * \return the minimum corner of the bounding box
+         */
+        const glm::vec3& get_min() const {
+            return m_min;
+        }
+
+        /**
+         * Get the maximum corner of the bounding box.
+         * \return the maximum corner of the bounding box
+         */
+        const glm::vec3& get_max() const {
+            return m_max;
+        }
+
+        glm::vec3 get_centroid() const {
+            return (m_min + m_max) * 0.5f;
+        }
+
+        /**
+         * Compute the surface area of the bounding box.
+         * \return surface area of the bounding box.
+         */
+        T calc_surface_area() const {
+            return 2.0f * (m_extent.x * m_extent.y + m_extent.x * m_extent.z + m_extent.y * m_extent.z);
+        }
+
+        /**
+         * Check if bounding box is empty.
+         * Bounding box that has no size is considered empty. Note that since
+         * bounding box are used for objects with positive volumes, a bounding
+         * box of zero size (empty, or contains a single vertex) are considered
+         * empty.
+         */
         bool is_empty() const {
-            return m_intervals[0].is_empty() || m_intervals[1].is_empty() || m_intervals[2].is_empty();
+            return m_extent.x <= 0.0f || m_extent.y <= 0.0f || m_extent.z <= 0.0f;
         }
 
-        // point is inside the AABB (including the boundary)
-        bool contains(const glm::vec3& point) const {
-            return m_intervals[0].contains(point.x) &&
-                m_intervals[1].contains(point.y) &&
-                m_intervals[2].contains(point.z);
-        }
-
-        // point is inside the AABB (excluding the boundary)
-        bool surrounds(const glm::vec3& point) const {
-            return m_intervals[0].surrounds(point.x) &&
-                m_intervals[1].surrounds(point.y) &&
-                m_intervals[2].surrounds(point.z);
-        }
-
-        bool is_hit(const Ray& ray, IntervalT<T> ray_interval) const {
+        /**
+         * Ray - bbox intersection.
+         * Intersects ray with bounding box, does not store shading information.
+         * \param ray the ray to intersect with
+         * \param interval lower bound and upper bound of intersection
+         */
+        bool is_hit(const Ray& ray, IntervalT<T>& ray_interval) const {
             if (ray.get_direction() == glm::vec3(0.0f)) {
                 std::cout << "Ray direction is zero vector." << std::endl;
-                return contains(ray.get_origin());
+                return false;
             }
             const auto inv_direction = 1.0f / ray.get_direction();
 
-            for (std::size_t i = 0; i < m_intervals.size(); i++) {
+            for (std::size_t i = 0; i < 3; i++) {
                 if (std::fabs(ray.get_direction()[i]) <= 1e-6) {
                     continue;
                 }
-                T t0 = (m_intervals[i].min() - ray.get_origin()[i]) * inv_direction[i];
-                T t1 = (m_intervals[i].max() - ray.get_origin()[i]) * inv_direction[i];
+                T t0 = (m_min[i] - ray.get_origin()[i]) * inv_direction[i];
+                T t1 = (m_max[i] - ray.get_origin()[i]) * inv_direction[i];
+                // T t0 = (m_intervals[i].min() - ray.get_origin()[i]) * inv_direction[i];
+                // T t1 = (m_intervals[i].max() - ray.get_origin()[i]) * inv_direction[i];
 
                 if (inv_direction[i] < 0.0f) std::swap<T>(t0, t1);
 
@@ -142,17 +188,42 @@ namespace SignalTracer {
             return true;
         }
 
+        /**
+         * Check if a point is inside the bounding box.
+         * \param p the point to check
+         * \return true if the point is inside the bounding box, false otherwise
+         */
+        bool is_contained(const glm::vec3& p) const {
+            return p.x >= m_min.x && p.x <= m_max.x &&
+                p.y >= m_min.y && p.y <= m_max.y &&
+                p.z >= m_min.z && p.z <= m_max.z;
+        }
+
+        /**
+         * Check if a point is on the surface of the bounding box.
+         * \param p the point to check
+         * \return true if the point is on the surface of the bounding box, false otherwise
+         */
+         // bool is_on_surface(const glm::vec3& p) const {
+         //     return (p.x >= m_min.x && p.x <= m_max.x &&
+         //         p.y >= m_min.y && p.y <= m_max.y &&
+         //         (p.z == m_min.z || p.z == m_max.z)) ||
+         //         (p.x >= m_min.x && p.x <= m_max.x &&
+         //             (p.y == m_min.y || p.y == m_max.y) &&
+         //             p.z >= m_min.z && p.z <= m_max.z) ||
+         //         ((p.x == m_min.x || p.x == m_max.x) &&
+         //             p.y >= m_min.y && p.y <= m_max.y &&
+         //             p.z >= m_min.z && p.z <= m_max.z);
+         // }
+
     private:
-        std::array<IntervalT<T>, 3> m_intervals{ {
-                IntervalT(Constant::INFINITY_POS, Constant::INFINITY_NEG),
-                    IntervalT(Constant::INFINITY_POS, Constant::INFINITY_NEG),
-                    IntervalT(Constant::INFINITY_POS, Constant::INFINITY_NEG)
-            }
-        }; // x, y, z
+        glm::vec3 m_min{ Constant::INFINITY_POS_T<T> };
+        glm::vec3 m_max{ Constant::INFINITY_NEG_T<T> };
+        glm::vec3 m_extent{ m_max - m_min };
     };
 
     // define float aabb
     using AABB = AABBT<float>;
-}
+}// namespace SignalTracer
 
 #endif // !AABB_HPP
