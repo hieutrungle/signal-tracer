@@ -71,26 +71,30 @@ namespace SignalTracer {
         }
 
         void trace_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) override {
-            reset();
-            // std::clog << "Running in sequential mode" << std::endl;
-            // std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
-            // std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
-            // glm::vec3 up{ 0.0f, 1.0f, 0.0f };
-            // glm::vec3 right{ 1.0f, 0.0f, 0.0f };
-            // for (float i = 0; i < 360; i += m_angular_interval) {
-            //     for (float j = 0; j < 360; j += m_angular_interval) {
-            //         glm::vec3 direction = spherical2cartesian(i, j);
-            //         Ray ray{ tx_pos, direction };
-            //         ReflectionRecord ref_record{};
-            //         ref_record.add_point(tx_pos);
-            //         trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, ref_record);
-            //         if (!ref_record.is_empty()) {
-            //             ref_records.emplace_back(ref_record);
-            //         }
-            //     }
-            // }
+            // trace_rays_sequential(tx_pos, rx_pos, ref_records);
             trace_rays_parallel(tx_pos, rx_pos, ref_records);
         };
+
+        void trace_rays_sequential(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) {
+            reset();
+            std::clog << "Running in sequential mode" << std::endl;
+            std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
+            std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
+            glm::vec3 up{ 0.0f, 1.0f, 0.0f };
+            glm::vec3 right{ 1.0f, 0.0f, 0.0f };
+            for (float i = 0; i < 360; i += m_angular_interval) {
+                for (float j = 0; j < 360; j += m_angular_interval) {
+                    glm::vec3 direction = spherical2cartesian(i, j);
+                    Ray ray{ tx_pos, direction };
+                    ReflectionRecord ref_record{};
+                    ref_record.add_point(tx_pos);
+                    trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, ref_record);
+                    if (!ref_record.is_empty()) {
+                        ref_records.emplace_back(ref_record);
+                    }
+                }
+            }
+        }
 
         void trace_rays_parallel(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) {
             reset();
