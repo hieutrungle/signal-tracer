@@ -120,7 +120,7 @@ namespace SignalTracer {
     protected:
         int m_max_reflection{ 2 };
         std::vector<std::shared_ptr<Hittable>> m_triangles{};
-        BVHAccel m_bvh{};
+        BVHAccel m_bvh;
     };
 }
 
