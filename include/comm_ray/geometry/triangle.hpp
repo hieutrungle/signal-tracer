@@ -48,9 +48,6 @@ namespace SignalTracer {
             m_a = rhs.m_a;
             m_b = rhs.m_b;
             m_c = rhs.m_c;
-            m_edge_ab = rhs.m_edge_ab;
-            m_edge_ac = rhs.m_edge_ac;
-            m_normal = rhs.m_normal;
             m_box = rhs.m_box;
             m_material_ptr = rhs.m_material_ptr;
             return *this;
@@ -64,9 +61,6 @@ namespace SignalTracer {
             m_a = std::move(rhs.m_a);
             m_b = std::move(rhs.m_b);
             m_c = std::move(rhs.m_c);
-            m_edge_ab = std::move(rhs.m_edge_ab);
-            m_edge_ac = std::move(rhs.m_edge_ac);
-            m_normal = std::move(rhs.m_normal);
             m_box = std::move(rhs.m_box);
             m_material_ptr = std::move(rhs.m_material_ptr);
             return *this;
@@ -110,7 +104,6 @@ namespace SignalTracer {
         const glm::vec3& a() const { return m_a; }
         const glm::vec3& b() const { return m_b; }
         const glm::vec3& c() const { return m_c; }
-        const glm::vec3& normal() const { return m_normal; }
         AABB bounding_box() const override { return m_box; }
         const std::shared_ptr<Material> p_material() const { return m_material_ptr; }
 
@@ -119,19 +112,38 @@ namespace SignalTracer {
         void c(const glm::vec3& c) { m_c = c; update(); }
         void p_material(std::shared_ptr<Material> p_material) { m_material_ptr = p_material; }
 
-        glm::vec3 centroid() const {
-            return (m_a + m_b + m_c) / 3.0f;
+
+        glm::vec3 get_normal() const {
+            glm::vec3 edge_ab = m_b - m_a;
+            glm::vec3 edge_ac = m_c - m_a;
+            glm::vec3 normal = glm::normalize(glm::cross(edge_ab, edge_ac));
+            return normal;
+        }
+
+        glm::vec3 get_centroid() const override {
+            return (m_a + m_b + m_c) * 0.3333f;
         }
 
         glm::vec3 get_mirror_point(const glm::vec3& point) const {
-            auto mirror_point = point + 2.0f * glm::dot(m_b - point, m_normal) * m_normal;
+            glm::vec3 normal = get_normal();
+            auto mirror_point = point + 2.0f * glm::dot(m_b - point, normal) * normal;
             return mirror_point;
+        }
+
+        glm::vec3 get_min() const override {
+            return glm::min(m_a, glm::min(m_b, m_c));
+        }
+
+        glm::vec3 get_max() const override {
+            return glm::max(m_a, glm::max(m_b, m_c));
         }
 
         bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const override {
             // Tomas Moller and Ben Trumbore Algorithm
-            glm::vec3 pvec = glm::cross(ray.get_direction(), m_edge_ac);
-            float det = glm::dot(m_edge_ab, pvec);
+            glm::vec3 edge_ab = m_b - m_a;
+            glm::vec3 edge_ac = m_c - m_a;
+            glm::vec3 pvec = glm::cross(ray.get_direction(), edge_ac);
+            float det = glm::dot(edge_ab, pvec);
 #if defined(CULLING)
             // if the determinant is negative, the triangle is 'back facing.'
             // if the determinant is close to 0, the ray misses the triangle
@@ -151,13 +163,13 @@ namespace SignalTracer {
                 return false;
             }
 
-            glm::vec3 qvec = glm::cross(tvec, m_edge_ab);
+            glm::vec3 qvec = glm::cross(tvec, edge_ab);
             float v = glm::dot(ray.get_direction(), qvec) * inv_det;
             if (v < 0.0f || u + v > 1.0f) {
                 return false;
             }
 
-            float t = glm::dot(m_edge_ac, qvec) * inv_det;
+            float t = glm::dot(edge_ac, qvec) * inv_det;
             if (t < Constant::EPSILON) {
                 return false;
             }
@@ -165,27 +177,22 @@ namespace SignalTracer {
             if (interval.contains(t)) {
                 record.set_t(t);
                 record.set_point(ray.point_at(t));
-                record.set_face_normal(ray, m_normal);
+                record.set_face_normal(ray, get_normal());
                 record.set_material_ptr(m_material_ptr);
                 return true;
             }
             return false;
         }
 
+
     private:
         glm::vec3 m_a{};
         glm::vec3 m_b{};
         glm::vec3 m_c{};
-        glm::vec3 m_edge_ab{};
-        glm::vec3 m_edge_ac{};
-        glm::vec3 m_normal{};
         AABB m_box{};
         std::shared_ptr<Material> m_material_ptr{};
 
         void update() {
-            m_edge_ab = m_b - m_a;
-            m_edge_ac = m_c - m_a;
-            m_normal = glm::normalize(glm::cross(m_edge_ab, m_edge_ac));
             m_box = AABB{ m_a, m_b, m_c };
         }
     };
