@@ -192,16 +192,17 @@ namespace SignalTracer {
                 std::cout << "Ray direction is zero vector." << std::endl;
                 return Constant::INF_POS_T<T>;
             }
-            const auto inv_direction = 1.0f / ray.get_direction();
+            const auto& rdirection = ray.get_rdirection();
+            const auto& origin = ray.get_origin();
 
             for (std::size_t i = 0; i < 3; i++) {
                 if (std::fabs(ray.get_direction()[i]) <= 1e-6) {
                     continue;
                 }
-                T t0 = (m_min[i] - ray.get_origin()[i]) * inv_direction[i];
-                T t1 = (m_max[i] - ray.get_origin()[i]) * inv_direction[i];
+                T t0 = (m_min[i] - origin[i]) * rdirection[i];
+                T t1 = (m_max[i] - origin[i]) * rdirection[i];
 
-                if (inv_direction[i] < 0.0f) std::swap<T>(t0, t1);
+                if (rdirection[i] < 0.0f) std::swap<T>(t0, t1);
 
                 interval.min(std::fmax(t0, interval.min()));
                 interval.max(std::fmin(t1, interval.max()));
