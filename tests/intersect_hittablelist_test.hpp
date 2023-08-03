@@ -37,7 +37,7 @@ TEST_F(IntersectionTest, RayHittableList3) {
     bool hit3 = model1.is_hit(ray3, interval, record);
     EXPECT_FALSE(hit3);
     EXPECT_FLOAT_EQ(record.get_t(), 0.0f);
-    EXPECT_EQ(record.get_point(), (glm::vec3{Constant::INFINITY_NEG}));
+    EXPECT_EQ(record.get_point(), (glm::vec3{Constant::INF_NEG}));
 
 }
 

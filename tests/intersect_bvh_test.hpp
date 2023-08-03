@@ -36,7 +36,7 @@ TEST_F(IntersectionTest, RayBVH3) {
     bool hit3 = bvh->is_hit(ray3, interval, record);
     EXPECT_FALSE(hit3);
     EXPECT_FLOAT_EQ(record.get_t(), 0.0f);
-    EXPECT_EQ(record.get_point(), (glm::vec3{Constant::INFINITY_NEG}));
+    EXPECT_EQ(record.get_point(), (glm::vec3{Constant::INF_NEG}));
 }
 
 
@@ -66,7 +66,7 @@ TEST_F(IntersectionTest, RayBVHHittableList3) {
 
 TEST_F(IntersectionTest, EmptyBVH) {
     SignalTracer::HittableList empty_list{};
-    std::shared_ptr<SignalTracer::OldBVH> empty_bvh = std::make_shared<SignalTracer::OldBVH>(empty_list);
+    std::shared_ptr<SignalTracer::BVHAccel> empty_bvh = std::make_shared<SignalTracer::BVHAccel>(empty_list);
     bool hit_empty_bvh = empty_bvh->is_hit(ray1, interval, record);
     EXPECT_FALSE(hit_empty_bvh);
 }
