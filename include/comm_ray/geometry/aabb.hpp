@@ -18,7 +18,7 @@ namespace SignalTracer {
          * The default constructor creates a new bounding box which contains no
          * points.
          */
-        AABBT() : m_min{ Constant::INFINITY_NEG_T<T> }, m_max{ Constant::INFINITY_POS_T<T> }, m_extent{ m_max - m_min } {};
+        AABBT() : m_min{ Constant::INFINITY_POS_T<T> }, m_max{ Constant::INFINITY_NEG_T<T> }, m_extent{ m_max - m_min } {};
 
         /**
          * Constructor.
