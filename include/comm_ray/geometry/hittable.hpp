@@ -21,6 +21,18 @@ namespace SignalTracer {
         friend std::ostream& operator<<(std::ostream& out, const Hittable& hittable) {
             return hittable.print(out);
         }
+
+        virtual glm::vec3 get_centroid() const {
+            return glm::vec3{ 0.0f };
+        }
+
+        virtual glm::vec3 get_max() const {
+            return glm::vec3{ 0.0f };
+        }
+
+        virtual glm::vec3 get_min() const {
+            return glm::vec3{ 0.0f };
+        }
     };
 }
 
