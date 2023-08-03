@@ -145,7 +145,7 @@ namespace SignalTracer {
                 return;
             }
             IntersectRecord record{};
-            Interval interval{ Constant::EPSILON, Constant::INFINITY_POS };
+            Interval interval{ Constant::EPSILON, Constant::INF_POS };
             glm::vec3 projection_point{};
 
             // Ray: Origin + t * Direction
