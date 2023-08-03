@@ -12,14 +12,14 @@ namespace SignalTracer {
         Interval class
         Can be used to represent a range of values
         Constructor:
-            Interval() : m_min{ Constant::INFINITY_POS }, m_max{ Constant::INFINITY_NEG } {}
+            Interval() : m_min{ Constant::INF_POS }, m_max{ Constant::INF_NEG } {}
             Interval(T min, T max) : m_min(min), m_max(max) {}
     */
     template<typename T>
     class IntervalT {
     public:
         // default to empty interval
-        IntervalT() : m_min{ static_cast<T>(Constant::INFINITY_POS) }, m_max{ static_cast<T>(Constant::INFINITY_NEG) } {}
+        IntervalT() : m_min{ static_cast<T>(Constant::INF_POS) }, m_max{ static_cast<T>(Constant::INF_NEG) } {}
 
         // Initialize an interval with two values
         IntervalT(T min, T max) : m_min(min), m_max(max) {}
@@ -103,11 +103,11 @@ namespace SignalTracer {
         }
 
         static IntervalT<T> empty() {
-            return IntervalT<T>((Constant::INFINITY_POS_T<T>), (Constant::INFINITY_NEG_T<T>));
+            return IntervalT<T>((Constant::INF_POS_T<T>), (Constant::INF_NEG_T<T>));
         }
 
         static IntervalT<T> universe() {
-            return IntervalT<T>((Constant::INFINITY_NEG_T<T>), (Constant::INFINITY_POS_T<T>));
+            return IntervalT<T>((Constant::INF_NEG_T<T>), (Constant::INF_POS_T<T>));
         }
 
         static IntervalT<T> get_union_interval(const IntervalT<T>& interval1, const IntervalT<T>& interval2) {

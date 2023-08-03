@@ -20,7 +20,7 @@ namespace SignalTracer {
     */
     class IntersectRecord {
     public:
-        IntersectRecord() : m_point{ Constant::INFINITY_NEG }, m_normal{}, m_material_ptr{ nullptr }, m_t{ Constant::INFINITY_POS }, m_front_face{ false } {};
+        IntersectRecord() : m_point{ Constant::INF_NEG }, m_normal{}, m_material_ptr{ nullptr }, m_t{ Constant::INF_POS }, m_front_face{ false } {};
         IntersectRecord(glm::vec3 point, glm::vec3 normal, std::shared_ptr<Material> material_ptr, float t, bool front_face)
             : m_point(point)
             , m_normal(normal)
@@ -117,10 +117,10 @@ namespace SignalTracer {
         }
 
     private:
-        glm::vec3 m_point{ Constant::INFINITY_NEG };
+        glm::vec3 m_point{ Constant::INF_NEG };
         glm::vec3 m_normal{};
         std::shared_ptr<Material> m_material_ptr{ nullptr };
-        float m_t{ Constant::INFINITY_POS };
+        float m_t{ Constant::INF_POS };
         bool m_front_face{};
     };
 }
