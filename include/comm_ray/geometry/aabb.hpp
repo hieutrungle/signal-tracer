@@ -18,7 +18,7 @@ namespace SignalTracer {
          * The default constructor creates a new bounding box which contains no
          * points.
          */
-        AABBT() : m_min{ Constant::INFINITY_POS_T<T> }, m_max{ Constant::INFINITY_NEG_T<T> }, m_extent{ m_max - m_min } {};
+        AABBT() : m_min{ Constant::INF_POS_T<T> }, m_max{ Constant::INF_NEG_T<T> }, m_extent{ m_max - m_min } {};
 
         /**
          * Constructor.
@@ -174,8 +174,6 @@ namespace SignalTracer {
                 }
                 T t0 = (m_min[i] - ray.get_origin()[i]) * inv_direction[i];
                 T t1 = (m_max[i] - ray.get_origin()[i]) * inv_direction[i];
-                // T t0 = (m_intervals[i].min() - ray.get_origin()[i]) * inv_direction[i];
-                // T t1 = (m_intervals[i].max() - ray.get_origin()[i]) * inv_direction[i];
 
                 if (inv_direction[i] < 0.0f) std::swap<T>(t0, t1);
 
@@ -186,6 +184,32 @@ namespace SignalTracer {
                 }
             }
             return true;
+        }
+
+        T hit(const Ray& ray, IntervalT<T> interval) const {
+
+            if (ray.get_direction() == glm::vec3(0.0f)) {
+                std::cout << "Ray direction is zero vector." << std::endl;
+                return Constant::INF_POS_T<T>;
+            }
+            const auto inv_direction = 1.0f / ray.get_direction();
+
+            for (std::size_t i = 0; i < 3; i++) {
+                if (std::fabs(ray.get_direction()[i]) <= 1e-6) {
+                    continue;
+                }
+                T t0 = (m_min[i] - ray.get_origin()[i]) * inv_direction[i];
+                T t1 = (m_max[i] - ray.get_origin()[i]) * inv_direction[i];
+
+                if (inv_direction[i] < 0.0f) std::swap<T>(t0, t1);
+
+                interval.min(std::fmax(t0, interval.min()));
+                interval.max(std::fmin(t1, interval.max()));
+                if (interval.max() < interval.min()) {
+                    return Constant::INF_POS_T<T>;
+                }
+            }
+            return static_cast<T>(interval.min());
         }
 
         /**
@@ -199,26 +223,9 @@ namespace SignalTracer {
                 p.z >= m_min.z && p.z <= m_max.z;
         }
 
-        /**
-         * Check if a point is on the surface of the bounding box.
-         * \param p the point to check
-         * \return true if the point is on the surface of the bounding box, false otherwise
-         */
-         // bool is_on_surface(const glm::vec3& p) const {
-         //     return (p.x >= m_min.x && p.x <= m_max.x &&
-         //         p.y >= m_min.y && p.y <= m_max.y &&
-         //         (p.z == m_min.z || p.z == m_max.z)) ||
-         //         (p.x >= m_min.x && p.x <= m_max.x &&
-         //             (p.y == m_min.y || p.y == m_max.y) &&
-         //             p.z >= m_min.z && p.z <= m_max.z) ||
-         //         ((p.x == m_min.x || p.x == m_max.x) &&
-         //             p.y >= m_min.y && p.y <= m_max.y &&
-         //             p.z >= m_min.z && p.z <= m_max.z);
-         // }
-
     private:
-        glm::vec3 m_min{ Constant::INFINITY_POS_T<T> };
-        glm::vec3 m_max{ Constant::INFINITY_NEG_T<T> };
+        glm::vec3 m_min{ Constant::INF_POS_T<T> };
+        glm::vec3 m_max{ Constant::INF_NEG_T<T> };
         glm::vec3 m_extent{ m_max - m_min };
     };
 
