@@ -27,7 +27,7 @@ namespace SignalTracer {
         void clear() { m_objects.clear(); };
         void add(shared_ptr<Hittable> object) {
             m_objects.push_back(object);
-            m_box = AABB{ m_box, object->bounding_box() };
+            m_box.expand(object->bounding_box());
         };
 
         bool is_hit(const Ray& r, const Interval& interval, IntersectRecord& rec) const override {
