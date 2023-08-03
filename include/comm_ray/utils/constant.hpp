@@ -9,21 +9,21 @@
 
 namespace Constant {
     template<typename T>
-    const T INFINITY_POS_T = std::numeric_limits<T>::infinity();
+    const T INF_POS_T = std::numeric_limits<T>::infinity();
     template<typename T>
-    const T INFINITY_NEG_T = -std::numeric_limits<T>::infinity();
+    const T INF_NEG_T = -std::numeric_limits<T>::infinity();
     const double PI = std::numbers::pi;
 
     const float LIGHT_SPEED = 299792458.0;
 
-    const float INFINITY_POS = INFINITY_POS_T<float>;
-    const float INFINITY_NEG = INFINITY_NEG_T<float>;
+    const float INF_POS = INF_POS_T<float>;
+    const float INF_NEG = INF_NEG_T<float>;
 
     const float EPSILON = 1e-5;
 
-    const inline glm::vec3 NEG_INF_VEC = glm::vec3(INFINITY_NEG);
-    const inline glm::vec3 MIN_BOUND = glm::vec3(INFINITY_POS);
-    const inline glm::vec3 MAX_BOUND = glm::vec3(INFINITY_NEG);
+    const inline glm::vec3 NEG_INF_VEC = glm::vec3(INF_NEG);
+    const inline glm::vec3 MIN_BOUND = glm::vec3(INF_POS);
+    const inline glm::vec3 MAX_BOUND = glm::vec3(INF_NEG);
 
     /*
         ---------------------------------
