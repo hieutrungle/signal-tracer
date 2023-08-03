@@ -68,7 +68,6 @@ int main(int argc, char* argv []) {
     // Load models
     // ----------------------------------
     // auto city_model_ptr{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj") };
-
     // glm::vec3 tx_pos{ 5.0f, 2.5f, 5.0f };
     // glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
 
@@ -87,9 +86,13 @@ int main(int argc, char* argv []) {
 
     std::vector<std::reference_wrapper<SignalTracer::Model>> models{ *city_model_ptr };
     auto timer = Utils::Timer{};
-    SignalTracer::RayCastingTracer sig_tracer{ models, 20, 0.1 };
+    SignalTracer::RayCastingTracer sig_tracer{ models, 20, 0.2f };
     // SignalTracer::ImagingTracer sig_tracer{ models, 2 };
     timer.execution_time();
+    bool check{ false };
+    if (check) {
+        return EXIT_SUCCESS;
+    }
     timer.reset();
     {
         std::vector<SignalTracer::ReflectionRecord> ref_records{};
@@ -113,6 +116,13 @@ int main(int argc, char* argv []) {
 
         rx0.add_reflection_records(tx0.get_id(), ref_records);
     }
+
+    // for (const auto& [transmitter_id, ref_records] : rx0.get_reflection_records()) {
+    //     std::cout << "Transmitter ID: " << transmitter_id << std::endl;
+    //     for (const auto& ref_record : ref_records) {
+    //         std::cout << ref_record << std::endl;
+    //     }
+    // }
 
     /*
         ----------------------------------
