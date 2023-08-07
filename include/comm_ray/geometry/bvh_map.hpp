@@ -64,123 +64,7 @@ namespace SignalTracer {
         AABB bounding_box() const override { return m_box; }
 
     private:
-        // void partition_node(const std::vector<shared_ptr<Hittable>>& src_objects, size_t start, size_t end, size_t level = 0, const std::size_t& num_buckets = 32) {
-        //     m_level = level;
-        //     // create a copy of pointers to source objects
-        //     std::vector<shared_ptr<Hittable>> objects{ std::vector<shared_ptr<Hittable>>(&src_objects[start],&src_objects[end]) };
 
-        //     glm::vec3 centroid_min{ Constant::INF_POS };
-        //     glm::vec3 centroid_max{ Constant::INF_NEG };
-        //     for (const auto& object : objects) {
-        //         const auto box = object->bounding_box();
-        //         centroid_min = glm::min(centroid_min, box.get_centroid());
-        //         centroid_max = glm::max(centroid_max, box.get_centroid());
-        //     }
-        //     std::cout << "Level: " << level << "; centroid_min: " << glm::to_string(centroid_min) << "; centroid_max: " << glm::to_string(centroid_max) << std::endl;
-
-        //     float best_sah{ Constant::INF_POS };
-        //     AABB best_left_bbox{}, best_right_bbox{};
-        //     std::size_t best_left_count{};
-        //     int best_axis{};
-        //     int best_pplane{};
-        //     float best_centroid_max{}, best_centroid_min{};
-
-        //     for (int axis = 0; axis < 3; ++axis) {
-
-        //         // Skip if the centroids are the same
-        //         if (centroid_max[axis] - centroid_min[axis] <= Constant::EPSILON) {
-        //             continue;
-        //         }
-
-        //         std::vector<AABB> boxes(num_buckets, AABB{});
-        //         std::vector<std::size_t> primitive_counts(num_buckets, 0);
-
-        //         partition_buckets(objects, centroid_min, centroid_max, axis, boxes, primitive_counts);
-
-        //         for (std::size_t plane_idx = 1; plane_idx < num_buckets; ++plane_idx) {
-        //             AABB left_box{};
-        //             AABB right_box{};
-        //             std::size_t left_count{ 0 };
-        //             std::size_t right_count{ 0 };
-
-        //             for (std::size_t i = 0; i < plane_idx; ++i) {
-        //                 left_box.expand(boxes[i]);
-        //                 left_count += primitive_counts[i];
-        //             }
-
-        //             for (std::size_t i = plane_idx; i < num_buckets; ++i) {
-        //                 right_box.expand(boxes[i]);
-        //                 right_count += primitive_counts[i];
-        //             }
-
-        //             if (left_count == 0 || right_count == 0) {
-        //                 continue;
-        //             }
-
-        //             // We remove some constant from the SAH equation.
-        //             // Those are:
-        //             // 1. The cost of traversing the BVH tree
-        //             // 2. The cost of intersecting a primitive
-        //             // 3. The cost of intersecting a BVH node
-        //             // 4. The surface area of the bounding box of the current BVH node
-        //             const auto sah = left_count * left_box.calc_surface_area() + right_count * right_box.calc_surface_area();
-
-        //             if (sah < best_sah) {
-
-        //                 best_sah = sah;
-        //                 best_left_bbox = left_box;
-        //                 best_right_bbox = right_box;
-        //                 best_left_count = left_count;
-        //                 best_axis = axis;
-        //                 best_pplane = plane_idx;
-        //                 best_centroid_max = centroid_max[axis];
-        //                 best_centroid_min = centroid_min[axis];
-        //                 std::cout << "Level: " << level << ". SAH: " << sah << "; axis: " << axis << "; plane_idx: " << plane_idx << "; left_count: " << left_count << "; right_count: " << right_count << "; left_box: " << left_box << "; right_box: " << right_box << std::endl;
-        //             }
-        //         }
-        //     }
-
-        //     const auto object_span = objects.size();
-        //     std::size_t mid{};
-
-        //     if (best_sah == Constant::INF_POS) {
-        //         // All centroids are at the same position
-        //         std::cout << "Level: " << level << ". All centroids are at the same position." << std::endl;
-        //         mid = object_span / 2;
-        //     }
-        //     else {
-        //         // lambda function
-        //         auto get_left_primitives = [&best_axis, &best_pplane, &best_centroid_min, &best_centroid_max, this](const shared_ptr<Hittable>& object) {
-        //             AABB box = object->bounding_box();
-        //             glm::vec3 centroid = box.get_centroid();
-        //             int bucket_idx = calc_bucket_idx(best_centroid_min, best_centroid_max, centroid[best_axis], best_pplane);
-        //             return bucket_idx < best_pplane;
-        //             };
-        //         std::partition(objects.begin(), objects.end(), get_left_primitives);
-        //         mid = best_left_count;
-        //     }
-
-        //     if (objects.empty() || object_span == 0) {
-        //         std::cerr << "No objects in BVH constructor." << std::endl;
-        //         return;
-        //     }
-        //     else if (object_span == 1) {
-        //         m_left = m_right = objects[0];
-        //     }
-        //     else if (object_span == 2) {
-        //         m_left = objects[0];
-        //         m_right = objects[1];
-        //     }
-        //     else {
-        //         m_left = make_shared<BVHAccel>(objects, 0, mid, level + 1);
-        //         m_right = make_shared<BVHAccel>(objects, mid, objects.size(), level + 1);
-        //     }
-
-        //     const auto box_left = m_left->bounding_box();
-        //     const auto box_right = m_right->bounding_box();
-        //     m_box = AABB(box_left, box_right);
-        //     std::cout << "Level: " << level << ". Box: " << m_box << std::endl;
-        // }
 
         void partition_buckets(
             const std::vector<std::shared_ptr<Hittable>>& objects,
@@ -572,7 +456,5 @@ namespace SignalTracer {
     };
 
 }
-
-
 
 #endif // !_BVH_MAP_HPP_
