@@ -67,13 +67,19 @@ int main(int argc, char* argv []) {
 
     // Load models
     // ----------------------------------
-    // auto city_model_ptr{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj") };
+    // auto city_model_ptr1{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj") };
+    // auto city_model_ptr2{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj") };
     // glm::vec3 tx_pos{ 5.0f, 2.5f, 5.0f };
     // glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
 
-    auto city_model_ptr{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj") };
+    auto city_model_ptr1{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj") };
+    auto city_model_ptr2{ std::make_shared<SignalTracer::Model>("/home/hieule/research/comm_ray/assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj") };
     glm::vec3 tx_pos{ 0.0f, 2.5f, 20.0f };
     glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
+
+    glm::mat4 tmp_trans2{ glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 60.0f, 0.0f }) * glm::rotate(glm::mat4{ 1.0f }, glm::radians(180.0f), glm::vec3{ 1.0f, 0.0f, 0.0f }) };
+
+    city_model_ptr2->transform(tmp_trans2);
 
     SignalTracer::Transmitter tx0{ 0, tx_pos, prop_params.frequency, prop_params.tx_power, prop_params.tx_gain };
     SignalTracer::Receiver rx0{ 0, rx_pos, prop_params.rx_gain };
@@ -82,11 +88,19 @@ int main(int argc, char* argv []) {
 
     // Signal tracer
     // ----------------------------------
-    std::vector<std::shared_ptr<SignalTracer::Model>> model_ptrs{ city_model_ptr };
+    std::vector<std::shared_ptr<SignalTracer::Model>> model_ptrs{ city_model_ptr1, city_model_ptr2 };
+    // std::vector<std::shared_ptr<SignalTracer::Model>> model_ptrs{ city_model_ptr1 };
 
-    std::vector<std::reference_wrapper<SignalTracer::Model>> models{ *city_model_ptr };
+#ifdef BVH1
+    std::vector<std::reference_wrapper<SignalTracer::Model>> models{ *city_model_ptr1, *city_model_ptr2 };
+#elif defined(BVH3)
+    std::vector<std::reference_wrapper<SignalTracer::Model>> models{ *city_model_ptr1 };
+#endif
+
+    int max_reflection_count{ 20 };
+    float ray_interval{ 0.2f };
     auto timer = Utils::Timer{};
-    SignalTracer::RayCastingTracer sig_tracer{ models, 20, 0.2f };
+    SignalTracer::RayCastingTracer sig_tracer{ models, max_reflection_count, ray_interval };
     // SignalTracer::ImagingTracer sig_tracer{ models, 2 };
     timer.execution_time();
     bool check{ false };
@@ -117,11 +131,17 @@ int main(int argc, char* argv []) {
         rx0.add_reflection_records(tx0.get_id(), ref_records);
     }
 
+    // int ref_counts[max_reflection_count + 2] = {};
     // for (const auto& [transmitter_id, ref_records] : rx0.get_reflection_records()) {
     //     std::cout << "Transmitter ID: " << transmitter_id << std::endl;
     //     for (const auto& ref_record : ref_records) {
-    //         std::cout << ref_record << std::endl;
+    //         ++ref_counts[ref_record.get_reflection_count()];
+    //         // std::cout << ref_record << std::endl;
     //     }
+    // }
+
+    // for (int i = 0; i < max_reflection_count + 2; ++i) {
+    //     std::cout << "Reflection count: " << i << "\t" << ref_counts[i] << std::endl;
     // }
 
     /*
@@ -139,10 +159,7 @@ int main(int argc, char* argv []) {
     // set drawing for city
     // ----------------------------------
     std::vector<std::shared_ptr<SignalTracer::Drawable>> model_drawable_ptrs(model_ptrs.begin(), model_ptrs.end());
-    std::vector<glm::mat4> model_mats{ };
-    for (std::size_t i = 0; i < model_ptrs.size(); ++i) {
-        model_mats.push_back(glm::mat4{ 1.0f });
-    }
+    std::vector<glm::mat4> model_mats(model_ptrs.size(), glm::mat4{ 1.0 });
 
     auto shader_city_prog{ std::make_shared<SignalTracer::ShaderProgram>(
         "city",
