@@ -12,6 +12,13 @@ namespace SignalTracer {
         build();
     }
 
+    BVHAccel::BVHAccel(const Model& model)
+        : m_primitives{ init_triangles(model) }
+        , m_prim_indices{ std::vector<uint>(m_primitives.size()) }
+        , m_nodes{ std::vector<BVHNode>(2 * m_primitives.size()) } {
+        build();
+    }
+
     void BVHAccel::build() {
         for (std::size_t i = 0; i < m_primitives.size(); ++i) {
             m_prim_indices[i] = i;
@@ -26,8 +33,8 @@ namespace SignalTracer {
         root.left_first = 0;
         root.tri_count = m_primitives.size();
 
-        update_node_bounds(m_root_idx);
-        subdivide(m_root_idx);
+        update_node_bounds(0);
+        subdivide(0);
     }
 
     void BVHAccel::subdivide(uint node_idx, uint depth) {
@@ -108,7 +115,7 @@ namespace SignalTracer {
     }
 
     AABB BVHAccel::bounding_box() const {
-        return AABB{ m_nodes[m_root_idx].aabb_min, m_nodes[m_root_idx].aabb_max };
+        return AABB{ m_nodes[0].aabb_min, m_nodes[0].aabb_max };
     }
 
     bool BVHAccel::is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const {
@@ -117,16 +124,7 @@ namespace SignalTracer {
 
     bool BVHAccel::is_hit_(const Ray& ray, Interval interval, IntersectRecord& record) const {
 
-        // transformed ray if BVH structure moves.
-        // This is similar to the inverse transformation of the ray in the world space.
-        Ray transformed_ray = ray;
-        glm::mat4 invTransform = m_inv_transform;
-        auto transform_origin = glm::vec3(invTransform * glm::vec4(ray.get_origin(), 1.0f));
-        transformed_ray.set_origin(transform_origin);
-        transformed_ray.set_direction(glm::vec3(invTransform * glm::vec4(ray.get_direction(), 0.0f)));
-
-        // trace transformed ray
-        const BVHNode* node = &m_nodes[m_root_idx], * stack[128];
+        const BVHNode* node = &m_nodes[0], * stack[128];
         uint stack_ptr = 0;
 
         bool hit_flag = false;
@@ -138,7 +136,7 @@ namespace SignalTracer {
                     const auto& prim = m_primitives[prim_idx];
 
                     IntersectRecord tmp_record{};
-                    if (prim->is_hit(transformed_ray, interval, tmp_record)) {
+                    if (prim->is_hit(ray, interval, tmp_record)) {
                         if (tmp_record.get_t() < record.get_t()) {
                             record = tmp_record;
                             interval.max(record.get_t());
@@ -155,8 +153,8 @@ namespace SignalTracer {
                 AABB left_box{ child1->aabb_min, child1->aabb_max };
                 AABB right_box{ child2->aabb_min, child2->aabb_max };
 
-                float dist1 = left_box.hit(transformed_ray, interval);
-                float dist2 = right_box.hit(transformed_ray, interval);
+                float dist1 = left_box.hit(ray, interval);
+                float dist2 = right_box.hit(ray, interval);
 
                 if (dist1 > dist2) {
                     std::swap(child1, child2);
@@ -178,17 +176,32 @@ namespace SignalTracer {
         return hit_flag;
     }
 
-    void BVHAccel::set_transform(const glm::mat4& transform) {
-        m_inv_transform = glm::inverse(transform);
-        glm::vec3 bmin{ m_nodes[m_root_idx].aabb_min };
-        glm::vec3 bmax{ m_nodes[m_root_idx].aabb_max };
-        m_box = AABB{};
-        for (int i = 0; i < 8; i++) {
-            glm::vec4 tmp_point{ i & 1 ? bmax.x : bmin.x, i & 2 ? bmax.y : bmin.y, i & 4 ? bmax.z : bmin.z, 1.0f };
-            glm::vec3 transformed_point{ transform * tmp_point };
-            m_box.expand(transformed_point);
+    std::vector<std::shared_ptr<Hittable>> BVHAccel::init_triangles(const Model& model) {
+        std::vector<std::shared_ptr<Hittable>> triangles{};
+        std::vector<Vertex> vertex_buffer;
+        vertex_buffer.reserve(3);
+        int triangle_count{ 0 };
+        int vertex_count{ 0 };
+        for (const auto& mesh : model.get_meshes()) {
+            for (const auto& idx : mesh.get_indices()) {
+                vertex_count++;
+                vertex_buffer.push_back(mesh.get_vertices()[idx]);
+                triangle_count++;
+                if (triangle_count == 3) {
+                    triangles.emplace_back(std::make_shared<Triangle>(
+                        vertex_buffer[0].position,
+                        vertex_buffer[1].position,
+                        vertex_buffer[2].position)
+                    );
+                    vertex_buffer.clear();
+                    triangle_count = 0;
+                }
+            }
         }
-    }
+        std::cout << "Triangle count: " << triangles.size() << std::endl;
+        std::cout << "Vertex count: " << vertex_count << std::endl;
+        return triangles;
+    };
 
     void BVHAccel::update_node_bounds(const uint node_idx) {
         BVHNode& node = m_nodes[node_idx];
@@ -260,74 +273,111 @@ namespace SignalTracer {
     }
 
     /*
-        No Binning
+    -----------------------------
+    BVHInstance
+    -----------------------------
     */
-    // float find_best_split_plane(const BVHNode& node, int& axis, float& split_pos) {
-        //     float best_cost = Constant::INF_POS;
-        //     glm::vec3 bound_min{ 1e30f }, bound_max{ -1e30f };
-        //     for (uint i = 0; i < node.tri_count; i++) {
-        //         uint prim_idx = m_prim_indices[node.left_first + i];
-        //         const auto& prim_ptr = m_primitives[prim_idx];
-        //         bound_min = glm::min(bound_min, prim_ptr->get_centroid());
-        //         bound_max = glm::max(bound_max, prim_ptr->get_centroid());
-        //     }
 
-        //     uint num_bins = 100;
-        //     for (int a = 0; a < 3; a++) {
-        //         if (bound_min[a] == bound_max[a]) { continue; }
-        //         float scale = (bound_max[a] - bound_min[a]) / static_cast<float>(num_bins);
-
-        //         for (uint i = 1; i < num_bins; i++) {
-        //             float candidate_pos = bound_min[a] + scale * i;
-        //             float cost = evaluate_sah(node, a, candidate_pos);
-        //             if (cost < best_cost) {
-        //                 split_pos = candidate_pos;
-        //                 best_cost = cost;
-        //                 axis = a;
-        //             }
-        //         }
-        //     }
-        //     return best_cost;
-        // }
-
-        // float evaluate_sah(const BVHNode& node, int axis, float pos) {
-        //     AABB left_box{}, right_box{};
-        //     uint left_count{ 0 }, right_count{ 0 };
-        //     for (uint i = 0; i < node.tri_count; ++i) {
-        //         uint prim_idx = m_prim_indices[node.left_first + i];
-        //         const auto& prim_ptr = m_primitives[prim_idx];
-        //         if (prim_ptr->get_centroid()[axis] < pos) {
-        //             left_count++;
-        //             left_box.expand(prim_ptr->bounding_box());
-        //         }
-        //         else {
-        //             right_count++;
-        //             right_box.expand(prim_ptr->bounding_box());
-        //         }
-        //     }
-        //     float cost = left_count * left_box.calc_surface_area() + right_count * right_box.calc_surface_area();
-        //     return cost > 0 ? cost : Constant::INF_POS;
-        // }
-
-    TLAS::TLAS(BVHAccel* bvh_list, uint num_bvh)
-        : m_blas{ bvh_list }, m_blas_count{ num_bvh } {
-        m_tlas_node = (TLASNode*) aligned_alloc(sizeof(TLASNode) * 2 * num_bvh, 64);
-        m_nodes_used = 2;
+    void BVHInstance::set_transform(const glm::mat4& transform) {
+        m_transform_point = transform;
+        m_inv_transform_point = glm::inverse(transform);
+        m_transform_vector = glm::mat3(glm::transpose(glm::inverse(transform)));
+        m_inv_transform_vector = glm::inverse(m_transform_vector);
+        glm::vec3 bmin{ m_bvh_ptr->get_root().aabb_min };
+        glm::vec3 bmax{ m_bvh_ptr->get_root().aabb_max };
+        m_box = AABB{};
+        for (int i = 0; i < 8; i++) {
+            glm::vec4 tmp_point{ i & 1 ? bmax.x : bmin.x, i & 2 ? bmax.y : bmin.y, i & 4 ? bmax.z : bmin.z, 1.0f };
+            glm::vec3 transformed_point{ transform * tmp_point };
+            m_box.expand(transformed_point);
+        }
     }
 
-    TLAS::~TLAS() {
-        free(m_tlas_node);
+    bool BVHInstance::is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const {
+        // transformed ray if BVH structure moves.
+        // This is similar to the inverse transformation of the ray in the world space.
+        Ray transformed_ray = ray;
+        transformed_ray.set_origin(glm::vec3(m_inv_transform_point * glm::vec4(ray.get_origin(), 1.0f)));
+        transformed_ray.set_direction(glm::vec3(m_inv_transform_vector * glm::vec4(ray.get_direction(), 0.0f)));
+
+        bool hit_flag = false;
+        if (m_bvh_ptr->is_hit_(transformed_ray, interval, record)) {
+            hit_flag = true;
+            // transform back to world space
+            glm::vec3 point{ glm::vec3(m_transform_point * glm::vec4(record.get_point(), 1.0f)) };
+            record.set_point(point);
+        }
+        return hit_flag;
+    }
+
+    AABB BVHInstance::bounding_box() const {
+        return m_box;
+    }
+
+    /*
+    -----------------------------
+    TLAS
+    -----------------------------
+    */
+    TLAS::TLAS(BVHInstance* bvh_list, uint num_bvh)
+        : m_blas{ bvh_list }, m_blas_count{ num_bvh }, m_nodes_used{ 2 } {
+        // m_tlas_nodes = (TLASNode*) aligned_alloc(sizeof(TLASNode) * 2 * num_bvh, 64);
+        m_tlas_nodes.reserve(2 * num_bvh);
+    }
+
+    TLAS::TLAS(const std::vector<BVHInstance>& bvh_list, uint num_bvhs)
+        : m_blas{ bvh_list.data() }
+        , m_blas_count{ num_bvhs }
+        , m_nodes_used{ 2 } {
+        std::cout << "TLAS constructor" << std::endl;
+        m_tlas_nodes.reserve(2 * num_bvhs);
     }
 
     void TLAS::build() {
-        // for (uint i = 0; i < m_blas_count; ++i) {
-        //     m_tlas_node[i].left_first = i;
-        //     m_tlas_node[i].tri_count = 1;
-        //     m_tlas_node[i].aabb_min = m_blas[i].bounding_box().get_min();
-        //     m_tlas_node[i].aabb_max = m_blas[i].bounding_box().get_max();
-        // }
-        // m_root_idx = 0;
-        // subdivide(m_root_idx);
+
+        // assign a TLAS leaf node to each BLAS
+        int node_idxs[256];
+        // remaining_nodes = number of nodes that are not yet assigned to a TLAS node
+        int remaining_nodes = static_cast<int>(m_blas_count);
+        m_nodes_used = 1;
+        for (std::size_t i = 0; i < m_blas_count; ++i) {
+            node_idxs[i] = m_nodes_used;
+            m_tlas_nodes[m_nodes_used].aabb_min = m_blas[i].bounding_box().get_min();
+            m_tlas_nodes[m_nodes_used].aabb_max = m_blas[i].bounding_box().get_max();
+            m_tlas_nodes[m_nodes_used].blas_idx = i;
+            m_tlas_nodes[m_nodes_used++].left_right = 0; // leaf node since this is a BVH
+        }
+
+        // use agglomerative clustering to build the TLAS
+        int pos_idx_A = 0;
+        int pos_idx_B = find_best_match(node_idxs, remaining_nodes, pos_idx_A);
+        while (remaining_nodes > 1) {
+            int pos_idx_C = find_best_match(node_idxs, remaining_nodes, pos_idx_B);
+
+            if (pos_idx_A == pos_idx_C) {
+                int node_idx_A = node_idxs[pos_idx_A];
+                int node_idx_B = node_idxs[pos_idx_B];
+                TLASNode& node_A = m_tlas_nodes[node_idx_A];
+                TLASNode& node_B = m_tlas_nodes[node_idx_B];
+                TLASNode& new_node = m_tlas_nodes[m_nodes_used];
+                new_node.left_right = node_idx_A + (node_idx_B << 16);
+                new_node.aabb_min = glm::min(node_A.aabb_min, node_B.aabb_min);
+                new_node.aabb_max = glm::max(node_A.aabb_max, node_B.aabb_max);
+
+                // remove node A & B from the list = remove pos_idx of A and B from the node_idxs array
+                // replace pos_idx of A with the new node
+                // replace pos_idx of B with the last node in the list
+                // remaining_nodes--;
+                node_idxs[pos_idx_A] = m_nodes_used++;
+                node_idxs[pos_idx_B] = node_idxs[remaining_nodes - 1];
+                pos_idx_B = find_best_match(node_idxs, --remaining_nodes, pos_idx_A);
+            }
+            else {
+                pos_idx_A = pos_idx_B;
+                pos_idx_B = pos_idx_C;
+            }
+        }
+        m_tlas_nodes[0] = m_tlas_nodes[node_idxs[pos_idx_A]];
     }
 
     bool TLAS::is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const {
@@ -336,15 +386,16 @@ namespace SignalTracer {
 
     bool TLAS::is_hit_(const Ray& ray, Interval interval, IntersectRecord& record) const {
         // trace transformed ray
-        const TLASNode* node = &m_tlas_node[0], * stack[128];
+        const TLASNode* node = &m_tlas_nodes[0];
+        const TLASNode* stack[128];
         uint stack_ptr = 0;
 
         bool hit_flag = false;
         while (true) {
-            if (node->is_leaf != 0) {
+            if (node->is_leaf()) {
                 // tlas leaf node
                 IntersectRecord tmp_record{};
-                if (m_blas[node->left_blas].is_hit(ray, interval, tmp_record)) {
+                if (m_blas[node->blas_idx].is_hit(ray, interval, tmp_record)) {
                     if (tmp_record.get_t() < record.get_t()) {
                         record = tmp_record;
                         interval.max(record.get_t());
@@ -353,37 +404,56 @@ namespace SignalTracer {
                 }
                 if (stack_ptr == 0) { break; }
                 else { node = stack[--stack_ptr]; }
+                continue;
+            }
+            uint child_idx_1 = node->left_right & 0xffff;
+            uint child_idx_2 = node->left_right >> 16;
+            const TLASNode* child1 = &m_tlas_nodes[child_idx_1];
+            const TLASNode* child2 = &m_tlas_nodes[child_idx_2];
+            AABB left_box{ child1->aabb_min, child1->aabb_max };
+            AABB right_box{ child2->aabb_min, child2->aabb_max };
+            float dist1 = left_box.hit(ray, interval);
+            float dist2 = right_box.hit(ray, interval);
+
+            if (dist1 > dist2) {
+                std::swap(child1, child2);
+                std::swap(dist1, dist2);
+            }
+            if (dist1 == Constant::INF_POS) {
+                // no hit for both child nodes
+                if (stack_ptr == 0) break;
+                else node = stack[--stack_ptr];
             }
             else {
-                const TLASNode* child1 = &m_tlas_node[node->left_blas];
-                const TLASNode* child2 = &m_tlas_node[node->left_blas + 1];
-                AABB left_box{ child1->aabb_min, child1->aabb_max };
-                AABB right_box{ child2->aabb_min, child2->aabb_max };
-
-                float dist1 = left_box.hit(ray, interval);
-                float dist2 = right_box.hit(ray, interval);
-
-                if (dist1 > dist2) {
-                    std::swap(child1, child2);
-                    std::swap(dist1, dist2);
-                }
-                if (dist1 == Constant::INF_POS) {
-                    // no hit for both child nodes
-                    if (stack_ptr == 0) break;
-                    else node = stack[--stack_ptr];
-                }
-                else {
-                    node = child1;
-                    if (dist2 != Constant::INF_POS) {
-                        stack[stack_ptr++] = child2;
-                    }
+                node = child1;
+                if (dist2 != Constant::INF_POS) {
+                    stack[stack_ptr++] = child2;
                 }
             }
         }
         return hit_flag;
     }
+
+    int TLAS::find_best_match(int* node_idxs, int num_nodes, int pos_idx_A) {
+        // return the index position of node B in the node_idxs array
+        // int node_idx_B = node_idxs[pos_B];
+        // TLASNode& node_B = m_tlas_nodes[node_idx_B];
+        float smallest_surface_area = Constant::INF_POS;
+        int best_pos_idx_B = -1;
+        for (int pos_idx_B = 0; pos_idx_B < num_nodes; pos_idx_B++) {
+            if (pos_idx_B != pos_idx_A) {
+                glm::vec3 bmax = glm::max(m_tlas_nodes[node_idxs[pos_idx_A]].aabb_max, m_tlas_nodes[node_idxs[pos_idx_B]].aabb_max);
+                glm::vec3 bmin = glm::min(m_tlas_nodes[node_idxs[pos_idx_A]].aabb_min, m_tlas_nodes[node_idxs[pos_idx_B]].aabb_min);
+                AABB box{ bmin, bmax };
+                float surface_area = box.calc_surface_area();
+                if (surface_area < smallest_surface_area) {
+                    smallest_surface_area = surface_area;
+                    best_pos_idx_B = pos_idx_B;
+                }
+            }
+        }
+        return best_pos_idx_B;
+    }
 }
-
-
 
 #endif
