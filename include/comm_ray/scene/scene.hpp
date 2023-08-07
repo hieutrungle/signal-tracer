@@ -305,8 +305,8 @@ namespace SignalTracer {
                     if (prog_ptr->name == "line") {
                         int display_ref_count = static_cast<Line*>(drawable_ptr.get())->get_reflection_count();
                         if (display_ref_count == m_viewing_ptr->get_draw_reflection_mode()) {
-                            LineColor color = static_cast<LineColor>(display_ref_count);
-                            prog_ptr->program.SetUniform("color", get_station_color(color) * 1.5f);
+                            LineColor color = static_cast<LineColor>(display_ref_count % 11);
+                            prog_ptr->program.SetUniform("color", get_line_color(color) * 1.5f);
                             drawable_ptr->set_model_mat(prog_ptr->drawable_model_mats[drawable_idx]);
                             drawable_ptr->draw(prog_ptr->program, drawable_ptr->get_model_mat(), view_mat, projection_mat);
                         }

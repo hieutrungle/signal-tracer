@@ -26,7 +26,7 @@ namespace SignalTracer {
         return static_cast<std::underlying_type_t<LineColor>>(color);
     }
 
-    const glm::vec3 get_station_color(LineColor color) {
+    const glm::vec3 get_line_color(LineColor color) {
         switch (color) {
         case LineColor::red:
             return Constant::RED;

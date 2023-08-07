@@ -85,7 +85,7 @@ namespace SignalTracer {
             m_signal_phase = signal_phase;
         }
 
-        float get_reflection_count() const {
+        int get_reflection_count() const {
             return m_reflection_count;
         }
         std::vector<glm::vec3> get_ref_points() const {
