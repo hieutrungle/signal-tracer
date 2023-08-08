@@ -49,6 +49,8 @@ Install all needed compilers, tools & libs. Complete list is : cmake make g++ li
 
 Use sudo apt-get install ***** or su && yum install ******.
 
+Install OpenCL: sudo apt install opencl-headers ocl-icd-opencl-dev -y
+
 ## Usage
 
 ### Build

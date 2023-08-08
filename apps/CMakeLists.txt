@@ -13,12 +13,12 @@ set_target_properties(app.exe
     )
 target_link_libraries(app.exe PRIVATE ${ALL_LIBS})
 
-# add_executable(main.exe main.cpp)
-# set_target_properties(main.exe 
-#     PROPERTIES
-#     # PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-#     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-#     )
-# target_link_libraries(main.exe PRIVATE ${ALL_LIBS})
+add_executable(main.exe main.cpp)
+set_target_properties(main.exe 
+    PROPERTIES
+    # PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    )
+target_link_libraries(main.exe PRIVATE ${ALL_LIBS})

@@ -39,7 +39,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     # "$<${MSVC_CXX}:$<BUILD_INTERFACE:-W3>>")
 
     target_compile_options(compiler_flags INTERFACE
-    "$<${GCC_LIKE_CXX}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused;-Werror;-lglfw3;-lGL;-lX11;-lpthread;-lXrandr;-lXi;-ldl>>"
+    "$<${GCC_LIKE_CXX}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused;-Werror;-lglfw3;-lGL;-lX11;-lpthread;-lXrandr;-lXi;-ldl;-lOpenCL>>"
     "$<$<CONFIG:DEBUG>:-g3>"
     "$<$<CONFIG:DEBUG>:-Og>"
     "$<$<CONFIG:RELEASE>:-O3>"
@@ -77,6 +77,7 @@ include(FetchContent)
 # This is header only, so could be replaced with git submodules or FetchContent
 find_package(Boost REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(OpenCL REQUIRED)
 # Adds Boost::boost
 
 # Gtest
@@ -101,6 +102,8 @@ add_subdirectory(external)
 
 set(EXTERNAL_LIBS
     ${OPENGL_LIBRARY}
+    ${OpenCL_LIBRARIES}
+    # OpenCL::OpenCL
     compiler_flags
     fmt::fmt
     glfw
@@ -108,7 +111,6 @@ set(EXTERNAL_LIBS
     assimp
     glad
 )
-
 
 # The compiled library code is here
 add_subdirectory(src)

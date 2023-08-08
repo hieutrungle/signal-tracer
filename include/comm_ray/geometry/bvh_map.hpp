@@ -376,7 +376,6 @@ namespace SignalTracer {
         bool is_hit_(const Ray& ray, Interval interval, IntersectRecord& record) const;
 
         AABB bounding_box() const override;
-        // void set_transform(const glm::mat4& transform);
 
     private:
 
@@ -389,7 +388,6 @@ namespace SignalTracer {
         std::vector<uint> m_prim_indices{};
         std::vector<BVHNode> m_nodes{};
         uint32_t m_nodes_used{ 2 };
-        glm::mat4 m_inv_transform{ 1.0 };
     };
 
 #endif
