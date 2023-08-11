@@ -1,7 +1,5 @@
 #include "bvh_map.hpp"
 
-#ifdef BVH3
-
 namespace SignalTracer {
     BVHAccel::BVHAccel(const HittableList& obj_container) : BVHAccel{ obj_container.objects(), 0, obj_container.objects().size() } {}
 
@@ -335,6 +333,16 @@ namespace SignalTracer {
 
     void TLAS::build() {
 
+        omp_set_nested(1);  // need nested parallel calls
+        omp_set_dynamic(0); // want team size set by calls to set_num_threads
+        omp_set_num_threads(omp_get_max_threads());
+
+#pragma omp parallel
+        {
+#pragma omp single
+            std::cout << "OPENMP: num_threads=" << omp_get_num_threads() << ", nested=" << omp_get_nested() << ", dynamic=" << omp_get_dynamic() << std::endl;
+        }
+
         // assign a TLAS leaf node to each BLAS
         int node_idxs[256];
         // remaining_nodes = number of nodes that are not yet assigned to a TLAS node
@@ -455,5 +463,3 @@ namespace SignalTracer {
         return best_pos_idx_B;
     }
 }
-
-#endif
