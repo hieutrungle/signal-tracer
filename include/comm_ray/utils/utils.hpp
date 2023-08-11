@@ -160,6 +160,47 @@ namespace Utils {
     inline float linear_to_dB(float linear) {
         return 10.0f * std::log10(linear);
     }
+
+    inline glm::vec3 spherical2cartesian(float yaw, float pitch) {
+        glm::vec3 cartesian;
+        cartesian.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        cartesian.y = sin(glm::radians(pitch));
+        cartesian.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        return cartesian;
+    }
+
+    inline std::vector<glm::vec3> get_fibonacci_lattice(int num_points) {
+
+        // https://extremelearning.com.au/evenly-distributing-points-on-a-sphere/
+
+        float golden_ratio = (1.0f + glm::sqrt(5.0f)) / 2.0f;
+
+        int min_n{}, max_n{};
+        if (num_points % 2 == 0) {
+            min_n = -num_points / 2;
+            max_n = num_points / 2 - 1;
+        }
+        else {
+            min_n = -(num_points - 1) / 2;
+            max_n = (num_points - 1) / 2;
+        }
+
+        std::vector<glm::vec3> points(num_points);
+        for (int i = min_n; i <= max_n; ++i) {
+            // compute for the right hand coordinate system
+            // theta = pitch, phi = yaw
+            //
+            float theta = glm::acos(2.0f * (i - min_n + 0.5) / (max_n - min_n) - 1.0f) - Constant::PI / 2.0f;
+            float phi = 2.0f * Constant::PI * i / golden_ratio;
+            phi = glm::degrees(phi);
+            theta = glm::degrees(theta);
+            // std::cout << "theta: " << theta << " phi: " << phi << std::endl;
+            points[i - min_n] = glm::normalize(spherical2cartesian(phi, theta));
+        }
+
+        return points;
+    }
+
 };
 
 
