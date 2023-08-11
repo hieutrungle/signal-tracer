@@ -3,7 +3,7 @@
 #ifndef RECEIVER_HPP
 #define RECEIVER_HPP
 
-#include "radio_station.hpp"
+#include "radio_device.hpp"
 #include "reflection_record.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"

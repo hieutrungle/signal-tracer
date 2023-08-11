@@ -3,7 +3,7 @@
 #ifndef _COMM_RAY_TRACER_TRANSMITTER_HPP_
 #define _COMM_RAY_TRACER_TRANSMITTER_HPP_
 
-#include "radio_station.hpp"
+#include "radio_device.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include <iostream>
