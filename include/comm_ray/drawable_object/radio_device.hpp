@@ -12,10 +12,10 @@
 
 
 namespace SignalTracer {
-    class RadioStation : public Cubesphere {
+    class RadioDevice : public Cubesphere {
     public:
-        RadioStation();
-        RadioStation(const glm::vec3& position, const float& pitch, const float& yaw, float radius = 0.25f);
+        RadioDevice();
+        RadioDevice(const glm::vec3& position, const float& pitch, const float& yaw, float radius = 0.25f);
 
         std::ostream& print(std::ostream& out) const override;
 

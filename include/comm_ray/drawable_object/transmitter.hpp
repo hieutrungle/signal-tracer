@@ -10,7 +10,7 @@
 
 
 namespace SignalTracer {
-    class Transmitter : public RadioStation {
+    class Transmitter : public RadioDevice {
     public:
         Transmitter();
 
