@@ -60,8 +60,8 @@ namespace SignalTracer {
 
     class BVHAccel : public Hittable {
     public:
-        BVHAccel(const HittableList& obj_container);
-        BVHAccel(const std::vector<shared_ptr<Hittable>>& src_objects, const std::size_t& start, const std::size_t& range);
+        // BVHAccel(const HittableList& obj_container);
+        BVHAccel(const std::vector<shared_ptr<Triangle>>& src_objects, const std::size_t& start, const std::size_t& range);
         BVHAccel(const Model& model);
 
         const BVHNode& get_node(const uint node_idx) const { return m_nodes[node_idx]; }
@@ -77,12 +77,12 @@ namespace SignalTracer {
 
     private:
 
-        std::vector<std::shared_ptr<Hittable>> init_triangles(const Model& model);
+        std::vector<std::shared_ptr<Triangle>> init_triangles(const Model& model);
         void update_node_bounds(const uint node_idx);
         float find_best_split_plane(const BVHNode& node, int& axis, float& split_pos, uint num_bins = 64);
         void subdivide(uint node_idx, uint depth = 0);
 
-        std::vector<shared_ptr<Hittable>> m_primitives{};
+        std::vector<shared_ptr<Triangle>> m_primitives{};
         std::vector<uint> m_prim_indices{};
         std::vector<BVHNode> m_nodes{};
         uint32_t m_nodes_used{ 2 };

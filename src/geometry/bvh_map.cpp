@@ -1,10 +1,10 @@
 #include "bvh_map.hpp"
 
 namespace SignalTracer {
-    BVHAccel::BVHAccel(const HittableList& obj_container) : BVHAccel{ obj_container.objects(), 0, obj_container.objects().size() } {}
+    // BVHAccel::BVHAccel(const HittableList& obj_container) : BVHAccel{ obj_container.objects(), 0, obj_container.objects().size() } {}
 
-    BVHAccel::BVHAccel(const std::vector<shared_ptr<Hittable>>& src_objects, const std::size_t& start, const std::size_t& range)
-        : m_primitives{ std::vector<shared_ptr<Hittable>>(&src_objects[start],&src_objects[range]) }
+    BVHAccel::BVHAccel(const std::vector<shared_ptr<Triangle>>& src_objects, const std::size_t& start, const std::size_t& range)
+        : m_primitives{ std::vector<shared_ptr<Triangle>>(&src_objects[start],&src_objects[range]) }
         , m_prim_indices{ std::vector<uint>(m_primitives.size()) }
         , m_nodes{ std::vector<BVHNode>(2 * m_primitives.size()) } {
         build();
@@ -174,8 +174,8 @@ namespace SignalTracer {
         return hit_flag;
     }
 
-    std::vector<std::shared_ptr<Hittable>> BVHAccel::init_triangles(const Model& model) {
-        std::vector<std::shared_ptr<Hittable>> triangles{};
+    std::vector<std::shared_ptr<Triangle>> BVHAccel::init_triangles(const Model& model) {
+        std::vector<std::shared_ptr<Triangle>> triangles{};
         std::vector<Vertex> vertex_buffer;
         vertex_buffer.reserve(3);
         int triangle_count{ 0 };
