@@ -1,7 +1,3 @@
-#include <CL/cl.h>
-#include <CL/cl_ext.h>
-#include <CL/cl_gl.h>
-
 __kernel void render(__global uint *target, int offset) {
   // plot a pixel into the target array in GPU memory
   int thread_idx = get_global_id(0);
