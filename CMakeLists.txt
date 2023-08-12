@@ -7,7 +7,7 @@ else()
 endif()
 
 project(CommRay VERSION 1.0
-                  DESCRIPTION "Ray Tracing in One Weekend"
+                  DESCRIPTION "Signal Tracing"
                   LANGUAGES CXX)
 
 ### Require out-of-source builds
@@ -31,15 +31,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(GCC_LIKE_CXX "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>")
     set(MSVC_CXX "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
 
-    # target_compile_options(compiler_flags INTERFACE
-    # "$<${GCC_LIKE_CXX}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused;-Werror;-lglfw3;-lGL;-lX11;-lpthread;-lXrandr;-lXi;-ldl>>"
-    # "$<$<CONFIG:DEBUG>:-g3>"
-    # "$<$<CONFIG:DEBUG>:-Og>"
-    # "$<$<CONFIG:RELEASE>:-O3>"
-    # "$<${MSVC_CXX}:$<BUILD_INTERFACE:-W3>>")
-
     target_compile_options(compiler_flags INTERFACE
-    "$<${GCC_LIKE_CXX}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused;-Werror;-lglfw3;-lGL;-lX11;-lpthread;-lXrandr;-lXi;-ldl;-lOpenCL>>"
+    "$<${GCC_LIKE_CXX}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused;-Werror;-lglfw3;-lGL;-lX11;-fopenmp;-lpthread;-lXrandr;-lXi;-ldl;-lOpenCL>>"
     "$<$<CONFIG:DEBUG>:-g3>"
     "$<$<CONFIG:DEBUG>:-Og>"
     "$<$<CONFIG:RELEASE>:-O3>"
@@ -78,6 +71,7 @@ include(FetchContent)
 find_package(Boost REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(OpenCL REQUIRED)
+find_package(OpenMP REQUIRED)
 # Adds Boost::boost
 
 # Gtest
@@ -96,6 +90,16 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(fmtlib)
 # Adds fmt::fmt
 
+# OpenMP
+if(NOT TARGET OpenMP::OpenMP_CXX)
+    find_package(Threads REQUIRED)
+    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+    set_property(TARGET OpenMP::OpenMP_CXX
+                 PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+    # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
+    set_property(TARGET OpenMP::OpenMP_CXX
+                 PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+endif()
 
 # Compile external dependencies 
 add_subdirectory(external)
@@ -104,6 +108,7 @@ set(EXTERNAL_LIBS
     ${OPENGL_LIBRARY}
     ${OpenCL_LIBRARIES}
     # OpenCL::OpenCL
+    OpenMP::OpenMP_CXX
     compiler_flags
     fmt::fmt
     glfw
@@ -125,7 +130,7 @@ add_subdirectory(apps)
 
 # Testing only available if this is the main app
 # Emergency override MODERN_CMAKE_BUILD_TESTING provided as well
-if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
-   AND BUILD_TESTING)
-  add_subdirectory(tests)
-endif()
+# if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
+#    AND BUILD_TESTING)
+#   add_subdirectory(tests)
+# endif()

@@ -111,8 +111,8 @@ namespace SignalTracer {
             }
 
             for (auto& tmp_ref_records : ref_records_vec) {
-                std::copy_if(tmp_ref_records.begin(), tmp_ref_records.end(), std::back_inserter(ref_records), [](const PathRecord& ref_record) {
-                    return !ref_record.is_empty();
+                std::copy_if(tmp_ref_records.begin(), tmp_ref_records.end(), std::back_inserter(ref_records), [](const PathRecord& path_rec) {
+                    return !path_rec.is_empty();
                     });
             }
         };
@@ -135,8 +135,8 @@ namespace SignalTracer {
                 trace_fibonacci_ray(tx_pos, rx_pos, ref_records_vec[i], ray);
             }
 
-            std::copy_if(ref_records_vec.begin(), ref_records_vec.end(), std::back_inserter(ref_records), [](const PathRecord& ref_record) {
-                return !ref_record.is_empty();
+            std::copy_if(ref_records_vec.begin(), ref_records_vec.end(), std::back_inserter(ref_records), [](const PathRecord& path_rec) {
+                return !path_rec.is_empty();
                 });
 
         }
@@ -177,23 +177,24 @@ namespace SignalTracer {
             }
 
             for (auto& tmp_ref_records : ref_records_vec) {
-                std::copy_if(tmp_ref_records.begin(), tmp_ref_records.end(), std::back_inserter(ref_records), [](const PathRecord& ref_record) {
-                    return !ref_record.is_empty();
+                std::copy_if(tmp_ref_records.begin(), tmp_ref_records.end(), std::back_inserter(ref_records), [](const PathRecord& path_rec) {
+                    return !path_rec.is_empty();
                     });
             }
 
             timer.execution_time();
         };
 
+    private:
         void trace_horizontal_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records, const float& pitch_angle) {
             for (float i = 0.0; i < 360.0; i += m_angular_interval) {
                 glm::vec3 direction = Utils::spherical2cartesian(i, pitch_angle);
                 Ray ray{ tx_pos, direction };
-                PathRecord ref_record{};
-                ref_record.add_point(tx_pos);
-                trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, ref_record);
-                if (!ref_record.is_empty()) {
-                    ref_records.emplace_back(ref_record);
+                PathRecord path_rec{};
+                path_rec.add_point(tx_pos);
+                trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, path_rec);
+                if (!path_rec.is_empty()) {
+                    ref_records.emplace_back(path_rec);
                 }
             }
         }
@@ -203,34 +204,34 @@ namespace SignalTracer {
             for (float j = 180; j < 360; j += m_angular_interval) {
                 glm::vec3 direction = Utils::spherical2cartesian(yaw_angle, j);
                 Ray ray{ tx_pos, direction };
-                PathRecord ref_record{};
-                ref_record.add_point(tx_pos);
-                trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, ref_record);
-                if (!ref_record.is_empty()) {
-                    ref_records.emplace_back(ref_record);
+                PathRecord path_rec{};
+                path_rec.add_point(tx_pos);
+                trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, path_rec);
+                if (!path_rec.is_empty()) {
+                    ref_records.emplace_back(path_rec);
                 }
             }
         }
 
         void trace_fibonacci_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records, const std::vector<Ray>& ray) {
             for (const auto& r : ray) {
-                PathRecord ref_record{};
-                ref_record.add_point(tx_pos);
-                trace_ray(r, rx_pos, m_rx_radius, m_max_reflection, ref_record);
-                if (!ref_record.is_empty()) {
-                    ref_records.emplace_back(ref_record);
+                PathRecord path_rec{};
+                path_rec.add_point(tx_pos);
+                trace_ray(r, rx_pos, m_rx_radius, m_max_reflection, path_rec);
+                if (!path_rec.is_empty()) {
+                    ref_records.emplace_back(path_rec);
                 }
             }
         }
 
-        void trace_fibonacci_ray(const glm::vec3& tx_pos, const glm::vec3& rx_pos, PathRecord& ref_record, const Ray& ray) {
-            ref_record.add_point(tx_pos);
-            trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, ref_record);
+        void trace_fibonacci_ray(const glm::vec3& tx_pos, const glm::vec3& rx_pos, PathRecord& path_rec, const Ray& ray) {
+            path_rec.add_point(tx_pos);
+            trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, path_rec);
         }
 
-        void trace_ray(const Ray& ray, const glm::vec3& rx_pos, const float& rx_radius, int depth, PathRecord& ref_record) {
+        void trace_ray(const Ray& ray, const glm::vec3& rx_pos, const float& rx_radius, int depth, PathRecord& path_rec) {
             if (depth < 0) {
-                ref_record.clear();
+                path_rec.clear();
                 return;
             }
             IntersectRecord record{};
@@ -245,36 +246,42 @@ namespace SignalTracer {
             // save new IntersectionRecord to record
             bool b_is_hit{ m_tlas.is_hit(ray, interval, record) };
 
-
-            if (t0 >= 0 && t0 <= record.get_t()) {
+            if (t0 >= 0 && t0 <= record.t) {
+                // if (t0 >= 0 && t0 <= record.get_t()) {
                 projection_point = ray.get_origin() + t0 * ray.get_direction();
                 float rx_projection_len = glm::length(projection_point - rx_pos);
 
                 if (rx_projection_len <= rx_radius) {
-                    ref_record.add_record(projection_point);
+                    path_rec.add_record(projection_point);
                     return;
                 }
             }
 
+            // if (b_is_hit) {
+            //     path_rec.add_record(record.get_point(), record.get_material_ptr(), record.get_triangle_ptr());
+            //     Ray scattered_ray{};
+            //     glm::vec3 attenuation{};
+            //     if (record.get_material_ptr()->is_scattering(ray, record, attenuation, scattered_ray)) {
+            //         trace_ray(scattered_ray, rx_pos, rx_radius, depth - 1, path_rec);
+            //         return;
+            //     }
+            // }
+
             if (b_is_hit) {
-                ref_record.add_record(record.get_point(), record.get_material_ptr());
+                path_rec.add_record(record.point, record.mat_ptr, record.tri_ptr);
                 Ray scattered_ray{};
                 glm::vec3 attenuation{};
-                if (record.get_material_ptr()->is_scattering(ray, record, attenuation, scattered_ray)) {
-                    trace_ray(scattered_ray, rx_pos, rx_radius, depth - 1, ref_record);
+                if (record.mat_ptr->is_scattering(ray, record, attenuation, scattered_ray)) {
+                    trace_ray(scattered_ray, rx_pos, rx_radius, depth - 1, path_rec);
                     return;
                 }
             }
 
             // ray does not hit any object and does not reach the receiver
-            ref_record.clear();
+            path_rec.clear();
             return;
         }
 
-    private:
-        // Low resolution: 1.0 degree
-        // Medium resolution: 0.5 degree
-        // High resolution: 0.25 degree
         float m_angular_interval{ 0.5f };
         float m_rx_radius{ 0.1f };
     };

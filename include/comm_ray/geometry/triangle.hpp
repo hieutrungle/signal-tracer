@@ -177,12 +177,20 @@ namespace SignalTracer {
             }
 
             if (interval.contains(t)) {
-                record.set_t(t);
-                record.set_point(ray.point_at(t));
-                record.set_face_normal(ray, get_normal());
-                record.set_material_ptr(m_material_ptr);
+                record.t = t;
+                record.point = ray.point_at(t);
+                record.normal = get_normal();
+                record.mat_ptr = m_material_ptr;
                 return true;
             }
+
+            // if (interval.contains(t)) {
+            //     record.set_t(t);
+            //     record.set_point(ray.point_at(t));
+            //     record.set_face_normal(ray, get_normal());
+            //     record.set_material_ptr(m_material_ptr);
+            //     return true;
+            // }
             return false;
         }
 

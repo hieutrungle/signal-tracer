@@ -37,6 +37,15 @@ namespace SignalTracer {
                     os << "\t" << *material_ptr;
                 }
             }
+            os << "Trace Triangles: " << std::endl;
+            for (const auto& triangle_ptr : record.m_tri_ptrs) {
+                if (triangle_ptr == nullptr) {
+                    os << "\t" << "nullptr" << std::endl;
+                }
+                else {
+                    os << "\t" << *triangle_ptr;
+                }
+            }
             os << "Signal loss: " << "\t" << record.m_loss << " dB" << std::endl;
             os << "Signal strength: " << "\t" << record.m_strength << " dBm" << std::endl;
             os << "Transmitting distance: " << "\t" << record.m_distance << " m" << std::endl;
@@ -49,6 +58,7 @@ namespace SignalTracer {
             m_ref_count = 0;
             m_points.clear();
             m_mat_ptrs.clear();
+            m_tri_ptrs.clear();
             m_loss = 0.0f;
             m_strength = 0.0f;
             m_delay = 0.0f;
@@ -89,6 +99,10 @@ namespace SignalTracer {
             m_mat_ptrs.emplace_back(material_ptr);
         }
 
+        void add_triangle_ptr(const std::shared_ptr<Triangle>& triangle_ptr) {
+            m_tri_ptrs.emplace_back(triangle_ptr);
+        }
+
         // Add starting point or ending point
         void add_record(const glm::vec3& point) {
             add_point(point);
@@ -99,6 +113,13 @@ namespace SignalTracer {
             add_reflection_count();
             add_point(point);
             add_material_ptr(material_ptr);
+        }
+
+        void add_record(const glm::vec3& point, const std::shared_ptr<Material>& material_ptr, const std::shared_ptr<Triangle>& triangle_ptr) {
+            add_reflection_count();
+            add_point(point);
+            add_material_ptr(material_ptr);
+            add_triangle_ptr(triangle_ptr);
         }
 
         bool is_empty() const {
@@ -115,6 +136,9 @@ namespace SignalTracer {
         float m_delay{};
         float m_distance{};
         float m_phase{};
+        std::vector<glm::vec3> m_doas{}; // Direction of arrival
+        std::vector<glm::vec3> m_dods{}; // Direction of departure
+        glm::mat2 m_transition_mat{}; // Transition matrix
     };
 }
 

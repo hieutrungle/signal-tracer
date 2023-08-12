@@ -39,9 +39,14 @@ namespace SignalTracer {
                 Interval interval_tmp(interval.min(), closest_so_far);
                 if (object->is_hit(r, interval_tmp, temp_rec)) {
                     is_intersect = true;
-                    closest_so_far = temp_rec.get_t();
+                    closest_so_far = temp_rec.t;
                     rec = temp_rec;
                 }
+                // if (object->is_hit(r, interval_tmp, temp_rec)) {
+                //     is_intersect = true;
+                //     closest_so_far = temp_rec.get_t();
+                //     rec = temp_rec;
+                // }
             }
 
             return is_intersect;

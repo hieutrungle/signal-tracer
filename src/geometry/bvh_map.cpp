@@ -135,12 +135,19 @@ namespace SignalTracer {
 
                     IntersectRecord tmp_record{};
                     if (prim_ptr->is_hit(ray, interval, tmp_record)) {
-                        if (tmp_record.get_t() < record.get_t()) {
+                        if (tmp_record.t < record.t) {
                             record = tmp_record;
-                            record.set_triangle_ptr(prim_ptr);
-                            interval.max(record.get_t());
+                            record.tri_ptr = prim_ptr;
+                            interval.max(record.t);
                             hit_flag = true;
                         }
+                        // if (tmp_record.get_t() < record.get_t()) {
+                        //     // tmp_record.set_triangle_ptr(m_prim_ptrs[prim_idx]);
+                        //     record = tmp_record;
+                        //     record.set_triangle_ptr(m_prim_ptrs[prim_idx]);
+                        //     interval.max(record.get_t());
+                        //     hit_flag = true;
+                        // }
                     }
                 }
                 if (stack_ptr == 0) { break; }
@@ -303,8 +310,9 @@ namespace SignalTracer {
         if (m_bvh_ptr->is_hit_(transformed_ray, interval, record)) {
             hit_flag = true;
             // transform back to world space
-            glm::vec3 point{ glm::vec3(m_transform_point * glm::vec4(record.get_point(), 1.0f)) };
-            record.set_point(point);
+            glm::vec3 point{ glm::vec3(m_transform_point * glm::vec4(record.point, 1.0f)) };
+            record.point = point;
+            // record.set_point(point);
         }
         return hit_flag;
     }
@@ -405,11 +413,16 @@ namespace SignalTracer {
                 // tlas leaf node
                 IntersectRecord tmp_record{};
                 if (m_blas[node->blas_idx].is_hit(ray, interval, tmp_record)) {
-                    if (tmp_record.get_t() < record.get_t()) {
+                    if (tmp_record.t < record.t) {
                         record = tmp_record;
-                        interval.max(record.get_t());
+                        interval.max(record.t);
                         hit_flag = true;
                     }
+                    // if (tmp_record.get_t() < record.get_t()) {
+                    //     record = tmp_record;
+                    //     interval.max(record.get_t());
+                    //     hit_flag = true;
+                    // }
                 }
                 if (stack_ptr == 0) { break; }
                 else { node = stack[--stack_ptr]; }
