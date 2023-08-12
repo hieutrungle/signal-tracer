@@ -4,32 +4,32 @@ namespace SignalTracer {
     // BVHAccel::BVHAccel(const HittableList& obj_container) : BVHAccel{ obj_container.objects(), 0, obj_container.objects().size() } {}
 
     BVHAccel::BVHAccel(const std::vector<shared_ptr<Triangle>>& src_objects, const std::size_t& start, const std::size_t& range)
-        : m_primitives{ std::vector<shared_ptr<Triangle>>(&src_objects[start],&src_objects[range]) }
-        , m_prim_indices{ std::vector<uint>(m_primitives.size()) }
-        , m_nodes{ std::vector<BVHNode>(2 * m_primitives.size()) } {
+        : m_prim_ptrs{ std::vector<shared_ptr<Triangle>>(&src_objects[start],&src_objects[range]) }
+        , m_prim_indices{ std::vector<uint>(m_prim_ptrs.size()) }
+        , m_nodes{ std::vector<BVHNode>(2 * m_prim_ptrs.size()) } {
         build();
     }
 
     BVHAccel::BVHAccel(const Model& model)
-        : m_primitives{ init_triangles(model) }
-        , m_prim_indices{ std::vector<uint>(m_primitives.size()) }
-        , m_nodes{ std::vector<BVHNode>(2 * m_primitives.size()) } {
+        : m_prim_ptrs{ init_triangles(model) }
+        , m_prim_indices{ std::vector<uint>(m_prim_ptrs.size()) }
+        , m_nodes{ std::vector<BVHNode>(2 * m_prim_ptrs.size()) } {
         build();
     }
 
     void BVHAccel::build() {
-        for (std::size_t i = 0; i < m_primitives.size(); ++i) {
+        for (std::size_t i = 0; i < m_prim_ptrs.size(); ++i) {
             m_prim_indices[i] = i;
         }
 
-        if (m_primitives.empty() || m_primitives.size() == 0) {
+        if (m_prim_ptrs.empty() || m_prim_ptrs.size() == 0) {
             std::cerr << "No objects in BVH constructor." << std::endl;
             return;
         }
 
         auto& root = m_nodes[0];
         root.left_first = 0;
-        root.tri_count = m_primitives.size();
+        root.tri_count = m_prim_ptrs.size();
 
         update_node_bounds(0);
         subdivide(0);
@@ -60,7 +60,7 @@ namespace SignalTracer {
         int i = node.left_first;
         int j = node.left_first + node.tri_count - 1;
         while (i <= j) {
-            const auto& prim = m_primitives[m_prim_indices[i]];
+            const auto& prim = m_prim_ptrs[m_prim_indices[i]];
             glm::vec3 centroid = prim->get_centroid();
             if (centroid[axis] < split_pos) {
                 ++i;
@@ -131,12 +131,13 @@ namespace SignalTracer {
                 // leaf node
                 for (uint i = 0; i < node->tri_count; ++i) {
                     const uint prim_idx = m_prim_indices[node->left_first + i];
-                    const auto& prim = m_primitives[prim_idx];
+                    const auto& prim_ptr = m_prim_ptrs[prim_idx];
 
                     IntersectRecord tmp_record{};
-                    if (prim->is_hit(ray, interval, tmp_record)) {
+                    if (prim_ptr->is_hit(ray, interval, tmp_record)) {
                         if (tmp_record.get_t() < record.get_t()) {
                             record = tmp_record;
+                            record.set_triangle_ptr(prim_ptr);
                             interval.max(record.get_t());
                             hit_flag = true;
                         }
@@ -207,7 +208,7 @@ namespace SignalTracer {
         node.aabb_max = glm::vec3{ Constant::INF_NEG };
         for (uint i = node.left_first; i < node.left_first + node.tri_count; ++i) {
             uint prim_idx = m_prim_indices[i];
-            const auto& prim = m_primitives[prim_idx];
+            const auto& prim = m_prim_ptrs[prim_idx];
 
             node.aabb_min = glm::min(node.aabb_min, prim->get_min());
             node.aabb_max = glm::max(node.aabb_max, prim->get_max());
@@ -219,7 +220,7 @@ namespace SignalTracer {
         glm::vec3 bound_min{ 1e30f }, bound_max{ -1e30f };
         for (uint i = 0; i < node.tri_count; i++) {
             uint prim_idx = m_prim_indices[node.left_first + i];
-            const auto& prim_ptr = m_primitives[prim_idx];
+            const auto& prim_ptr = m_prim_ptrs[prim_idx];
             bound_min = glm::min(bound_min, prim_ptr->get_centroid());
             bound_max = glm::max(bound_max, prim_ptr->get_centroid());
         }
@@ -232,7 +233,7 @@ namespace SignalTracer {
             float scale = static_cast<float>(num_bins) / (bound_max[a] - bound_min[a]);
             for (uint i = 0; i < node.tri_count; i++) {
                 uint prim_idx = m_prim_indices[node.left_first + i];
-                const auto& prim_ptr = m_primitives[prim_idx];
+                const auto& prim_ptr = m_prim_ptrs[prim_idx];
                 glm::vec3 centroid = prim_ptr->get_centroid();
                 uint bin_idx = std::min(num_bins - 1, static_cast<uint>((centroid[a] - bound_min[a]) * scale));
                 bins[bin_idx].box.expand(prim_ptr->bounding_box());
