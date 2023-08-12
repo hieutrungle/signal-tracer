@@ -82,7 +82,7 @@ namespace SignalTracer {
         float find_best_split_plane(const BVHNode& node, int& axis, float& split_pos, uint num_bins = 64);
         void subdivide(uint node_idx, uint depth = 0);
 
-        std::vector<shared_ptr<Triangle>> m_primitives{};
+        std::vector<shared_ptr<Triangle>> m_prim_ptrs{};
         std::vector<uint> m_prim_indices{};
         std::vector<BVHNode> m_nodes{};
         uint32_t m_nodes_used{ 2 };

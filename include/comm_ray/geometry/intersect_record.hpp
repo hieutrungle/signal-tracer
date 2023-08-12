@@ -11,6 +11,7 @@
 
 namespace SignalTracer {
     class Material;
+    class Triangle;
 
     /*
         ----------------------------------------
@@ -85,12 +86,14 @@ namespace SignalTracer {
         const std::shared_ptr<Material> get_material_ptr() const { return m_material_ptr; };
         float get_t() const { return m_t; };
         bool get_front_face() const { return m_front_face; };
+        const std::shared_ptr<Triangle> get_triangle_ptr() const { return m_triangle_ptr; };
 
         void set_point(glm::vec3 point) { m_point = point; };
         void set_normal(glm::vec3 normal) { m_normal = glm::normalize(normal); };
         void set_material_ptr(std::shared_ptr<Material> material_ptr) { m_material_ptr = material_ptr; };
         void set_t(float t) { m_t = t; };
         void set_front_face(bool front_face) { m_front_face = front_face; };
+        void set_triangle_ptr(std::shared_ptr<Triangle> triangle_ptr) { m_triangle_ptr = triangle_ptr; };
 
         // r: incomming Ray
         // outward_normal: normal vector of the surface
@@ -102,8 +105,6 @@ namespace SignalTracer {
         // cout
         friend std::ostream& operator<<(std::ostream& os, const IntersectRecord& record) {
             os << "IntersectRecord: " << glm::to_string(record.get_point()) << std::endl;
-
-            // " " << glm::to_string(record.get_normal()) << " " << record.get_t() << std::endl;
             return os;
         }
 
@@ -119,6 +120,7 @@ namespace SignalTracer {
     private:
         glm::vec3 m_point{ Constant::INF_NEG };
         glm::vec3 m_normal{};
+        std::shared_ptr<Triangle> m_triangle_ptr{ nullptr };
         std::shared_ptr<Material> m_material_ptr{ nullptr };
         float m_t{ Constant::INF_POS };
         bool m_front_face{};

@@ -15,6 +15,8 @@
 #include <memory>
 
 namespace SignalTracer {
+    class IntersectRecord;
+
     class Triangle : public Hittable {
 
     public:
@@ -183,7 +185,6 @@ namespace SignalTracer {
             }
             return false;
         }
-
 
     private:
         glm::vec3 m_a{};
