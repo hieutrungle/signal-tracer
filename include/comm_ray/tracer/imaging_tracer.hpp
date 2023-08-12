@@ -72,12 +72,12 @@
 //             m_is_direct_lighting = false;
 //         }
 
-//         void trace_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) override {
+//         void trace_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records) override {
 //             reset();
 //             std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
 //             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
 
-//             ReflectionRecord ref_record{ 0, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{} };
+//             PathRecord ref_record{ 0, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{} };
 //             if (m_max_reflection >= 0) {
 //                 if (is_ray_direct(tx_pos, rx_pos, ref_record)) {
 //                     ref_records.emplace_back(ref_record);
@@ -97,7 +97,7 @@
 //         /// @param rx_pos 
 //         /// @param ref_record 
 //         /// @return 
-//         bool is_ray_direct(const glm::vec3& tx_pos, const glm::vec3& rx_pos, ReflectionRecord& ref_record) const {
+//         bool is_ray_direct(const glm::vec3& tx_pos, const glm::vec3& rx_pos, PathRecord& ref_record) const {
 //             Ray ray(tx_pos, rx_pos - tx_pos);
 //             Interval interval{ Constant::EPSILON, glm::length(rx_pos - tx_pos) - Constant::EPSILON };
 //             IntersectRecord record{};
@@ -113,7 +113,7 @@
 //         /// @param rx_pos 
 //         /// @param ref_records 
 //         /// @return 
-//         bool is_ray_reflected(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
+//         bool is_ray_reflected(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records) const {
 //             bool is_reflect = false;
 //             for (const auto& triangle : m_triangles) {
 //                 // cast to triangle
@@ -125,7 +125,7 @@
 //                 if (triangle->is_hit(ray, interval, record)) {
 //                     glm::vec3 reflective_point = record.get_point();
 
-//                     ReflectionRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{record.get_material_ptr()} };
+//                     PathRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{record.get_material_ptr()} };
 //                     if (is_ray_direct(tx_pos, reflective_point, ref_record) && is_ray_direct(reflective_point, rx_pos, ref_record)) {
 //                         ref_records.emplace_back(ref_record);
 //                         is_reflect = true;
@@ -135,7 +135,7 @@
 //             return is_reflect;
 //         }
 
-//         bool is_ray_double_reflect(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
+//         bool is_ray_double_reflect(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records) const {
 //             bool is_reflect = false;
 //             // Setup mirror points of tx and rx
 //             std::vector<glm::vec3> tx_mirror_points{};
@@ -169,7 +169,7 @@
 //                         if (rx_triangle->is_hit(ray, interval, rx_mirror_record)) {
 //                             glm::vec3 rx_reflective_point = rx_mirror_record.get_point();
 
-//                             ReflectionRecord ref_record{ 2, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{ tx_mirror_record.get_material_ptr(), rx_mirror_record.get_material_ptr()} };
+//                             PathRecord ref_record{ 2, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{ tx_mirror_record.get_material_ptr(), rx_mirror_record.get_material_ptr()} };
 //                             if (is_ray_direct(tx_pos, tx_reflective_point, ref_record) && is_ray_direct(tx_reflective_point, rx_reflective_point, ref_record) && is_ray_direct(rx_reflective_point, rx_pos, ref_record)) {
 //                                 ref_records.emplace_back(ref_record);
 //                                 is_reflect = true;
@@ -284,12 +284,12 @@
 // //             m_is_direct_lighting = false;
 // //         }
 
-// //         void trace_rays(glm::vec3& tx_pos, glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) override {
+// //         void trace_rays(glm::vec3& tx_pos, glm::vec3& rx_pos, std::vector<PathRecord>& ref_records) override {
 // //             reset();
 // //             std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
 // //             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
 
-// //             ReflectionRecord ref_record{ 0, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{} };
+// //             PathRecord ref_record{ 0, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{} };
 // //             if (m_max_reflection >= 0) {
 // //                 if (is_ray_direct(tx_pos, rx_pos, ref_record)) {
 // //                     ref_records.emplace_back(ref_record);
@@ -309,7 +309,7 @@
 // //         /// @param rx_pos 
 // //         /// @param ref_record 
 // //         /// @return 
-// //         bool is_ray_direct(const glm::vec3& tx_pos, const glm::vec3& rx_pos, ReflectionRecord& ref_record) const {
+// //         bool is_ray_direct(const glm::vec3& tx_pos, const glm::vec3& rx_pos, PathRecord& ref_record) const {
 // //             Ray ray(tx_pos, rx_pos - tx_pos);
 // //             Interval interval{ Constant::EPSILON, glm::length(rx_pos - tx_pos) - Constant::EPSILON };
 // //             IntersectRecord record{};
@@ -325,7 +325,7 @@
 // //         /// @param rx_pos 
 // //         /// @param ref_records 
 // //         /// @return 
-// //         bool is_ray_reflected(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
+// //         bool is_ray_reflected(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records) const {
 // //             bool is_reflect = false;
 // //             for (const auto& triangle : m_triangles) {
 // //                 glm::vec3 mirror_point = triangle->get_mirror_point(tx_pos);
@@ -335,7 +335,7 @@
 // //                 if (triangle->is_hit(ray, interval, record)) {
 // //                     glm::vec3 reflective_point = record.get_point();
 
-// //                     ReflectionRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{record.get_material_ptr()} };
+// //                     PathRecord ref_record{ 1, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{record.get_material_ptr()} };
 // //                     if (is_ray_direct(tx_pos, reflective_point, ref_record) && is_ray_direct(reflective_point, rx_pos, ref_record)) {
 // //                         ref_records.emplace_back(ref_record);
 // //                         is_reflect = true;
@@ -345,7 +345,7 @@
 // //             return is_reflect;
 // //         }
 
-// //         bool is_ray_double_reflect(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<ReflectionRecord>& ref_records) const {
+// //         bool is_ray_double_reflect(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records) const {
 // //             bool is_reflect = false;
 // //             // Setup mirror points of tx and rx
 // //             std::vector<glm::vec3> tx_mirror_points{};
@@ -377,7 +377,7 @@
 // //                         if (rx_triangle->is_hit(ray, interval, rx_mirror_record)) {
 // //                             glm::vec3 rx_reflective_point = rx_mirror_record.get_point();
 
-// //                             ReflectionRecord ref_record{ 2, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{ tx_mirror_record.get_material_ptr(), rx_mirror_record.get_material_ptr()} };
+// //                             PathRecord ref_record{ 2, std::vector<glm::vec3>{tx_pos}, std::vector<std::shared_ptr<Material>>{ tx_mirror_record.get_material_ptr(), rx_mirror_record.get_material_ptr()} };
 // //                             if (is_ray_direct(tx_pos, tx_reflective_point, ref_record) && is_ray_direct(tx_reflective_point, rx_reflective_point, ref_record) && is_ray_direct(rx_reflective_point, rx_pos, ref_record)) {
 // //                                 ref_records.emplace_back(ref_record);
 // //                                 is_reflect = true;
@@ -391,10 +391,10 @@
 
 // //         bool is_direct_lighting() const { return m_is_direct_lighting; }
 
-// //         float calc_total_receiving_power(const std::vector<ReflectionRecord>& ref_records) const {
+// //         float calc_total_receiving_power(const std::vector<PathRecord>& ref_records) const {
 // //             float total_power{ 0.0f };
 // //             // using accumulate
-// //             total_power = std::accumulate(ref_records.begin(), ref_records.end(), 0.0f, [](float sum, const ReflectionRecord& record) {
+// //             total_power = std::accumulate(ref_records.begin(), ref_records.end(), 0.0f, [](float sum, const PathRecord& record) {
 // //                 return sum + Utils::dB_to_linear(record.signal_strength);
 // //                 });
 // //             return Utils::linear_to_dB(total_power);

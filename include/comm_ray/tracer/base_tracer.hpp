@@ -3,9 +3,6 @@
 #ifndef _COMM_RAY_TRACER_BASE_TRACER_HPP_
 #define _COMM_RAY_TRACER_BASE_TRACER_HPP_
 
-#include "reflection_record.hpp"
-#include "model.hpp"
-#include "triangle.hpp"
 #include "glm/glm.hpp"
 #include "bvh_map.hpp"
 #include "tracer_interface.hpp"
