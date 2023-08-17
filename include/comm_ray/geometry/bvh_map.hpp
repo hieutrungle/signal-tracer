@@ -101,7 +101,6 @@ namespace SignalTracer {
         bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const override;
 
         AABB bounding_box() const override;
-
         void set_transform(const glm::mat4& transform);
 
     private:
@@ -134,7 +133,6 @@ namespace SignalTracer {
         void build();
         bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const override;
         bool is_hit_(const Ray& ray, Interval interval, IntersectRecord& record) const;
-
 
         AABB bounding_box() const override {
             return AABB{ m_tlas_nodes[0].aabb_min, m_tlas_nodes[0].aabb_max };
