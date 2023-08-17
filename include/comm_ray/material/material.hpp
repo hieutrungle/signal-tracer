@@ -41,16 +41,6 @@ namespace SignalTracer {
             return true;
         }
 
-        // virtual bool is_scattering(const Ray& ray_in, const IntersectRecord& record, glm::vec3& attenuation, Ray& scattered_ray) const {
-        //     attenuation = glm::vec3{ 1.0, 1.0, 1.0 };
-
-        //     glm::vec3 normal{ record.get_normal() };
-        //     glm::vec3 scattered_direction{ reflect(ray_in.get_direction(), normal) };
-
-        //     scattered_ray = Ray(record.get_point(), scattered_direction);
-        //     return true;
-        // }
-
         glm::vec3 reflect(const glm::vec3& v, const glm::vec3& n) const {
             return v - 2 * glm::dot(v, n) * n;
         }
