@@ -1,7 +1,6 @@
 #include "bvh_map.hpp"
 
 namespace SignalTracer {
-    // BVHAccel::BVHAccel(const HittableList& obj_container) : BVHAccel{ obj_container.objects(), 0, obj_container.objects().size() } {}
 
     BVHAccel::BVHAccel(const std::vector<shared_ptr<Triangle>>& src_objects, const std::size_t& start, const std::size_t& range)
         : m_prim_ptrs{ std::vector<shared_ptr<Triangle>>(&src_objects[start],&src_objects[range]) }
@@ -141,13 +140,6 @@ namespace SignalTracer {
                             interval.max(record.t);
                             hit_flag = true;
                         }
-                        // if (tmp_record.get_t() < record.get_t()) {
-                        //     // tmp_record.set_triangle_ptr(m_prim_ptrs[prim_idx]);
-                        //     record = tmp_record;
-                        //     record.set_triangle_ptr(m_prim_ptrs[prim_idx]);
-                        //     interval.max(record.get_t());
-                        //     hit_flag = true;
-                        // }
                     }
                 }
                 if (stack_ptr == 0) { break; }
@@ -418,11 +410,6 @@ namespace SignalTracer {
                         interval.max(record.t);
                         hit_flag = true;
                     }
-                    // if (tmp_record.get_t() < record.get_t()) {
-                    //     record = tmp_record;
-                    //     interval.max(record.get_t());
-                    //     hit_flag = true;
-                    // }
                 }
                 if (stack_ptr == 0) { break; }
                 else { node = stack[--stack_ptr]; }
