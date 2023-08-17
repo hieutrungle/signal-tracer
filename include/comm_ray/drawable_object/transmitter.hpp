@@ -31,9 +31,12 @@ namespace SignalTracer {
         int get_id() const { return m_id; }
         float get_power() const { return m_power; }
         float get_frequency() const { return m_frequency; }
+        float get_gain() const { return m_gain; }
+        const glm::vec3& get_position() const { return RadioDevice::get_position(); }
 
         void set_power(const float& power) { m_power = power; }
         void set_frequency(const float& frequency) { m_frequency = frequency; }
+        void set_position(const glm::vec3& position) { RadioDevice::set_position(position); }
 
     private:
         int m_id{ 0 };
