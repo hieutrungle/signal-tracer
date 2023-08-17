@@ -13,21 +13,24 @@ namespace SignalTracer {
     public:
         BaseTracer() = default;
 
-        BaseTracer(const std::vector<Model>& models, int max_reflection = 2);
 
-        BaseTracer(const std::vector<std::reference_wrapper<Model>>& models, int max_reflection = 2);
+        /// @brief Initialize TLAS and BLAS (BVH) struture
+        /// @param models Imported ASSIMP models that contains meshes
+        BaseTracer(const std::vector<Model>& models);
+
+        /// @brief Initialize TLAS and BLAS (BVH) struture
+        /// @param models Imported ASSIMP models that contains meshes
+        BaseTracer(const std::vector<std::reference_wrapper<Model>>& models);
 
         virtual ~BaseTracer() = default;
 
         //copy constructor
         BaseTracer(const BaseTracer& other)
-            : m_max_reflection{ other.m_max_reflection }
-            , m_bvhs{ other.m_bvhs }
+            : m_bvhs{ other.m_bvhs }
             , m_tlas{ other.m_tlas } {}
 
         //copy assignment
         BaseTracer& operator=(const BaseTracer& other) {
-            m_max_reflection = other.m_max_reflection;
             m_bvhs = other.m_bvhs;
             m_tlas = other.m_tlas;
             return *this;
@@ -35,20 +38,17 @@ namespace SignalTracer {
 
         // move constructor
         BaseTracer(BaseTracer&& other)
-            : m_max_reflection{ other.m_max_reflection }
-            , m_bvhs{ other.m_bvhs }
+            : m_bvhs{ other.m_bvhs }
             , m_tlas{ other.m_tlas } {}
 
         // move assignment
         BaseTracer& operator=(BaseTracer&& other) noexcept {
-            m_max_reflection = other.m_max_reflection;
             m_bvhs = other.m_bvhs;
             m_tlas = other.m_tlas;
             return *this;
         }
 
     protected:
-        int m_max_reflection{ 2 };
         std::vector<BVHInstance> m_bvhs{};
         TLAS m_tlas{};
     };
