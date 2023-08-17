@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <execution>
 
 namespace SignalTracer {
 
@@ -32,35 +33,49 @@ namespace SignalTracer {
         RayCastingTracer() = default;
 
         RayCastingTracer(const std::vector<Model>& models, int max_reflection = 2)
-            : BaseTracer{ models, max_reflection } {}
+            : BaseTracer{ models }
+            , m_max_reflection{ max_reflection } {}
 
         RayCastingTracer(const std::vector<std::reference_wrapper<Model>>& models, int max_reflection = 2)
-            : BaseTracer{ models, max_reflection } {}
+            : BaseTracer{ models }
+            , m_max_reflection{ max_reflection } {}
 
-        RayCastingTracer(std::vector<std::reference_wrapper<Model>>& models, int max_reflection = 2, const float& angular_interval = 0.5f)
-            : BaseTracer{ models, max_reflection }, m_angular_interval{ angular_interval } {
-            m_rx_radius = (m_angular_interval < 1.0f) ? m_angular_interval / 2.0f : 1.0f / 2.0f;
-        }
+        RayCastingTracer(std::vector<std::reference_wrapper<Model>>& models, int max_reflection = 2, int num_rays = int(6e6))
+            : BaseTracer{ models }
+            , m_max_reflection{ max_reflection }
+            , m_num_rays{ num_rays } {}
 
         ~RayCastingTracer() override = default;
 
         // copy constructor
         RayCastingTracer(const RayCastingTracer& other)
-            : BaseTracer{ other } {}
+            : BaseTracer{ other }
+            , m_rx_radius{ other.m_rx_radius }
+            , m_max_reflection{ other.m_max_reflection }
+            , m_num_rays{ other.m_num_rays } {}
 
         // copy assignment
         RayCastingTracer& operator=(const RayCastingTracer& other) {
             BaseTracer::operator=(other);
+            m_rx_radius = other.m_rx_radius;
+            m_max_reflection = other.m_max_reflection;
+            m_num_rays = other.m_num_rays;
             return *this;
         }
 
         // move constructor
         RayCastingTracer(RayCastingTracer&& other)
-            : BaseTracer{ std::move(other) } {}
+            : BaseTracer{ std::move(other) }
+            , m_rx_radius{ other.m_rx_radius }
+            , m_max_reflection{ other.m_max_reflection }
+            , m_num_rays{ other.m_num_rays } {}
 
         // move assignment
         RayCastingTracer& operator=(RayCastingTracer&& other) noexcept {
             BaseTracer::operator=(std::move(other));
+            m_rx_radius = other.m_rx_radius;
+            m_max_reflection = other.m_max_reflection;
+            m_num_rays = other.m_num_rays;
             return *this;
         }
 
@@ -71,51 +86,7 @@ namespace SignalTracer {
             trace_rays_parallel_fibo(tx_pos, rx_pos, ref_records);
         };
 
-        void trace_rays_sequential(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records) {
-            reset();
-            std::clog << "Running in sequential mode" << std::endl;
-            std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
-            std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
-            glm::vec3 up{ 0.0f, 1.0f, 0.0f };
-            glm::vec3 right{ 1.0f, 0.0f, 0.0f };
-            for (float i = 0; i < 360; i += m_angular_interval) {
-                trace_vertial_rays(tx_pos, rx_pos, ref_records, i);
-            }
-        }
-
-        void trace_rays_parallel(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records) {
-            reset();
-            std::clog << "Running in parallel mode" << std::endl;
-            std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
-            std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
-            glm::vec3 up{ 0.0f, 1.0f, 0.0f };
-            glm::vec3 right{ 1.0f, 0.0f, 0.0f };
-            const int num_threads{ static_cast<int>(round(360.0f / m_angular_interval)) + 1 };
-            std::vector<std::thread> threads{};
-            std::vector<std::vector<PathRecord>> ref_records_vec(num_threads);
-
-            // horizontal -> vertical
-            for (float i = 0.0; i < 360.0; i += m_angular_interval) {
-                threads.emplace_back(std::thread(&RayCastingTracer::trace_vertial_rays, this, tx_pos, rx_pos, std::ref(ref_records_vec[round(i / m_angular_interval)]), i));
-            }
-
-            // vertical -> horizontal
-            // for (float j = 180.0; j < 360.0; j += m_angular_interval) {
-            //     threads.emplace_back(std::thread(&RayCastingTracer::trace_horizontal_rays, this, tx_pos, rx_pos, std::ref(ref_records_vec[round(j / m_angular_interval)]), j));
-            // }
-
-            for (auto& thread : threads) {
-                if (thread.joinable()) {
-                    thread.join();
-                }
-            }
-
-            for (auto& tmp_ref_records : ref_records_vec) {
-                std::copy_if(tmp_ref_records.begin(), tmp_ref_records.end(), std::back_inserter(ref_records), [](const PathRecord& path_rec) {
-                    return !path_rec.is_empty();
-                    });
-            }
-        };
+    private:
 
         void trace_rays_sequential_fibo(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records) {
             reset();
@@ -124,8 +95,7 @@ namespace SignalTracer {
             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
             glm::vec3 up{ 0.0f, 1.0f, 0.0f };
             glm::vec3 right{ 1.0f, 0.0f, 0.0f };
-            int num_rays{ static_cast<int>(360.0f * 360.0f / m_angular_interval / m_angular_interval) };
-            std::vector <glm::vec3> directions{ Utils::get_fibonacci_lattice(num_rays) };
+            std::vector <glm::vec3> directions{ Utils::get_fibonacci_lattice(m_num_rays) };
 
             const int num_threads{ static_cast<int>(directions.size()) };
             std::vector<PathRecord> ref_records_vec(num_threads);
@@ -149,24 +119,29 @@ namespace SignalTracer {
             std::clog << "rx position: " << glm::to_string(rx_pos) << std::endl;
             glm::vec3 up{ 0.0f, 1.0f, 0.0f };
             glm::vec3 right{ 1.0f, 0.0f, 0.0f };
-            int num_rays{ int(6e6) };
 
             Utils::Timer timer{};
-            std::vector <glm::vec3> directions{ Utils::get_fibonacci_lattice(num_rays) };
+            std::vector <glm::vec3> directions{ Utils::get_fibonacci_lattice(m_num_rays) };
             timer.execution_time();
 
             timer.reset();
-
             int num_threads{ int(std::thread::hardware_concurrency()) * 10 };
-            int num_rays_per_thread{ num_rays / num_threads };
+            int num_rays_per_thread{ m_num_rays / num_threads };
             std::vector<std::thread> threads(num_threads);
             std::vector<std::vector<PathRecord>> ref_records_vec(num_threads);
 
+            // iota
+            std::vector<int> rays_per_thread_idx(num_rays_per_thread);
+            std::iota(rays_per_thread_idx.begin(), rays_per_thread_idx.end(), 0);
+
             for (int i = 0; i < num_threads;i++) {
                 std::vector<Ray> rays(num_rays_per_thread);
-                for (int j = i * num_rays_per_thread; j < (i + 1) * num_rays_per_thread; j++) {
-                    rays[j - i * num_rays_per_thread] = Ray{ tx_pos, directions[j] };
-                }
+                std::for_each(std::execution::unseq, rays_per_thread_idx.begin(), rays_per_thread_idx.end(), [&](const int& idx) {
+                    rays[idx] = Ray{ tx_pos, directions[i * num_rays_per_thread + idx] };
+                    });
+                // for (int j = i * num_rays_per_thread; j < (i + 1) * num_rays_per_thread; j++) {
+                //     rays[j - i * num_rays_per_thread] = Ray{ tx_pos, directions[j] };
+                // }
                 threads.emplace_back(std::thread(&RayCastingTracer::trace_fibonacci_rays, this, tx_pos, rx_pos, std::ref(ref_records_vec[i]), rays));
             }
 
@@ -184,34 +159,6 @@ namespace SignalTracer {
 
             timer.execution_time();
         };
-
-    private:
-        void trace_horizontal_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records, const float& pitch_angle) {
-            for (float i = 0.0; i < 360.0; i += m_angular_interval) {
-                glm::vec3 direction = Utils::spherical2cartesian(i, pitch_angle);
-                Ray ray{ tx_pos, direction };
-                PathRecord path_rec{};
-                path_rec.add_point(tx_pos);
-                trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, path_rec);
-                if (!path_rec.is_empty()) {
-                    ref_records.emplace_back(path_rec);
-                }
-            }
-        }
-
-        // function for concurrency, thread
-        void trace_vertial_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records, const float& yaw_angle) {
-            for (float j = 180; j < 360; j += m_angular_interval) {
-                glm::vec3 direction = Utils::spherical2cartesian(yaw_angle, j);
-                Ray ray{ tx_pos, direction };
-                PathRecord path_rec{};
-                path_rec.add_point(tx_pos);
-                trace_ray(ray, rx_pos, m_rx_radius, m_max_reflection, path_rec);
-                if (!path_rec.is_empty()) {
-                    ref_records.emplace_back(path_rec);
-                }
-            }
-        }
 
         void trace_fibonacci_rays(const glm::vec3& tx_pos, const glm::vec3& rx_pos, std::vector<PathRecord>& ref_records, const std::vector<Ray>& ray) {
             for (const auto& r : ray) {
@@ -257,16 +204,6 @@ namespace SignalTracer {
                 }
             }
 
-            // if (b_is_hit) {
-            //     path_rec.add_record(record.get_point(), record.get_material_ptr(), record.get_triangle_ptr());
-            //     Ray scattered_ray{};
-            //     glm::vec3 attenuation{};
-            //     if (record.get_material_ptr()->is_scattering(ray, record, attenuation, scattered_ray)) {
-            //         trace_ray(scattered_ray, rx_pos, rx_radius, depth - 1, path_rec);
-            //         return;
-            //     }
-            // }
-
             if (b_is_hit) {
                 path_rec.add_record(record.point, record.mat_ptr, record.tri_ptr);
                 Ray scattered_ray{};
@@ -282,8 +219,9 @@ namespace SignalTracer {
             return;
         }
 
-        float m_angular_interval{ 0.5f };
-        float m_rx_radius{ 0.1f };
+        float m_rx_radius{ 0.05f };
+        int m_max_reflection{ 2 };
+        int m_num_rays{ static_cast<int>(6e6) };
     };
 
 }
