@@ -22,6 +22,7 @@ namespace SignalTracer {
         int get_id() const { return m_id; }
         float get_gain() const { return m_gain; }
         const std::unordered_map<int, std::vector<PathRecord>>& get_reflection_records() { return m_path_records; }
+        const glm::vec3& get_position() const { return RadioDevice::get_position(); }
 
         void set_gain(const float& gain) { m_gain = gain; }
 
