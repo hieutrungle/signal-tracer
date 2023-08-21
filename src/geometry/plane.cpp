@@ -22,18 +22,23 @@ namespace SignalTracer {
         , m_d{ -glm::dot(m_normal, point1) } {}
 
     bool Plane::is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const {
-        float denominator = glm::dot(ray.get_direction(), m_normal);
-        if (std::fabs(denominator) <= Constant::EPSILON) {
+        float denom = glm::dot(ray.get_direction(), m_normal);
+        // if the ray is parallel to the plane, return false
+        if (std::fabs(denom) <= Constant::EPSILON) {
             return false;
         }
-        float t = -(glm::dot(ray.get_origin(), m_normal) + m_d) / denominator;
-        if (t >= interval.min() && t <= interval.max()) {
-            record.t = t;
-            record.point = ray.get_origin() + t * ray.get_direction();
-            record.normal = m_normal;
-            return true;
+
+        // if the hit point is outside the interval, return false
+        float t = (m_d - glm::dot(m_normal, ray.get_origin())) / denom;
+        if (!interval.contains(t)) {
+            return false;
         }
-        return false;
+
+        record.t = t;
+        record.point = ray.point_at(t);
+        // record.normal = m_normal;
+        record.normal = (glm::dot(ray.get_direction(), m_normal) > 0) ? -m_normal : m_normal;
+        return true;
     }
 
     float Plane::calc_distance(const glm::vec3& point) const {
