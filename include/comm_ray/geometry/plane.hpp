@@ -24,6 +24,9 @@ namespace SignalTracer {
         Plane(const glm::vec3& point, const glm::vec3& normal);
         Plane(const glm::vec3& point1, const glm::vec3& point2, const glm::vec3& point3);
 
+        virtual glm::vec3 get_normal() const { return m_normal; }
+        virtual float get_d() const { return m_d; }
+
         bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const override;
         static bool is_hit_pplane(const Plane& plane1, const Plane& plane2, IntersectRecord& record);
         AABB bounding_box() const override { return AABB{}; };
