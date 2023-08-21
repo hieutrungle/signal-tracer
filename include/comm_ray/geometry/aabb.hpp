@@ -166,6 +166,37 @@ namespace SignalTracer {
          * Intersects ray with bounding box, does not store shading information.
          * \param ray the ray to intersect with
          * \param interval lower bound and upper bound of intersection
+         */
+        bool is_hit(const Ray& ray, IntervalT<T> ray_interval) const {
+            if (ray.get_direction() == glm::vec3(0.0f)) {
+                std::cout << "Ray direction is zero vector." << std::endl;
+                return false;
+            }
+            const auto inv_direction = 1.0f / ray.get_direction();
+
+            for (std::size_t i = 0; i < 3; i++) {
+                if (std::fabs(ray.get_direction()[i]) <= 1e-6) {
+                    continue;
+                }
+                T t0 = (m_min[i] - ray.get_origin()[i]) * inv_direction[i];
+                T t1 = (m_max[i] - ray.get_origin()[i]) * inv_direction[i];
+
+                if (inv_direction[i] < 0.0f) std::swap<T>(t0, t1);
+
+                ray_interval.min(std::fmax(t0, ray_interval.min()));
+                ray_interval.max(std::fmin(t1, ray_interval.max()));
+                if (ray_interval.max() < ray_interval.min()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Ray - bbox intersection.
+         * Intersects ray with bounding box, does not store shading information.
+         * \param ray the ray to intersect with
+         * \param interval lower bound and upper bound of intersection
          * \return POSITIVE INFINITE if not hit, otherwise, distance to hit
          */
         T hit(const Ray& ray, IntervalT<T> interval) const {
