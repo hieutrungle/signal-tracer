@@ -3,8 +3,9 @@
 #ifndef AABB_HPP
 #define AABB_HPP
 
-#include "utils.hpp"
+#include "constant.hpp"
 #include "interval.hpp"
+#include "utils.hpp"
 #include "ray.hpp"
 
 namespace SignalTracer {
@@ -42,8 +43,6 @@ namespace SignalTracer {
             *this = AABBT(*this, b3);
         }
 
-
-
         /**
          * Constructor.
          * Creates a bounding box that includes a single point.
@@ -60,6 +59,13 @@ namespace SignalTracer {
         AABBT(const glm::vec3& p1, const glm::vec3& p2)
             : m_min{ glm::min(p1, p2) }, m_max{ glm::max(p1, p2) }, m_extent{ m_max - m_min } {}
 
+        /**
+         * Constructor.
+         * Creates a bounding box with given 2 points.
+         * \param p1 point 1
+         * \param p2 point 2
+         * \param p3 point 3
+         */
         AABBT(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3)
             : m_min{ glm::min(p1, glm::min(p2, p3)) }
             , m_max{ glm::max(p1, glm::max(p2, p3)) }
@@ -160,32 +166,8 @@ namespace SignalTracer {
          * Intersects ray with bounding box, does not store shading information.
          * \param ray the ray to intersect with
          * \param interval lower bound and upper bound of intersection
+         * \return POSITIVE INFINITE if not hit, otherwise, distance to hit
          */
-        bool is_hit(const Ray& ray, IntervalT<T>& ray_interval) const {
-            if (ray.get_direction() == glm::vec3(0.0f)) {
-                std::cout << "Ray direction is zero vector." << std::endl;
-                return false;
-            }
-            const auto inv_direction = 1.0f / ray.get_direction();
-
-            for (std::size_t i = 0; i < 3; i++) {
-                if (std::fabs(ray.get_direction()[i]) <= 1e-6) {
-                    continue;
-                }
-                T t0 = (m_min[i] - ray.get_origin()[i]) * inv_direction[i];
-                T t1 = (m_max[i] - ray.get_origin()[i]) * inv_direction[i];
-
-                if (inv_direction[i] < 0.0f) std::swap<T>(t0, t1);
-
-                ray_interval.min(std::fmax(t0, ray_interval.min()));
-                ray_interval.max(std::fmin(t1, ray_interval.max()));
-                if (ray_interval.max() < ray_interval.min()) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         T hit(const Ray& ray, IntervalT<T> interval) const {
 
             if (ray.get_direction() == glm::vec3(0.0f)) {
@@ -222,6 +204,25 @@ namespace SignalTracer {
             return p.x >= m_min.x && p.x <= m_max.x &&
                 p.y >= m_min.y && p.y <= m_max.y &&
                 p.z >= m_min.z && p.z <= m_max.z;
+        }
+
+        AABBT<T> pad() const {
+            const float delta = Constant::EPSILON;
+            glm::vec minn{ m_min };
+            glm::vec maxx{ m_max };
+            if (m_extent.x < delta) {
+                minn.x -= delta;
+                maxx.x += delta;
+            }
+            if (m_extent.y < delta) {
+                minn.y -= delta;
+                maxx.y += delta;
+            }
+            if (m_extent.z < delta) {
+                minn.z -= delta;
+                maxx.z += delta;
+            }
+            return AABBT<T>(minn, maxx);
         }
 
     private:
