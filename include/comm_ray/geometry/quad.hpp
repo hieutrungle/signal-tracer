@@ -22,8 +22,14 @@ namespace SignalTracer {
         Quad(const glm::vec3& Q, const glm::vec3& u, const glm::vec3& v);
         void set_bounding_box();
 
+        glm::vec3 get_corner_point() const { return m_q; }
+        glm::vec3 get_unit_u() const { return glm::normalize(m_u); }
+        glm::vec3 get_unit_v() const { return glm::normalize(m_v); }
         glm::vec3 get_normal() const { return m_normal; }
         float get_d() const { return m_d; }
+        float get_height() const { return glm::length(m_u); }
+        float get_width() const { return glm::length(m_v); }
+        glm::vec3 get_centroid() const override { return m_q + m_u / 2.0f + m_v / 2.0f; }
 
         AABB bounding_box() const override;
         bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const override;
