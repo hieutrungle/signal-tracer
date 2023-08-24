@@ -6,12 +6,12 @@
 #include "line.hpp"
 #include "model.hpp"
 #include "program_container.hpp"
-
+#include "coverage_map.hpp"
 #include "imaging_tracer.hpp"
 #include "ray_casting_tracer.hpp"
 #include "receiver.hpp"
 #include "transmitter.hpp"
-
+#include "quad.hpp"
 #include "scene.hpp"
 #include "viewing.hpp"
 #include "path_record.hpp"
@@ -28,6 +28,11 @@
 #include <functional>
 #include <vector>
 #include <memory>
+
+// TODO:
+#include "coverage_tracer.hpp"
+#include "coverage_map.hpp"
+#include "map_draw.hpp"
 
 
 void process_terminal_inputs(int argc, char* argv [], SignalTracer::WindowParams& window_params, SignalTracer::PropagationParams& prop_params);
@@ -50,14 +55,33 @@ int main(int argc, char* argv []) {
     */
 
     SignalTracer::Scene scene{ window_params, viewing_ptr };
+    std::filesystem::path current_path{ std::filesystem::current_path() };
 
     // Create and compile our GLSL program from the shaders
     // ----------------------------------
     cy::GLSLProgram city_prog{};
-    if (city_prog.BuildFiles("/home/hieule/research/comm_ray/shader/model.vert", "/home/hieule/research/comm_ray/shader/model.frag")) {}
+    if (!city_prog.BuildFiles(
+        std::filesystem::path{ (current_path / "shader/model.vert") }.c_str(),
+        std::filesystem::path{ (current_path / "shader/model.frag") }.c_str())) {
+        std::cout << "Cannot build shader program" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     cy::GLSLProgram radio_prog{};
-    if (radio_prog.BuildFiles("/home/hieule/research/comm_ray/shader/radio.vert", "/home/hieule/research/comm_ray/shader/radio.frag")) {}
+    if (!radio_prog.BuildFiles(
+        std::filesystem::path{ (current_path / "shader/radio.vert") }.c_str(),
+        std::filesystem::path{ (current_path / "shader/radio.frag") }.c_str())) {
+        std::cout << "Cannot build shader program" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    cy::GLSLProgram cm_prog{};
+    if (!cm_prog.BuildFiles(
+        std::filesystem::path{ (current_path / "shader/radio.vert") }.c_str(),
+        std::filesystem::path{ (current_path / "shader/signal.frag") }.c_str())) {
+        std::cout << "Cannot build shader program" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     /*
         ----------------------------------
@@ -67,8 +91,6 @@ int main(int argc, char* argv []) {
 
     // Load models
     // ----------------------------------
-    std::filesystem::path current_path{ std::filesystem::current_path() };
-
     std::filesystem::path city_path{ current_path / "assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj" };
     auto city_model_ptr1{ std::make_shared<SignalTracer::Model>(city_path.string()) };
     // glm::vec3 tx_pos{ 5.0f, 1.5f, 5.0f };
@@ -90,23 +112,28 @@ int main(int argc, char* argv []) {
     std::vector<std::shared_ptr<SignalTracer::Model>> model_ptrs{ city_model_ptr1 };
     std::vector<std::reference_wrapper<SignalTracer::Model>> models{ *city_model_ptr1 };
 
+    // Coverage Map
+    SignalTracer::Quad cm_quad{ glm::vec3{ 0.0f, 10.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, 10.0f }, glm::vec3{ 5.8f, 0.0f, 0.0f } };
+    // SignalTracer::Quad cm_quad{ glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 5.8f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, 10.0f } };
+
+    // TODO: generate coverage map
+    SignalTracer::CoverageTracer cov_tracer{ models, 2, int(1e6) };
+    SignalTracer::CoverageMap cm{ cov_tracer.generate({ tx0 }) };
+    SignalTracer::MapDrawing map_drawing{ cm.get_num_row(), cm.get_num_col(), cm.get_points(), cm.get_strengths() };
+
+    // int max_reflection_count{ 20 };
+    // int num_rays{ int(12e6) };
     int max_reflection_count{ 2 };
-    float ray_interval{ 0.1f };
+    int num_rays{ int(12) };
     auto timer = Utils::Timer{};
-    SignalTracer::RayCastingTracer sig_tracer{ models, max_reflection_count, ray_interval };
-    // SignalTracer::ImagingTracer sig_tracer{ models, 2 };
+    SignalTracer::RayCastingTracer sig_tracer{ models, max_reflection_count, num_rays };
     timer.execution_time();
-    bool check{ false };
-    if (check) {
-        return EXIT_SUCCESS;
-    }
     timer.reset();
     {
         std::vector<SignalTracer::PathRecord> ref_records{};
         sig_tracer.trace_rays(tx0.get_position(), rx0.get_position(), ref_records);
         rx0.add_reflection_records(tx0.get_id(), ref_records);
     }
-
     timer.execution_time();
 
     std::cout << "Number of reflections: " << rx0.get_reflection_records().at(tx0.get_id()).size() << std::endl;
@@ -152,6 +179,7 @@ int main(int argc, char* argv []) {
     // set drawing for city
     // ----------------------------------
     std::vector<std::shared_ptr<SignalTracer::Drawable>> model_drawable_ptrs(model_ptrs.begin(), model_ptrs.end());
+    model_drawable_ptrs.emplace_back(std::make_shared<SignalTracer::MapDrawing>(map_drawing));
     std::vector<glm::mat4> model_mats(model_ptrs.size(), glm::mat4{ 1.0 });
 
     auto shader_city_prog{ std::make_shared<SignalTracer::ShaderProgram>(
@@ -161,7 +189,6 @@ int main(int argc, char* argv []) {
         std::vector<glm::vec3>{glm::vec3{ 1.0f }},
         model_drawable_ptrs,
         model_mats) };
-
 
     // TODO: Wrap this in a drawing tracer object
     // TODO: From here
@@ -198,6 +225,19 @@ int main(int argc, char* argv []) {
 
     // TODO: to here
 
+    // draw coverage map
+    // ----------------------------------
+    std::vector<std::shared_ptr<SignalTracer::Drawable>> map_drawable_ptrs{ std::make_shared<SignalTracer::MapDrawing>(map_drawing) };
+    std::vector<glm::mat4> map_model_mats{ glm::mat4{ 1.0f } };
+
+    auto shader_map_prog{ std::make_shared<SignalTracer::ShaderProgram>(
+        "map",
+        cm_prog,
+        std::vector<std::shared_ptr<SignalTracer::Light>>{directional_light_ptr},
+        std::vector<glm::vec3>{glm::vec3{ 1.0f }},
+        map_drawable_ptrs,
+        map_model_mats) };
+
     // drawing reflections
     //     ----------------------------------
     std::vector<std::shared_ptr<SignalTracer::Drawable>> lines{};
@@ -214,7 +254,7 @@ int main(int argc, char* argv []) {
 
     auto shader_line_prog{ std::make_shared<SignalTracer::ShaderProgram>(
         "line",
-        radio_prog,
+        cm_prog,
         std::vector<std::shared_ptr<SignalTracer::Light>>{directional_light_ptr},
         std::vector<glm::vec3>{glm::vec3{ 1.0f }},
         lines,
@@ -224,6 +264,7 @@ int main(int argc, char* argv []) {
     scene.add_program(shader_city_prog);
     scene.add_program(shader_radio_prog);
     scene.add_program(shader_line_prog);
+    scene.add_program(shader_map_prog);
 
     scene.render();
 

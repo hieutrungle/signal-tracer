@@ -10,6 +10,7 @@
 #include "hittable_list.hpp"
 #include "utils.hpp"
 #include "triangle.hpp"
+#include "quad.hpp"
 #include "glm/glm.hpp"
 #include "ray.hpp"
 #include <gtest/gtest.h>
@@ -35,9 +36,9 @@ protected:
         p_material = std::make_shared<Material>();
         triangle1 = std::make_shared<Triangle>(p1, p2, p3, p_material);
         triangle2 = std::make_shared<Triangle>(p4, p2, p3, p_material);
-        std::vector<std::shared_ptr<Triangle>> trangles {{triangle1, triangle2}};
-        model1 = SignalTracer::HittableList(trangles);
-        bvh = std::make_shared<SignalTracer::BVHAccel>(model1);
+        std::vector<std::shared_ptr<Triangle>> triangles{ {triangle1, triangle2} };
+        model1 = SignalTracer::HittableList(triangles);
+        bvh = std::make_shared<SignalTracer::BVHAccel>(triangles, 0, triangles.size());
     }
 
     glm::vec3 p1{};
@@ -47,9 +48,10 @@ protected:
     std::shared_ptr<SignalTracer::Material> p_material{};
     std::shared_ptr<SignalTracer::Triangle> triangle1{};
     std::shared_ptr<SignalTracer::Triangle> triangle2{};
+    std::shared_ptr<SignalTracer::Quad> quad1{};
     SignalTracer::HittableList model1{};
     SignalTracer::IntersectRecord record{};
-    SignalTracer::Interval interval{0.0f, 100.0f};
+    SignalTracer::Interval interval{ 0.0f, 100.0f };
     std::shared_ptr<SignalTracer::BVHAccel> bvh{};
 
     SignalTracer::Ray ray1{ glm::vec3{0.0f, 0.0f, 2.0f}, glm::vec3{0.0f, 0.0f, -1.0f} };
