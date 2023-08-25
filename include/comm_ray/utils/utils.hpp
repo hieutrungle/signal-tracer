@@ -200,7 +200,7 @@ namespace Utils {
 
             phi = glm::degrees(phi);
             theta = glm::degrees(theta);
-            std::cout << "theta: " << theta << " phi: " << phi << std::endl;
+            // std::cout << "theta: " << theta << " phi: " << phi << std::endl;
             points[i - min_n] = glm::normalize(spherical2cartesian(phi, theta));
         }
 
