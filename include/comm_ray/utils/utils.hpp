@@ -189,12 +189,12 @@ namespace Utils {
         for (int i = min_n; i <= max_n; ++i) {
             // compute for the right hand coordinate system
             // theta = pitch, phi = yaw
-            //
-            float theta = glm::acos(2.0f * (i - min_n + 0.5) / (max_n - min_n) - 1.0f) - Constant::PI / 2.0f;
-            float phi = 2.0f * Constant::PI * i / golden_ratio;
+            float theta = acos(1.0f - 2.0f * (i - min_n + 0.5) / num_points) - Constant::PI / 2.0f;
+            float phi = 2 * Constant::PI * (i + 0.5) / golden_ratio;
+
             phi = glm::degrees(phi);
             theta = glm::degrees(theta);
-            // std::cout << "theta: " << theta << " phi: " << phi << std::endl;
+            std::cout << "theta: " << theta << " phi: " << phi << std::endl;
             points[i - min_n] = glm::normalize(spherical2cartesian(phi, theta));
         }
 
