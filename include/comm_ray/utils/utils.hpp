@@ -189,8 +189,14 @@ namespace Utils {
         for (int i = min_n; i <= max_n; ++i) {
             // compute for the right hand coordinate system
             // theta = pitch, phi = yaw
-            float theta = acos(1.0f - 2.0f * (i - min_n + 0.5) / num_points) - Constant::PI / 2.0f;
-            float phi = 2 * Constant::PI * (i + 0.5) / golden_ratio;
+            float theta{ float(acos(1.0f - 2.0f * (i - min_n + 0.5) / num_points) - Constant::PI / 2.0f) };
+            float phi{};
+            if (num_points % 2 == 0) {
+                phi = 2 * Constant::PI * (i + 0.5) / golden_ratio;
+            }
+            else {
+                phi = 2 * Constant::PI * i / golden_ratio;
+            }
 
             phi = glm::degrees(phi);
             theta = glm::degrees(theta);
