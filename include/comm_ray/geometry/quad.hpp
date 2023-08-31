@@ -4,8 +4,9 @@
 #define QUAD_HPP
 
 #include "intersect_record.hpp"
-#include "plane.hpp"
 #include "glm/glm.hpp"
+#include "plane.hpp"
+#include "material.hpp"
 #include <math.h>
 #include <memory>
 
@@ -19,7 +20,7 @@ namespace SignalTracer {
     class Quad : public Hittable {
     public:
         // Quad() = default;
-        Quad(const glm::vec3& Q, const glm::vec3& u, const glm::vec3& v);
+        Quad(const glm::vec3& Q, const glm::vec3& u, const glm::vec3& v, std::shared_ptr<Material> mat_ptr = nullptr);
         void set_bounding_box();
 
         glm::vec3 get_corner_point() const { return m_q; }
@@ -45,6 +46,7 @@ namespace SignalTracer {
         float m_d{};
         AABB m_box{};
         glm::vec3 m_w{};
+        std::shared_ptr<Material> m_mat_ptr{};
     };
 }
 

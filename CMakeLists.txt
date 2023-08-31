@@ -134,3 +134,11 @@ if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
    AND BUILD_TESTING)
   add_subdirectory(tests)
 endif()
+
+# Copy shader folder to bin
+# add_custom_command(
+#     TARGET shaders POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E copy_directory
+#         ${CMAKE_SOURCE_DIR}/shaders
+#         ${CMAKE_CURRENT_BINARY_DIR}/shaders
+#         )

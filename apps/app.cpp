@@ -83,6 +83,14 @@ int main(int argc, char* argv []) {
         exit(EXIT_FAILURE);
     }
 
+    cy::GLSLProgram line_prog{};
+    if (!line_prog.BuildFiles(
+        std::filesystem::path{ (current_path / "shader/radio.vert") }.c_str(),
+        std::filesystem::path{ (current_path / "shader/line.frag") }.c_str())) {
+        std::cout << "Cannot build shader program" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     /*
         ----------------------------------
         TRACING
@@ -117,24 +125,33 @@ int main(int argc, char* argv []) {
     // SignalTracer::Quad cm_quad{ glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 5.8f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, 10.0f } };
 
     // TODO: generate coverage map
-    SignalTracer::CoverageTracer cov_tracer{ models, 2, int(1e6) };
-    SignalTracer::CoverageMap cm{ cov_tracer.generate({ tx0 }) };
-    SignalTracer::MapDrawing map_drawing{ cm.get_num_row(), cm.get_num_col(), cm.get_points(), cm.get_strengths() };
+    float cell_size{ 4.0f };
+    int max_reflection_count{ 1 };
+    int num_rays{ int(8) };
+    // SignalTracer::CoverageTracer cov_tracer{ models, 2, int(1e6) };
+    SignalTracer::CoverageTracer cov_tracer{ models, max_reflection_count, num_rays };
+
+    // {
+    std::vector<SignalTracer::PathRecord> tmp_ref_records{};
+    SignalTracer::CoverageMap cm{ cov_tracer.generate({ tx0 }, tmp_ref_records, cell_size) };
+    rx0.add_reflection_records(tx0.get_id(), tmp_ref_records);
+    // }
+
+    SignalTracer::MapDrawing map_drawing{ cm.get_num_row(), cm.get_num_col(), cm.get_cells() };
 
     // int max_reflection_count{ 20 };
     // int num_rays{ int(12e6) };
-    int max_reflection_count{ 2 };
-    int num_rays{ int(12) };
-    auto timer = Utils::Timer{};
-    SignalTracer::RayCastingTracer sig_tracer{ models, max_reflection_count, num_rays };
-    timer.execution_time();
-    timer.reset();
-    {
-        std::vector<SignalTracer::PathRecord> ref_records{};
-        sig_tracer.trace_rays(tx0.get_position(), rx0.get_position(), ref_records);
-        rx0.add_reflection_records(tx0.get_id(), ref_records);
-    }
-    timer.execution_time();
+
+    // auto timer = Utils::Timer{};
+    // SignalTracer::RayCastingTracer sig_tracer{ models, max_reflection_count, num_rays };
+    // timer.execution_time();
+    // timer.reset();
+    // {
+    //     std::vector<SignalTracer::PathRecord> ref_records{};
+    //     sig_tracer.trace_rays(tx0.get_position(), rx0.get_position(), ref_records);
+    //     rx0.add_reflection_records(tx0.get_id(), ref_records);
+    // }
+    // timer.execution_time();
 
     std::cout << "Number of reflections: " << rx0.get_reflection_records().at(tx0.get_id()).size() << std::endl;
 
@@ -254,7 +271,7 @@ int main(int argc, char* argv []) {
 
     auto shader_line_prog{ std::make_shared<SignalTracer::ShaderProgram>(
         "line",
-        cm_prog,
+        line_prog,
         std::vector<std::shared_ptr<SignalTracer::Light>>{directional_light_ptr},
         std::vector<glm::vec3>{glm::vec3{ 1.0f }},
         lines,

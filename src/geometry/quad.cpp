@@ -1,11 +1,12 @@
 #include "quad.hpp"
 
 namespace SignalTracer {
-    Quad::Quad(const glm::vec3& Q, const glm::vec3& u, const glm::vec3& v)
+    Quad::Quad(const glm::vec3& Q, const glm::vec3& u, const glm::vec3& v, std::shared_ptr<Material> mat_ptr)
         : m_q{ Q }, m_u{ u }, m_v{ v }
         , m_normal{ glm::normalize(glm::cross(u, v)) }
         , m_d{ glm::dot(m_normal, Q) }
-        , m_w{ m_normal / glm::dot(m_normal, m_normal) } {
+        , m_w{ glm::cross(u, v) / glm::dot(glm::cross(u, v), glm::cross(u, v)) }
+        , m_mat_ptr{ mat_ptr } {
         set_bounding_box();
     }
 
@@ -13,9 +14,7 @@ namespace SignalTracer {
         m_box = AABB{ m_q, m_q + m_u + m_v }.pad();
     }
 
-    AABB Quad::bounding_box() const {
-        return m_box;
-    }
+    AABB Quad::bounding_box() const { return m_box; }
 
     bool Quad::is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const {
         float denom = glm::dot(m_normal, ray.get_direction());
@@ -25,7 +24,7 @@ namespace SignalTracer {
             return false;
 
         // Return false if the hit point parameter t is outside the ray interval.
-        float t = (m_d - dot(m_normal, ray.get_origin())) / denom;
+        float t = (m_d - glm::dot(m_normal, ray.get_origin())) / denom;
         if (!interval.contains(t))
             return false;
 
@@ -44,7 +43,7 @@ namespace SignalTracer {
         // Ray hits the 2D shape; set the rest of the hit record and return true.
         record.t = t;
         record.point = intersection_point;
-        // record.mat = mat;
+        record.mat_ptr = m_mat_ptr;
         record.normal = (glm::dot(ray.get_direction(), m_normal) > 0) ? -m_normal : m_normal;
 
         return true;

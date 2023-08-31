@@ -7,6 +7,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "cyGL.h"
+#include "containers.hpp"
 #include "drawable.hpp"
 #include <string>
 #include <vector>
@@ -14,57 +15,18 @@
 namespace SignalTracer {
     class MapDrawing : public Drawable {
     public:
-        // MapDrawing() = default;
-        // MapDrawing(const std::vector<glm::vec3>& points) : m_points(points) {
-        //     setup_draw();
-        // }
+        MapDrawing(const int& num_row, const int& num_col, const std::vector<Cell>& cells)
+            : m_cells{ cells }
+            , m_indices{ make_indices(num_row, num_col) } {
 
-        MapDrawing(const int& num_row, const int& num_col, const std::vector<glm::vec3>& vertices, const std::vector<float>& strengths)
-            : m_vertices{ vertices }
-            , m_indices{ make_indices(num_row, num_col) }
-            , m_strengths{ strengths } {
-            m_indices.reserve((num_row - 1) * (num_col - 1) * 2);
-
+            for (int i = 0; i < num_row; ++i) {
+                for (int j = 0; j < num_col; ++j) {
+                    // cout strength
+                    std::cout << m_cells[i * num_col + j].strength << "\t";
+                }
+                std::cout << "\n";
+            }
             setup_draw();
-        }
-
-        // copy constructor
-        MapDrawing(const MapDrawing& other)
-            : m_vertices{ other.m_vertices }
-            , m_indices{ other.m_indices }
-            , m_strengths{ other.m_strengths } {
-            setup_draw();
-        }
-
-        // move constructor
-        MapDrawing(MapDrawing&& other) noexcept
-            : m_vertices{ std::move(other.m_vertices) }
-            , m_indices{ std::move(other.m_indices) }
-            , m_strengths{ std::move(other.m_strengths) } {
-            setup_draw();
-        }
-
-        // copy assignment
-        MapDrawing& operator=(const MapDrawing& other) {
-            m_vertices = other.m_vertices;
-            m_indices = other.m_indices;
-            m_strengths = other.m_strengths;
-            setup_draw();
-            return *this;
-        }
-
-        // move assignment
-        MapDrawing& operator=(MapDrawing&& other) noexcept {
-            m_vertices = std::move(other.m_vertices);
-            m_indices = std::move(other.m_indices);
-            m_strengths = std::move(other.m_strengths);
-            setup_draw();
-            return *this;
-        }
-
-        // Destructor
-        ~MapDrawing() override {
-            Drawable::~Drawable();
         }
 
         // prepare indices
@@ -90,12 +52,17 @@ namespace SignalTracer {
                 }
             }
 
-            // // cout
-            // for (std::size_t i = 0; i < indices.size(); i += 6) {
-            //     std::cout << indices[i] << " " << indices[i + 1] << " " << indices[i + 2] << "\t" << indices[i + 3] << " " << indices[i + 4] << " " << indices[i + 5] << std::endl;
-            // }
-
             return indices;
+        }
+
+        std::vector<glm::vec3> make_strengths(const std::vector<float>& strengths) {
+            std::vector<glm::vec3> strengths_vec(strengths.size(), glm::vec3(0));
+
+            for (std::size_t i = 0; i < strengths.size(); ++i) {
+                strengths_vec[i] = glm::vec3(strengths[i]);
+            }
+
+            return strengths_vec;
         }
 
         void draw(cy::GLSLProgram& shader_program, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) const override {
@@ -104,6 +71,7 @@ namespace SignalTracer {
             shader_program.SetUniformMatrix4("model_view", glm::value_ptr(view * model), 1, false);
             shader_program.SetUniformMatrix4("model_view_projection", glm::value_ptr(projection * view * model), 1, false);
             shader_program.SetUniformMatrix3("normal_matrix", glm::value_ptr(normal_matrix), 1, false);
+
             glBindVertexArray(m_vao);
             glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(m_indices.size()), GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
@@ -118,22 +86,24 @@ namespace SignalTracer {
 
             glGenBuffers(1, &m_vbo);
             glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-            glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(glm::vec3), &m_vertices[0], GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, m_cells.size() * sizeof(Cell), &m_cells[0], GL_STATIC_DRAW);
 
             glGenBuffers(1, &m_ebo);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(unsigned int), &m_indices[0], GL_STATIC_DRAW);
 
             glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*) 0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Cell), (void*) 0);
+
+            glEnableVertexAttribArray(3);
+            glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Cell), (void*) offsetof(Cell, strength));
 
             glBindVertexArray(0);
         }
 
     private:
-        std::vector<glm::vec3> m_vertices{};
+        std::vector<Cell> m_cells{};
         std::vector<uint> m_indices{};
-        std::vector<float> m_strengths{};
     };
 }
 
