@@ -6,6 +6,7 @@
 #include "glm/glm.hpp"
 #include "quad.hpp"
 #include "containers.hpp"
+#include <cmath>
 #include <vector>
 
 namespace SignalTracer {
@@ -46,7 +47,7 @@ namespace SignalTracer {
             // // std::cout
             // for (int i = 0; i < m_num_row; ++i) {
             //     for (int j = 0; j < m_num_col; ++j) {
-            //         std::cout << m_cells[i * m_num_col + j].point.x << " " << m_cells[i * m_num_col + j].point.y << " " << m_cells[i * m_num_col + j].point.z << "\t";
+            //         std::cout << m_cells[i * m_num_col + j].point.x << " " << m_cells[i * m_num_col + j].point.y << " " << m_cells[i * m_num_col + j].point.z << "  \t";
             //     }
             //     std::cout << std::endl;
             // }
@@ -93,6 +94,9 @@ namespace SignalTracer {
             return m_cells[cell_index].strength;
         }
 
+        /// @brief adding signal strength to a cell center.
+        /// @param point position of the ray-coverage_map intersection point.
+        /// @param strength signal strength at the intersection point in dB.
         void add_strength(const glm::vec3 point, float strength) {
             int cell_index = find_cell_index(point);
             m_cells[cell_index].strength += strength;
@@ -104,16 +108,19 @@ namespace SignalTracer {
 
             // project point into vector u and v
             glm::vec3 to_point_vec = point - m_cm.get_corner_point();
-            glm::vec3 projection_u = glm::dot(to_point_vec, u_vec) * u_vec;
-            glm::vec3 projection_v = glm::dot(to_point_vec, v_vec) * v_vec;
+            float mag_u = glm::dot(to_point_vec, u_vec);
+            float mag_v = glm::dot(to_point_vec, v_vec);
 
             // calculate the cell index
-            int row = glm::vec3(projection_u).length() / m_cell_size;
-            int col = glm::vec3(projection_v).length() / m_cell_size;
+            if (mag_u / m_cell_size > m_num_row || mag_v / m_cell_size > m_num_col) {
+                std::cerr << "Point is out of range." << std::endl;
+                return -1;
+            }
+
+            int row{ int(std::floor(mag_u / m_cell_size + 0.5f)) };
+            int col{ int(std::floor(mag_v / m_cell_size + 0.5f)) };
             int cell_index = row * m_num_col + col;
 
-            std::cout << "point: " << point.x << " " << point.y << " " << point.z << std::endl;
-            std::cout << "cell index: " << cell_index << std::endl;
             return cell_index;
         }
 
@@ -123,8 +130,6 @@ namespace SignalTracer {
         int m_num_row{};
         int m_num_col{};
         std::vector<Cell> m_cells{};
-        // std::vector<glm::vec3> m_points{};
-        // std::vector<float> m_strengths{};
     };
 }
 

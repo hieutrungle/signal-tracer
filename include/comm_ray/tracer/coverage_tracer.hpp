@@ -127,7 +127,7 @@ namespace SignalTracer {
                     IntersectRecord cm_isect_record{};
                     if (cm_quad.is_hit(rays[i], interval, cm_isect_record)) {
 
-                        /// TODO: need to have a container that contains cell index and a list of signal strengths at that cell
+                        // TODO: need to have a container that contains cell index and a list of signal strengths at that cell
                         // TODO: structure of the container:
                         // TODO: add calc_signal_strength() function 
                         float added_strength{ path_recs[i].get_signal_strength() };
@@ -186,9 +186,6 @@ namespace SignalTracer {
             {
                 std::vector <glm::vec3> directions{ Utils::get_fibonacci_lattice(m_num_rays) };
                 std::transform(std::execution::par_unseq, directions.begin(), directions.end(), rays.begin(), [&tx_pos](const glm::vec3& dir) {return Ray{ tx_pos, dir };});
-                for (std::size_t i = 0; i < rays.size(); ++i) {
-                    std::cout << "ray " << i << ": " << rays[i];
-                }
             }
             timer.execution_time();
 
@@ -196,13 +193,12 @@ namespace SignalTracer {
             // ray tracing and store signal strength into a container
             timer.reset();
             float tx_power{ tx.get_power() };
+            float tx_freq{ tx.get_frequency() };
             for (int i = 0; i < m_num_rays; i++) {
-                std::cout << "ray: " << i << rays[i];
                 tmp_path_recs[i].add_point(tx_pos);
-                tmp_path_recs[i].set_signal_strength(tx_power);
+                tmp_path_recs[i].set_signal_strength(Utils::dB_to_linear(tx_power));
                 Interval interval{ Constant::EPSILON, Constant::INF_POS };
 
-                // TODO: currently a reflection reduces the signal strength by 1, need to change this
                 for (int depth = 0; depth < m_max_reflection; depth++) {
                     // if the ray hits the coverage map plane, record the hit point
                     IntersectRecord cm_isect_record{};
@@ -210,24 +206,32 @@ namespace SignalTracer {
                     bool is_quad_hit{ cm_quad.is_hit(rays[i], interval, cm_isect_record) };
                     bool is_scene_hit{ m_tlas.is_hit(rays[i], interval, scene_isect_record) };
 
+                    glm::vec3 start_pos{ tmp_path_recs[i].get_last_point() };
+                    float start_strength{ tmp_path_recs[i].get_signal_strength() };
+                    start_strength = Utils::dB_to_linear(start_strength);
+                    float start_gain{ Utils::dB_to_linear(tx.get_gain()) };
+                    float end_gain{ 1.0f };
+
                     if (is_quad_hit && cm_isect_record.t < scene_isect_record.t) {
 
-                        /// TODO: need to have a container that contains cell index and a list of signal strengths at that cell
-                        // TODO: structure of the container:
-                        // TODO: add calc_signal_strength() function 
-                        float added_strength{ tmp_path_recs[i].get_signal_strength() };
+                        // TODO: Now: calc signal strength using Friss -> should use EM wave propagation model
+                        float added_strength{ calc_friss_strength(start_pos, cm_isect_record.point, tx_freq, start_strength, start_gain, end_gain) };
+                        // float added_strength{ tmp_path_recs[i].get_signal_strength() };
                         cm.add_strength(cm_isect_record.point, added_strength);
                     }
 
                     // if the ray hits the scene, record the hit point
                     if (is_scene_hit) {
                         tmp_path_recs[i].add_record(scene_isect_record.point, scene_isect_record.mat_ptr, scene_isect_record.tri_ptr);
-                        tmp_path_recs[i].set_signal_strength(tmp_path_recs[i].get_signal_strength() - 1);
+
+                        // TODO: Now: calc signal strength using Friss -> should use EM wave propagation model
+                        float added_strength{ calc_friss_strength(start_pos, scene_isect_record.point, tx_freq, start_strength, start_gain, end_gain) };
+                        tmp_path_recs[i].set_signal_strength(added_strength);
 
                         Ray scattered_ray{};
                         glm::vec3 attenuation{};
                         if (scene_isect_record.mat_ptr->is_scattering(rays[i], scene_isect_record, attenuation, scattered_ray)) {
-                            rays[i] = scattered_ray;
+                            rays[i] = std::move(scattered_ray);
                             continue;
                         }
                         else {
@@ -235,7 +239,11 @@ namespace SignalTracer {
                         }
                     }
                     else {
-                        tmp_path_recs[i].clear();
+                        // tmp_path_recs[i].clear();
+                        if (depth != 0) {
+                            auto reflected_point = rays[i].point_at(1000.0f);
+                            tmp_path_recs[i].add_record(reflected_point);
+                        }
                         break;
                     }
                 }
@@ -251,6 +259,13 @@ namespace SignalTracer {
             }
 
             return cm;
+        }
+
+        float calc_friss_strength(const glm::vec3& start_pos, const glm::vec3& end_pos, float freq, float tx_power, float tx_gain, float rx_gain) {
+            float lambda = Constant::LIGHT_SPEED / freq;
+            float dist = glm::distance(start_pos, end_pos);
+            float strength = tx_power * tx_gain * rx_gain * std::pow(lambda / (4 * Constant::PI * dist), 2);
+            return strength;
         }
 
         Quad make_coverage_quad(const AABB& scene, float map_height = 1.5f) {

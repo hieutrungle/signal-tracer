@@ -9,6 +9,7 @@ namespace SignalTracer {
     struct Cell {
         glm::vec3 point{};
         float strength{ 0.0f };
+        glm::vec3 color{ 0.0f };
     };
 
     struct TracerCell {

@@ -126,8 +126,8 @@ int main(int argc, char* argv []) {
 
     // TODO: generate coverage map
     float cell_size{ 4.0f };
-    int max_reflection_count{ 1 };
-    int num_rays{ int(8) };
+    int max_reflection_count{ 3 };
+    int num_rays{ int(20) };
     // SignalTracer::CoverageTracer cov_tracer{ models, 2, int(1e6) };
     SignalTracer::CoverageTracer cov_tracer{ models, max_reflection_count, num_rays };
 
@@ -161,9 +161,9 @@ int main(int argc, char* argv []) {
     std::cout << prop_model << std::endl;
     {
         auto ref_records{ rx0.get_reflection_records().at(tx0.get_id()) };
-        prop_model.calc_all_propagation_properties(ref_records);
+        // prop_model.calc_all_propagation_properties(ref_records);
 
-        std::cout << "Total receiving power: " << prop_model.calc_total_receiving_power(ref_records) << " dB" << std::endl;
+        // std::cout << "Total receiving power: " << prop_model.calc_total_receiving_power(ref_records) << " dB" << std::endl;
 
         rx0.add_reflection_records(tx0.get_id(), ref_records);
     }

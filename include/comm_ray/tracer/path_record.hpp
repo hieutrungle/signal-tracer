@@ -88,6 +88,7 @@ namespace SignalTracer {
         float get_signal_delay() const { return m_delay; }
         float get_distance() const { return m_distance; }
         float get_signal_phase() const { return m_phase; }
+        glm::vec3 get_last_point() const { return m_points.back(); }
 
         void add_reflection_count() { m_ref_count += 1; }
 
