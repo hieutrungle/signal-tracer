@@ -86,13 +86,13 @@ cmake --build . -- -j$PARALLEL_CORES
 Debug run:
 
 ```bash
-./build/bin/main.exe
+./build/bin/app.exe
 ```
 
 Release run:
 
 ```bash
-./build_release/bin/main.exe
+./build_release/bin/app.exe
 ```
 
 ### Mouse
