@@ -16,18 +16,11 @@ namespace SignalTracer {
     public:
         Material() = default;
 
-        // Material(const Material& other) = delete;
-        // Material(Material&& other) = delete;
-        // Material& operator=(const Material& other) = delete;
-        // Material& operator=(Material&& other) = delete;
-        virtual ~Material() = default;
-
         virtual std::ostream& print(std::ostream& out) const {
             return out;
         }
         friend std::ostream& operator<<(std::ostream& out, const Material& material) {
             return material.print(out);
-            // << "\tReal relative permittivity, a = " << material.get_real_relative_permittivity_a() << ", b = " << material.get_real_relative_permittivity_b() << "\n" << "\tConductivity, S/m, c = " << material.get_conductivity_c() << ", d = " << material.get_conductivity_d() << "\n";
         }
 
         // perfect reflection
