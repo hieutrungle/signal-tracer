@@ -19,13 +19,46 @@ namespace SignalTracer {
             : m_cells{ cells }
             , m_indices{ make_indices(num_row, num_col) } {
 
-            for (int i = 0; i < num_row; ++i) {
-                for (int j = 0; j < num_col; ++j) {
-                    // cout strength
-                    std::cout << m_cells[i * num_col + j].strength << "\t";
+            // find max strength in vector of cells using binary search
+            float max_strength{ Constant::INF_NEG };
+            float min_strength{ Constant::INF_POS };
+            for (const auto& cell : m_cells) {
+                if (cell.strength > max_strength) {
+                    max_strength = cell.strength;
                 }
-                std::cout << "\n";
+                if (cell.strength < min_strength) {
+                    min_strength = cell.strength;
+                }
             }
+
+            std::cout << "max strength: " << max_strength << "\n";
+            std::cout << "min strength: " << min_strength << "\n";
+
+            // normalize strength to put in color
+            for (auto& cell : m_cells) {
+                float intensity{ (max_strength - cell.strength) / (max_strength - min_strength) };
+                cell.color = glm::vec3(0.75f, intensity, intensity);
+            }
+
+
+            // for (int i = 0; i < num_row; ++i) {
+            //     for (int j = 0; j < num_col; ++j) {
+            //         // cout strength
+            //         std::cout << m_cells[i * num_col + j].strength << "\t";
+            //     }
+            //     std::cout << "\n";
+            // }
+
+            // std::cout << "\n\n";
+
+            // for (int i = 0; i < num_row; ++i) {
+            //     for (int j = 0; j < num_col; ++j) {
+            //         // cout color
+            //         std::cout << m_cells[i * num_col + j].color.x << " " << m_cells[i * num_col + j].color.y << " " << m_cells[i * num_col + j].color.z << "\t";
+            //     }
+            //     std::cout << "\n";
+            // }
+
             setup_draw();
         }
 
@@ -96,7 +129,7 @@ namespace SignalTracer {
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Cell), (void*) 0);
 
             glEnableVertexAttribArray(3);
-            glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Cell), (void*) offsetof(Cell, strength));
+            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Cell), (void*) offsetof(Cell, color));
 
             glBindVertexArray(0);
         }

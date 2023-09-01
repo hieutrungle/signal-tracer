@@ -87,86 +87,83 @@ namespace SignalTracer {
         /// change the direction to the reflection direction
         /// and repeat step 3
         /// - The final coverage map is a 2D array of cells, each cell contains a list of ray-quad intersections and the energy of signal at the intersections
-        CoverageMap generate(const std::vector<Transmitter>& transmitters, float cell_size = 5) {
-            // for (std::size_t i = 0; i < transmitters.size(); i++) {
-            // }
+        // CoverageMap generate(const std::vector<Transmitter>& transmitters, float cell_size = 5) {
+        //     // for (std::size_t i = 0; i < transmitters.size(); i++) {
+        //     // }
 
-            // testing for only one transmitter
-            auto tx{ transmitters[0] };
-            glm::vec3 tx_pos{ tx.get_position() };
-            std::clog << "Running in sequential testing mode" << std::endl;
-            std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
+        //     // testing for only one transmitter
+        //     auto tx{ transmitters[0] };
+        //     glm::vec3 tx_pos{ tx.get_position() };
+        //     std::clog << "Running in sequential testing mode" << std::endl;
+        //     std::clog << "tx position: " << glm::to_string(tx_pos) << std::endl;
 
-            // initialize the coverage map
-            Quad cm_quad{ make_coverage_quad(m_tlas.bounding_box(), 3.0f) };
-            CoverageMap cm{ cm_quad, cell_size };
+        //     // initialize the coverage map
+        //     Quad cm_quad{ make_coverage_quad(m_tlas.bounding_box(), 3.0f) };
+        //     CoverageMap cm{ cm_quad, cell_size };
 
-            // generate rays from the transmitters to the screen
-            Utils::Timer timer{};
-            std::vector<Ray> rays(m_num_rays);
-            {
-                std::vector <glm::vec3> directions{ Utils::get_fibonacci_lattice(m_num_rays) };
-                std::transform(std::execution::par_unseq, directions.begin(), directions.end(), rays.begin(), [&tx_pos](const glm::vec3& dir) {return Ray{ tx_pos, dir };});
-                for (std::size_t i = 0; i < rays.size(); ++i) {
-                    std::cout << "ray " << i << ": " << rays[i];
-                }
-            }
-            timer.execution_time();
+        //     // generate rays from the transmitters to the screen
+        //     Utils::Timer timer{};
+        //     std::vector<Ray> rays(m_num_rays);
+        //     {
+        //         std::vector <glm::vec3> directions{ Utils::get_fibonacci_lattice(m_num_rays) };
+        //         std::transform(std::execution::par_unseq, directions.begin(), directions.end(), rays.begin(), [&tx_pos](const glm::vec3& dir) {return Ray{ tx_pos, dir };});
+        //         for (std::size_t i = 0; i < rays.size(); ++i) {
+        //             std::cout << "ray " << i << ": " << rays[i];
+        //         }
+        //     }
+        //     timer.execution_time();
 
-            // ray tracing and store signal strength into a container
-            timer.reset();
-            std::vector<PathRecord> path_recs(m_num_rays);
-            float tx_power{ tx.get_power() };
-            for (int i = 0; i < m_num_rays; i++) {
-                path_recs[i].set_signal_strength(tx_power);
-                Interval interval{ Constant::EPSILON, Constant::INF_POS };
+        //     // ray tracing and store signal strength into a container
+        //     timer.reset();
+        //     std::vector<PathRecord> path_recs(m_num_rays);
+        //     float tx_power{ tx.get_power() };
+        //     for (int i = 0; i < m_num_rays; i++) {
+        //         path_recs[i].set_signal_strength(tx_power);
+        //         Interval interval{ Constant::EPSILON, Constant::INF_POS };
 
-                // TODO: currently a reflection reduces the signal strength by 1, need to change this
-                for (int depth = 0; depth < m_max_reflection; depth++) {
-                    // if the ray hits the coverage map plane, record the hit point
-                    IntersectRecord cm_isect_record{};
-                    if (cm_quad.is_hit(rays[i], interval, cm_isect_record)) {
+        //         // TODO: currently a reflection reduces the signal strength by 1, need to change this
+        //         for (int depth = 0; depth < m_max_reflection; depth++) {
+        //             // if the ray hits the coverage map plane, record the hit point
+        //             IntersectRecord cm_isect_record{};
+        //             if (cm_quad.is_hit(rays[i], interval, cm_isect_record)) {
 
-                        // TODO: need to have a container that contains cell index and a list of signal strengths at that cell
-                        // TODO: structure of the container:
-                        // TODO: add calc_signal_strength() function 
-                        float added_strength{ path_recs[i].get_signal_strength() };
-                        cm.add_strength(cm_isect_record.point, added_strength);
+        //                 // TODO: need to have a container that contains cell index and a list of signal strengths at that cell
+        //                 // TODO: structure of the container:
+        //                 // TODO: add calc_signal_strength() function 
+        //                 float added_strength{ path_recs[i].get_signal_strength() };
+        //                 cm.add_strength(cm_isect_record.point, added_strength);
 
-                    }
+        //             }
 
-                    // if the ray hits the scene, record the hit point
-                    IntersectRecord scene_isect_record{};
-                    if (m_tlas.is_hit(rays[i], interval, scene_isect_record)) {
-                        path_recs[i].add_record(scene_isect_record.point, scene_isect_record.mat_ptr, scene_isect_record.tri_ptr);
-                        path_recs[i].set_signal_strength(path_recs[i].get_signal_strength() - 1);
+        //             // if the ray hits the scene, record the hit point
+        //             IntersectRecord scene_isect_record{};
+        //             if (m_tlas.is_hit(rays[i], interval, scene_isect_record)) {
+        //                 path_recs[i].add_record(scene_isect_record.point, scene_isect_record.mat_ptr, scene_isect_record.tri_ptr);
+        //                 path_recs[i].set_signal_strength(path_recs[i].get_signal_strength() - 1);
 
-                        Ray scattered_ray{};
-                        glm::vec3 attenuation{};
-                        if (scene_isect_record.mat_ptr->is_scattering(rays[i], scene_isect_record, attenuation, scattered_ray)) {
-                            rays[i] = scattered_ray;
-                            continue;
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                    else {
-                        break;
-                    }
-                }
-            }
-            timer.execution_time();
+        //                 Ray scattered_ray{};
+        //                 glm::vec3 attenuation{};
+        //                 if (scene_isect_record.mat_ptr->is_scattering(rays[i], scene_isect_record, attenuation, scattered_ray)) {
+        //                     rays[i] = scattered_ray;
+        //                     continue;
+        //                 }
+        //                 else {
+        //                     break;
+        //                 }
+        //             }
+        //             else {
+        //                 break;
+        //             }
+        //         }
+        //     }
+        //     timer.execution_time();
 
-            // if 
+        //     cm.convert_to_dB();
 
-            // change the color of the cell if the cell is covered by the ray (for testing in intial phase)
-            timer.reset();
+        //     return cm;
+        // }
 
-            return cm;
-        }
-
-        CoverageMap generate(const std::vector<Transmitter>& transmitters, std::vector<SignalTracer::PathRecord>& path_recs, float cell_size = 5) {
+        CoverageMap generate(const std::vector<Transmitter>& transmitters, float cell_size, std::vector<SignalTracer::PathRecord>* path_recs = nullptr) {
             // for (std::size_t i = 0; i < transmitters.size(); i++) {
             // }
 
@@ -252,18 +249,29 @@ namespace SignalTracer {
 
             // change the color of the cell if the cell is covered by the ray (for testing in intial phase)
             timer.reset();
-            for (int i = 0; i < m_num_rays; i++) {
-                if (!tmp_path_recs[i].is_empty()) {
-                    path_recs.emplace_back(tmp_path_recs[i]);
+            if (path_recs != nullptr) {
+                for (int i = 0; i < m_num_rays; i++) {
+                    if (!tmp_path_recs[i].is_empty()) {
+                        (*path_recs).emplace_back(tmp_path_recs[i]);
+                    }
                 }
             }
+            // for (int i = 0; i < m_num_rays; i++) {
+            //     if (!tmp_path_recs[i].is_empty()) {
+            //         path_recs.emplace_back(tmp_path_recs[i]);
+            //     }
+            // }
 
+            cm.convert_to_dB();
+
+            std::clog << "Coverage map generation finished" << std::endl;
             return cm;
         }
 
         float calc_friss_strength(const glm::vec3& start_pos, const glm::vec3& end_pos, float freq, float tx_power, float tx_gain, float rx_gain) {
             float lambda = Constant::LIGHT_SPEED / freq;
             float dist = glm::distance(start_pos, end_pos);
+            if (dist <= 1.0f) { return tx_power * tx_gain * rx_gain; }
             float strength = tx_power * tx_gain * rx_gain * std::pow(lambda / (4 * Constant::PI * dist), 2);
             return strength;
         }

@@ -120,22 +120,21 @@ int main(int argc, char* argv []) {
     std::vector<std::shared_ptr<SignalTracer::Model>> model_ptrs{ city_model_ptr1 };
     std::vector<std::reference_wrapper<SignalTracer::Model>> models{ *city_model_ptr1 };
 
-    // Coverage Map
-    SignalTracer::Quad cm_quad{ glm::vec3{ 0.0f, 10.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, 10.0f }, glm::vec3{ 5.8f, 0.0f, 0.0f } };
-    // SignalTracer::Quad cm_quad{ glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 5.8f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, 10.0f } };
-
     // TODO: generate coverage map
-    float cell_size{ 4.0f };
-    int max_reflection_count{ 3 };
-    int num_rays{ int(20) };
-    // SignalTracer::CoverageTracer cov_tracer{ models, 2, int(1e6) };
+    float cell_size{ 1.0f };
+    int max_reflection_count{ 5 };
+    int num_rays{ int(500) };
     SignalTracer::CoverageTracer cov_tracer{ models, max_reflection_count, num_rays };
 
-    // {
-    std::vector<SignalTracer::PathRecord> tmp_ref_records{};
-    SignalTracer::CoverageMap cm{ cov_tracer.generate({ tx0 }, tmp_ref_records, cell_size) };
-    rx0.add_reflection_records(tx0.get_id(), tmp_ref_records);
-    // }
+    SignalTracer::CoverageMap cm{};
+    {
+        std::vector<SignalTracer::PathRecord> tmp_ref_records{};
+        std::vector<SignalTracer::PathRecord>* ref_records_ptr{ nullptr };
+        // std::vector<SignalTracer::PathRecord>* ref_records_ptr{ &tmp_ref_records };
+        cm = cov_tracer.generate({ tx0 }, cell_size, ref_records_ptr);
+        // SignalTracer::CoverageMap cm{ cov_tracer.generate({ tx0 }, cell_size, &tmp_ref_records) };
+        rx0.add_reflection_records(tx0.get_id(), tmp_ref_records);
+    }
 
     SignalTracer::MapDrawing map_drawing{ cm.get_num_row(), cm.get_num_col(), cm.get_cells() };
 

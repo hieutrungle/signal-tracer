@@ -23,6 +23,9 @@ namespace SignalTracer {
     /// Interpolation between cell centers is used to calculate the signal strength at other points.
     class CoverageMap {
     public:
+
+        CoverageMap() = default;
+
         CoverageMap(const Quad& quad, const float cell_size = 2.0f)
             : m_cm{ quad }
             , m_cell_size{ cell_size }
@@ -124,8 +127,19 @@ namespace SignalTracer {
             return cell_index;
         }
 
+        void convert_to_dB() {
+            for (Cell& cell : m_cells) {
+                if (cell.strength == 0.0f) {
+                    cell.strength = -100.0f;
+                }
+                else {
+                    cell.strength = 10.0f * std::log10(cell.strength);
+                }
+            }
+        }
+
     private:
-        Quad m_cm;
+        Quad m_cm{};
         float m_cell_size{ 2.0f };
         int m_num_row{};
         int m_num_col{};

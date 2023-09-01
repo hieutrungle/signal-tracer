@@ -19,7 +19,7 @@ namespace SignalTracer {
     ///     v, a vector representing the second side. Q + v gives one of the norners adjacent to Q.
     class Quad : public Hittable {
     public:
-        // Quad() = default;
+        Quad() = default;
         Quad(const glm::vec3& Q, const glm::vec3& u, const glm::vec3& v, std::shared_ptr<Material> mat_ptr = nullptr);
         void set_bounding_box();
 
