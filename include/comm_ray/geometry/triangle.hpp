@@ -88,14 +88,6 @@ namespace SignalTracer {
             return m_c;
         }
 
-        // array subscript operator with assignment
-        // eg. triangle[0] = glm::vec3{1.0f, 1.0f, 1.0f};
-        // glm::vec3& operator[](int i) {
-        //     if (i == 0) { update(); return m_a; };
-        //     if (i == 1) return m_b;
-        //     return m_c;
-        // }
-
         // cout
         std::ostream& print(std::ostream& out) const override {
             out << "Triangle: [" << glm::to_string(m_a) << ", " << glm::to_string(m_b) << ", " << glm::to_string(m_c) << "]" << std::endl;
@@ -183,14 +175,6 @@ namespace SignalTracer {
                 record.mat_ptr = m_material_ptr;
                 return true;
             }
-
-            // if (interval.contains(t)) {
-            //     record.set_t(t);
-            //     record.set_point(ray.point_at(t));
-            //     record.set_face_normal(ray, get_normal());
-            //     record.set_material_ptr(m_material_ptr);
-            //     return true;
-            // }
             return false;
         }
 
