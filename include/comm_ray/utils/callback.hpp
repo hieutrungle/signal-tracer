@@ -3,7 +3,6 @@
 #ifndef GLFW_CALLBACK_HPP
 #define GLFW_CALLBACK_HPP
 
-#include "config.hpp"
 #include "utils.hpp"
 #include "viewing.hpp"
 #include "glad/gl.h"
