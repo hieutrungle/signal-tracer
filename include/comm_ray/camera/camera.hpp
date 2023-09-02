@@ -2,7 +2,6 @@
 #ifndef ORBIT_CAMERA_HPP
 #define ORBIT_CAMERA_HPP
 
-#include "base_camera.hpp"
 #include "constant.hpp"
 #include "glad/gl.h"
 #include "glm/glm.hpp"
