@@ -121,7 +121,7 @@ int main(int argc, char* argv []) {
     std::vector<std::reference_wrapper<SignalTracer::Model>> models{ *city_model_ptr1 };
 
     // TODO: generate coverage map
-    float cell_size{ 1.0f };
+    float cell_size{ 2.0f };
     int max_reflection_count{ 5 };
     int num_rays{ int(500) };
     SignalTracer::CoverageTracer cov_tracer{ models, max_reflection_count, num_rays };

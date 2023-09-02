@@ -145,13 +145,15 @@ namespace SignalTracer {
                     if (is_scene_hit) {
                         tmp_path_recs[i].add_record(scene_isect_record.point, scene_isect_record.mat_ptr, scene_isect_record.tri_ptr);
 
-                        // TODO: Now: calc signal strength using Friss -> should use EM wave propagation model
-                        float added_strength{ calc_friss_strength(start_pos, scene_isect_record.point, tx_freq, start_strength, start_gain, end_gain) };
-                        tmp_path_recs[i].set_signal_strength(added_strength);
+
 
                         Ray scattered_ray{};
                         glm::vec3 attenuation{};
                         if (scene_isect_record.mat_ptr->is_scattering(rays[i], scene_isect_record, attenuation, scattered_ray)) {
+                            // TODO: Now: calc signal strength using Friss -> should use EM wave propagation model
+                            // float ref_coef{ calc_reflection_coefficient(scene_isect_record.incident_angle, scene_isect_record.eta1, scene_isect_record.eta2, scene_isect_record.polar) };
+                            float added_strength{ calc_friss_strength(start_pos, scene_isect_record.point, tx_freq, start_strength, start_gain, end_gain) };
+                            tmp_path_recs[i].set_signal_strength(added_strength);
                             rays[i] = std::move(scattered_ray);
                             continue;
                         }
@@ -192,11 +194,11 @@ namespace SignalTracer {
             return cm;
         }
 
-        float calc_friss_strength(const glm::vec3& start_pos, const glm::vec3& end_pos, float freq, float tx_power, float tx_gain, float rx_gain) {
+        float calc_friss_strength(const glm::vec3& start_pos, const glm::vec3& end_pos, float freq, float tx_power, float tx_gain, float rx_gain, float ref_coef = 1.0f) {
             float lambda = Constant::LIGHT_SPEED / freq;
             float dist = glm::distance(start_pos, end_pos);
             if (dist <= 1.0f) { return tx_power * tx_gain * rx_gain; }
-            float strength = tx_power * tx_gain * rx_gain * std::pow(lambda / (4 * Constant::PI * dist), 2);
+            float strength = tx_power * tx_gain * rx_gain * std::pow(lambda / (4 * Constant::PI * dist), 2) * std::pow(ref_coef, 2);
             return strength;
         }
 
@@ -212,6 +214,33 @@ namespace SignalTracer {
 
         void reset() override {};
         void trace_rays(const glm::vec3& UTILS_UNUSED_PARAM(tx_pos), const glm::vec3& UTILS_UNUSED_PARAM(rx_pos), std::vector<PathRecord>& UTILS_UNUSED_PARAM(ref_records)) override {};
+
+
+        static float calc_reflection_coefficient(const float& incident_angle, const float& eta1, const float& eta2, const std::string& polar = "TM") {
+            float coefficient{};
+            if (std::sqrt(eta1 / eta2) * std::sin(incident_angle) >= 1.0f) {
+                std::cout << "Total internal reflection" << std::endl;
+                coefficient = 1.0f;
+            }
+            else {
+                float sqrt_eta1 = std::sqrt(eta1);
+                float sqrt_eta2 = std::sqrt(eta2);
+                float cos_theta1 = std::cos(incident_angle);
+                float cos_theta2 = std::sqrt(1 - (eta1 / eta2) * std::pow(std::sin(incident_angle), 2));
+                if (polar == "TM") {
+                    coefficient = (sqrt_eta2 * cos_theta1 - sqrt_eta1 * cos_theta2) / (sqrt_eta2 * cos_theta1 + sqrt_eta1 * cos_theta2);
+                }
+                else if (polar == "TE") {
+                    coefficient = (sqrt_eta1 * cos_theta1 - sqrt_eta2 * cos_theta2) / (sqrt_eta1 * cos_theta1 + sqrt_eta2 * cos_theta2);
+                }
+                else {
+                    std::cerr << "Invalid polarization" << std::endl;
+                    coefficient = 0.0f;
+                }
+
+            }
+            return std::fabs(coefficient);
+        }
 
     private:
 
