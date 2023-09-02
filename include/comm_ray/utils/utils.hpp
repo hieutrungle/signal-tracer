@@ -94,41 +94,24 @@ namespace Utils {
     }
 
     class Timer {
+    public:
+
+        /// @brief Reset the timer to zero
+        void reset();
+
+        /// @brief Return the elapsed time in seconds
+        /// @return The elapsed time in seconds
+        double elapsed() const;
+
+        /// @brief Print the execution time in seconds, minutes, hours
+        void execution_time();
+
     private:
         // Type aliases to make accessing nested type easier
         using Clock = std::chrono::steady_clock;
         using Second = std::chrono::duration<double, std::ratio<1> >;
-
         std::chrono::time_point<Clock> m_begin{ Clock::now() };
 
-    public:
-
-        void reset() {
-            m_begin = Clock::now();
-        }
-
-        double elapsed() const {
-            return std::chrono::duration_cast<Second>(Clock::now() - m_begin).count();
-        }
-
-        void execution_time() {
-
-            auto sec = elapsed();
-            auto h = static_cast<double>(sec) / 3600.0;
-            if (h < 1.0) {
-                auto m = static_cast<double>(sec) / 60.0;
-                if (m < 1.0) {
-                    std::clog << "Execution time: " << sec << " seconds" << std::endl << std::endl;
-                    return;
-                }
-                auto s = static_cast<double>(static_cast<int>(sec) % 60);
-                std::clog << "Execution time: " << static_cast<int>(m) << " minutes " << s << " seconds" << std::endl << std::endl;
-                return;
-            }
-            auto m = static_cast<double>(static_cast<int>(sec) % 3600) / 60.0;
-            auto s = static_cast<double>((static_cast<int>(sec) % 3600) % 60);
-            std::clog << "Execution time: " << static_cast<int>(h) << " hours " << static_cast<int>(m) << " minutes " << s << " seconds" << std::endl << std::endl;
-        };
     };
 
     // void show_FPS(std::vector<Model>& model_list, double& time, int& skip) {
@@ -177,7 +160,6 @@ namespace Utils {
     }
 
     inline std::vector<glm::vec3> get_fibonacci_lattice(int num_points) {
-
         // https://extremelearning.com.au/evenly-distributing-points-on-a-sphere/
 
         float golden_ratio = (1.0f + glm::sqrt(5.0f)) / 2.0f;
