@@ -3,137 +3,92 @@
 #define ORBIT_CAMERA_HPP
 
 #include "base_camera.hpp"
+#include "constant.hpp"
 #include "glad/gl.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/string_cast.hpp"
+#include "utils.hpp"
 #include <cmath>
 #include <vector>
 
+namespace SignalTracer {
+    // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
+    enum class CameraMovement {
+        FORWARD,
+        BACKWARD,
+        LEFT,
+        RIGHT,
+        UP,
+        DOWN
+    };
 
-class Camera : public BaseCamera {
-public:
-
-    Camera(
-        glm::vec3 position = CameraDefaultParam::position,
-        glm::vec3 target = CameraDefaultParam::target,
-        glm::vec3 world_up = CameraDefaultParam::world_up,
-        float fov = CameraDefaultParam::fov
-    )
-        : BaseCamera(position, target, world_up, fov) {
-        init_camera();
+    namespace CameraDefaultParam {
+        inline glm::vec3 position{ 0.0f, 40.0f, 30.0f };
+        inline glm::vec3 target{ 0.0f, 0.0f, 0.0f };
+        inline glm::vec3 world_up{ 0.0f, 1.0f, 0.0f };
+        inline float fov{ 45.0 };
     }
 
-    void reset() override {
-        m_fov = CameraDefaultParam::fov;
-        m_position = CameraDefaultParam::position;
-        m_target = CameraDefaultParam::target;
-        m_world_up = glm::normalize(CameraDefaultParam::world_up);
-        init_camera();
-    }
+    class Camera {
+    public:
 
-    // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-    void process_keyboard(CameraMovement direction, float velocity) override {
-        if (direction == CameraMovement::FORWARD) {
-            glm::vec3 tmp_position = m_position + m_cam_front * velocity;
-            if (glm::length(tmp_position - m_target) > 1.0f) {
-                m_position += m_cam_front * velocity;
-            }
-        }
-        if (direction == CameraMovement::BACKWARD)
-            m_position -= m_cam_front * velocity;
-        if (direction == CameraMovement::LEFT) {
-            m_position -= m_cam_right * velocity;
-            m_target -= m_cam_right * velocity;
-        }
-        if (direction == CameraMovement::RIGHT) {
-            m_position += m_cam_right * velocity;
-            m_target += m_cam_right * velocity;
-        }
-        if (direction == CameraMovement::UP) {
-            m_position += m_cam_up * velocity;
-            m_target += m_cam_up * velocity;
-        }
-        if (direction == CameraMovement::DOWN) {
-            m_position -= m_cam_up * velocity;
-            m_target -= m_cam_up * velocity;
-        }
-    }
+        Camera(
+            glm::vec3 position = CameraDefaultParam::position,
+            glm::vec3 target = CameraDefaultParam::target,
+            glm::vec3 world_up = CameraDefaultParam::world_up,
+            float fov = CameraDefaultParam::fov
+        );
 
-    void pan(float xoffset, float yoffset, GLboolean constrain_pitch = true) override {
-        // xoffset *= m_mouse_sensitivity;
-        // yoffset *= m_mouse_sensitivity;
+        glm::mat4 get_view_matrix() const;
+        float get_fov() const;
+        void set_fov(float fov);
 
-        m_yaw += xoffset;
-        m_pitch += yoffset;
+        void reset();
 
-        // make sure that when pitch is out of bounds, screen doesn't get flipped
-        if (constrain_pitch) {
-            if (m_pitch > 89.0f)
-                m_pitch = 89.0f;
-            if (m_pitch < -89.0f)
-                m_pitch = -89.0f;
-        }
-        glm::vec3 front{ spherical2cartesian(m_yaw, m_pitch) };
-        update_camera_vectors(front);
-        m_target = m_position + glm::length(m_position - m_target) * m_cam_front;
-    }
+        // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
+        void process_keyboard(CameraMovement direction, float velocity);
 
-    void arcball_rotate(float xoffset, float yoffset) override {
-        // rotate the camera's position around the target
-        m_yaw += xoffset;
-        float tmp_pitch = m_pitch + yoffset;
+        void pan(float xoffset, float yoffset, GLboolean constrain_pitch = true);
+        void arcball_rotate(float xoffset, float yoffset);
+        void zoom(float yoffset);
 
-        if (tmp_pitch <= 89.0f && tmp_pitch >= -89.0f) {
-            m_pitch = tmp_pitch;
-        }
-        if (m_yaw > 360.0f) {
-            m_yaw -= 360.0f;
-        }
-        else if (m_yaw < -360.0f) {
-            m_yaw += 360.0f;
+        friend std::ostream& operator<<(std::ostream& os, const Camera& base_camera) {
+            os << "camera info: " << std::endl;
+            os << "position: " << glm::to_string(base_camera.m_position) << std::endl;
+            os << "target: " << glm::to_string(base_camera.m_target) << std::endl;
+            os << "radius: " << glm::length(base_camera.m_position - base_camera.m_target) << std::endl;
+            os << "front: " << glm::to_string(base_camera.m_cam_front) << std::endl;
+            os << "up: " << glm::to_string(base_camera.m_cam_up) << std::endl;
+            os << "right: " << glm::to_string(base_camera.m_cam_right) << std::endl;
+            os << "world_up: " << glm::to_string(base_camera.m_world_up) << std::endl;
+            os << "yaw: " << base_camera.m_yaw << std::endl;
+            os << "pitch: " << base_camera.m_pitch << std::endl;
+            return os;
         }
 
-        float radius = glm::length(m_position - m_target);
-        m_position = m_target - radius * spherical2cartesian(m_yaw, m_pitch);
+    protected:
 
-        update_camera_vectors(m_target - m_position);
-    }
+        // Initializes the camera's position, radius, yaw, pitch, front, up and right vectors. This also be used in reset function.
+        void init_camera();
 
-    void zoom(float yoffset) override {
-        m_position += m_cam_front * yoffset;
-    }
+        // Update camera orientation using Euler Angles. Update m_cam_front, m_cam_right and m_cam_up Vectors with the updated yaw and pitch values.
+        void update_camera_vectors(glm::vec3 front);
 
-protected:
-
-    // Initializes the camera's position, radius, yaw, pitch, front, up and right vectors. This also be used in reset function.
-    void init_camera() override {
-        cartesian2spherical(m_position, m_target, m_yaw, m_pitch);
-        glm::vec3 front{ spherical2cartesian(m_yaw, m_pitch) };
-        update_camera_vectors(front);
-    }
-
-    // Update camera orientation using Euler Angles. Update m_cam_front, m_cam_right and m_cam_up Vectors with the updated yaw and pitch values.
-    void update_camera_vectors(glm::vec3 front) override {
-        m_cam_front = glm::normalize(front);
-        m_cam_right = glm::normalize(glm::cross(m_cam_front, m_world_up));
-        m_cam_up = glm::normalize(glm::cross(m_cam_right, m_cam_front));
-    }
-
-    glm::vec3 spherical2cartesian(float yaw, float pitch) override {
-        glm::vec3 cartesian;
-        cartesian.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        cartesian.y = sin(glm::radians(pitch));
-        cartesian.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        return cartesian;
-    }
-
-    void cartesian2spherical(const glm::vec3& position, const glm::vec3& target, float& yaw, float& pitch) override {
-        // Convert from the position point and the target point to spherical coordinates
-        glm::vec3 cartesian = position - target;
-        yaw = -atan2(cartesian.z, cartesian.x) * 180 / Constant::PI;
-        pitch = -atan2(cartesian.y, sqrt(cartesian.x * cartesian.x + cartesian.z * cartesian.z)) * 180 / Constant::PI;
-    }
-
-};
+    private:
+        // camera Attributes
+        glm::vec3 m_position{};
+        glm::vec3 m_target{};
+        glm::vec3 m_cam_front{};
+        glm::vec3 m_cam_up{};
+        glm::vec3 m_cam_right{};
+        glm::vec3 m_world_up{};
+        // euler Angles
+        float m_yaw{};
+        float m_pitch{};
+        // camera options
+        float m_fov{}; // field of view in degrees
+    };
+}
 
 #endif // !ORBIT_CAMERA_HPP

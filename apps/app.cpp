@@ -46,7 +46,7 @@ int main(int argc, char* argv []) {
     // ----------------------------------
     process_terminal_inputs(argc, argv, window_params, prop_params);
 
-    auto viewing_ptr{ std::make_shared<Viewing>(Camera{}) };
+    auto viewing_ptr{ std::make_shared<SignalTracer::Viewing>(SignalTracer::Camera{}) };
 
     /*
         ----------------------------------
