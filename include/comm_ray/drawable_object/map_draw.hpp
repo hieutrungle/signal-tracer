@@ -31,33 +31,32 @@ namespace SignalTracer {
                 }
             }
 
-            std::cout << "max strength: " << max_strength << "\n";
-            std::cout << "min strength: " << min_strength << "\n";
-
             // normalize strength to put in color
             for (auto& cell : m_cells) {
                 float intensity{ (max_strength - cell.strength) / (max_strength - min_strength) };
                 cell.color = glm::vec3(0.75f, intensity, intensity);
             }
 
+            // cout max and min strength
+            std::cout << "max strength: " << max_strength << "\n";
+            std::cout << "min strength: " << min_strength << "\n";
 
-            // for (int i = 0; i < num_row; ++i) {
-            //     for (int j = 0; j < num_col; ++j) {
-            //         // cout strength
-            //         std::cout << m_cells[i * num_col + j].strength << "\t";
-            //     }
-            //     std::cout << "\n";
-            // }
+            // cout strength
+            for (int i = 0; i < num_row; ++i) {
+                for (int j = 0; j < num_col; ++j) {
+                    std::cout << m_cells[i * num_col + j].strength << "\t";
+                }
+                std::cout << "\n";
+            }
+            std::cout << "\n\n";
 
-            // std::cout << "\n\n";
-
-            // for (int i = 0; i < num_row; ++i) {
-            //     for (int j = 0; j < num_col; ++j) {
-            //         // cout color
-            //         std::cout << m_cells[i * num_col + j].color.x << " " << m_cells[i * num_col + j].color.y << " " << m_cells[i * num_col + j].color.z << "\t";
-            //     }
-            //     std::cout << "\n";
-            // }
+            // cout color
+            for (int i = 0; i < num_row; ++i) {
+                for (int j = 0; j < num_col; ++j) {
+                    std::cout << m_cells[i * num_col + j].color.x << " " << m_cells[i * num_col + j].color.y << " " << m_cells[i * num_col + j].color.z << "\t";
+                }
+                std::cout << "\n";
+            }
 
             setup_draw();
         }

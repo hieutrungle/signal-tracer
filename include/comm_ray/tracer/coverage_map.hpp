@@ -130,7 +130,7 @@ namespace SignalTracer {
         void convert_to_dB() {
             for (Cell& cell : m_cells) {
                 if (cell.strength == 0.0f) {
-                    cell.strength = -100.0f;
+                    cell.strength = -200.0f;
                 }
                 else {
                     cell.strength = 10.0f * std::log10(cell.strength);
