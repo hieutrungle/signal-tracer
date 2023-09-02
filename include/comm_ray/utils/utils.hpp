@@ -169,6 +169,13 @@ namespace Utils {
         return cartesian;
     }
 
+    inline void cartesian2spherical(const glm::vec3& position, const glm::vec3& target, float& yaw, float& pitch) {
+        // Convert from the position point and the target point to spherical coordinates
+        glm::vec3 cartesian = position - target;
+        yaw = -atan2(cartesian.z, cartesian.x) * 180 / Constant::PI;
+        pitch = -atan2(cartesian.y, sqrt(cartesian.x * cartesian.x + cartesian.z * cartesian.z)) * 180 / Constant::PI;
+    }
+
     inline std::vector<glm::vec3> get_fibonacci_lattice(int num_points) {
 
         // https://extremelearning.com.au/evenly-distributing-points-on-a-sphere/
