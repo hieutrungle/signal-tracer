@@ -43,13 +43,23 @@ This project is a simulation of ray tracing for wireless communication. It is ba
 
 ## Installation
 
-Install the latest drivers. We highly recommend the closed-source binary drivers. It’s not GNU or whatever, but they work. If your distribution doesn’t provide an automatic install, try Ubuntu’s guide.
+**OpenGL**: Install the latest drivers. We highly recommend the closed-source binary drivers. It’s not GNU or whatever, but they work. If your distribution doesn’t provide an automatic install, try Ubuntu’s guide.
 
 Install all needed compilers, tools & libs. Complete list is : cmake make g++ libx11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxext-dev libxcursor-dev libxinerama-dev libxi-dev .
 
 Use sudo apt-get install ***** or su && yum install ******.
 
-Install OpenCL: sudo apt install opencl-headers ocl-icd-opencl-dev -y
+**OpenCL**: sudo apt install opencl-headers ocl-icd-opencl-dev -y
+
+**Boost**: the installation of Boost follows this guide: <https://linux.how2shout.com/how-to-install-boost-c-on-ubuntu-20-04-or-22-04/>
+
+- Update Ubuntu Linux: `sudo apt update && sudo apt upgrade`
+- Install the Developer’s tool: `sudo apt install build-essential g++ python3-dev autotools-dev libicu-dev libbz2-dev libboost-all-dev`
+- Download the latest version of Boost from <https://www.boost.org/users/download/>
+- extract the downloaded file: e.g. `tar xvf boost_1_80_0.tar.gz`
+- Switch to the extracted directory: `cd boost_1_80_0`
+- Setup Boost’s bootstrap, save the compiled library files under `/usr/include/boost`: `./bootstrap.sh --prefix=/usr/local`
+- Install Boost: `sudo ./b2 install`
 
 ## Usage
 
