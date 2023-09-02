@@ -87,7 +87,7 @@ namespace SignalTracer {
         /// change the direction to the reflection direction
         /// and repeat step 3
         /// - The final coverage map is a 2D array of cells, each cell contains a list of ray-quad intersections and the energy of signal at the intersections
-        CoverageMap generate(const std::vector<Transmitter>& transmitters, float cell_size, std::vector<SignalTracer::PathRecord>* path_recs = nullptr) {
+        CoverageMap generate(const std::vector<Transmitter>& transmitters, float cell_size, std::vector<SignalTracer::PathRecord>* path_recs = nullptr, std::string method = "friss") {
             // for (std::size_t i = 0; i < transmitters.size(); i++) {
             // }
 
@@ -108,11 +108,8 @@ namespace SignalTracer {
                 std::vector <glm::vec3> directions{ Utils::get_fibonacci_lattice(m_num_rays) };
                 std::transform(std::execution::par_unseq, directions.begin(), directions.end(), rays.begin(), [&tx_pos](const glm::vec3& dir) {return Ray{ tx_pos, dir };});
             }
-            timer.execution_time();
 
             std::vector<SignalTracer::PathRecord> tmp_path_recs(m_num_rays);
-            // ray tracing and store signal strength into a container
-            timer.reset();
             float tx_power{ tx.get_power() };
             float tx_freq{ tx.get_frequency() };
             float tx_gain{ Utils::dB_to_linear(tx.get_gain()) };
@@ -137,9 +134,11 @@ namespace SignalTracer {
                     if (is_quad_hit && cm_isect_record.t < scene_isect_record.t) {
 
                         // TODO: Now: calc signal strength using Friss -> should use EM wave propagation model
-                        float added_strength{ calc_friss_strength(start_pos, cm_isect_record.point, tx_freq, start_strength, start_gain, end_gain) };
-                        // float added_strength{ tmp_path_recs[i].get_signal_strength() };
-                        cm.add_strength(cm_isect_record.point, added_strength);
+                        if (method == "friss") {
+                            float added_strength{ calc_friss_strength(start_pos, cm_isect_record.point, tx_freq, start_strength, start_gain, end_gain) };
+                            cm.add_strength(cm_isect_record.point, added_strength);
+                        }
+
                     }
 
                     // if the ray hits the scene, record the hit point
@@ -149,20 +148,22 @@ namespace SignalTracer {
                         Ray scattered_ray{};
                         glm::vec3 attenuation{};
                         if (scene_isect_record.mat_ptr->is_scattering(rays[i], scene_isect_record, attenuation, scattered_ray)) {
+
                             // TODO: Now: calc signal strength using Friss -> should use EM wave propagation model
-                            glm::vec3 normal{ scene_isect_record.normal };
-                            glm::vec3 incident_dir{ glm::normalize(rays[i].get_direction()) };
-                            glm::vec3 reflected_dir{ glm::normalize(glm::reflect(incident_dir, normal)) };
+                            if (method == "friss") {
+                                glm::vec3 normal{ scene_isect_record.normal };
+                                glm::vec3 incident_dir{ glm::normalize(rays[i].get_direction()) };
+                                glm::vec3 reflected_dir{ glm::normalize(glm::reflect(incident_dir, normal)) };
 
-                            float cos_2theta1 = glm::dot(incident_dir, reflected_dir);
-                            float incident_angle = std::acos(cos_2theta1) / 2;
+                                float cos_2theta1 = glm::dot(incident_dir, reflected_dir);
+                                float incident_angle = std::acos(cos_2theta1) / 2;
+                                float ref_coef{ calc_reflection_coefficient(incident_angle, 1.0f, scene_isect_record.mat_ptr->calc_real_relative_permittivity(tx_freq), polar) };
 
-                            float ref_coef{ calc_reflection_coefficient(incident_angle, 1.0f, scene_isect_record.mat_ptr->calc_real_relative_permittivity(tx_freq), polar) };
+                                float added_strength{ calc_friss_strength(start_pos, scene_isect_record.point, tx_freq, start_strength, start_gain, end_gain, ref_coef) };
 
+                                tmp_path_recs[i].set_signal_strength(added_strength);
+                            }
 
-                            float added_strength{ calc_friss_strength(start_pos, scene_isect_record.point, tx_freq, start_strength, start_gain, end_gain, ref_coef) };
-
-                            tmp_path_recs[i].set_signal_strength(added_strength);
                             rays[i] = std::move(scattered_ray);
                             continue;
                         }
@@ -193,9 +194,8 @@ namespace SignalTracer {
                     }
                 }
             }
-            cm.convert_to_dB();
 
-            std::clog << "Coverage map generation finished" << std::endl;
+            std::clog << "Coverage map is generated" << std::endl;
             return cm;
         }
 

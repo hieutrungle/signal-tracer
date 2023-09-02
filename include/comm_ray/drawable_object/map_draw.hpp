@@ -20,43 +20,54 @@ namespace SignalTracer {
             , m_indices{ make_indices(num_row, num_col) } {
 
             // find max strength in vector of cells using binary search
-            float max_strength{ Constant::INF_NEG };
-            float min_strength{ Constant::INF_POS };
+            float max_strength_dB{ Constant::INF_NEG };
+            float min_strength_dB{ Constant::INF_POS };
             for (const auto& cell : m_cells) {
-                if (cell.strength > max_strength) {
-                    max_strength = cell.strength;
+                if (cell.strength == 0.0f) {
+                    continue;
                 }
-                if (cell.strength < min_strength) {
-                    min_strength = cell.strength;
+                float strength_dB{ Utils::linear_to_dB(cell.strength) };
+                if (strength_dB > max_strength_dB) {
+                    max_strength_dB = strength_dB;
+                }
+                if (strength_dB < min_strength_dB) {
+                    min_strength_dB = strength_dB;
                 }
             }
 
             // normalize strength to put in color
             for (auto& cell : m_cells) {
-                float intensity{ (max_strength - cell.strength) / (max_strength - min_strength) };
-                cell.color = glm::vec3(0.75f, intensity, intensity);
-            }
-
-            // cout max and min strength
-            std::cout << "max strength: " << max_strength << "\n";
-            std::cout << "min strength: " << min_strength << "\n";
-
-            // cout strength
-            for (int i = 0; i < num_row; ++i) {
-                for (int j = 0; j < num_col; ++j) {
-                    std::cout << m_cells[i * num_col + j].strength << "\t";
+                float intensity{};
+                if (cell.strength == 0.0f) {
+                    intensity = 1.0f;
                 }
-                std::cout << "\n";
-            }
-            std::cout << "\n\n";
-
-            // cout color
-            for (int i = 0; i < num_row; ++i) {
-                for (int j = 0; j < num_col; ++j) {
-                    std::cout << m_cells[i * num_col + j].color.x << " " << m_cells[i * num_col + j].color.y << " " << m_cells[i * num_col + j].color.z << "\t";
+                else {
+                    float strength_dB{ Utils::linear_to_dB(cell.strength) };
+                    intensity = (max_strength_dB - strength_dB) / (max_strength_dB - min_strength_dB);
                 }
-                std::cout << "\n";
+                cell.color = glm::vec3(intensity, 1.0f - intensity, 1.0f - intensity);
             }
+
+            // // cout max and min strength
+            // std::cout << "max strength: " << max_strength_dB << "\n";
+            // std::cout << "min strength: " << min_strength_dB << "\n";
+
+            // // cout strength
+            // for (int i = 0; i < num_row; ++i) {
+            //     for (int j = 0; j < num_col; ++j) {
+            //         std::cout << m_cells[i * num_col + j].strength << "\t";
+            //     }
+            //     std::cout << "\n";
+            // }
+            // std::cout << "\n\n";
+
+            // // cout color
+            // for (int i = 0; i < num_row; ++i) {
+            //     for (int j = 0; j < num_col; ++j) {
+            //         std::cout << m_cells[i * num_col + j].color.x << " " << m_cells[i * num_col + j].color.y << " " << m_cells[i * num_col + j].color.z << "\t";
+            //     }
+            //     std::cout << "\n";
+            // }
 
             setup_draw();
         }

@@ -102,12 +102,12 @@ int main(int argc, char* argv []) {
     std::filesystem::path city_path{ current_path / "assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj" };
     auto city_model_ptr1{ std::make_shared<SignalTracer::Model>(city_path.string()) };
     // glm::vec3 tx_pos{ 5.0f, 1.5f, 5.0f };
-    glm::vec3 tx_pos{ 5.0f, 5.5f, 5.0f };
+    glm::vec3 tx_pos{ 5.0f, 7.0f, 5.0f };
     glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
 
     // std::filesystem::path city_path{ current_path / "assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj" };
     // auto city_model_ptr1{ std::make_shared<SignalTracer::Model>(city_path.string()) };
-    // glm::vec3 tx_pos{ 0.0f, 6.5f, 20.0f };
+    // glm::vec3 tx_pos{ 0.0f, 7.5f, 20.0f };
     // glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
 
     SignalTracer::Transmitter tx0{ 0, tx_pos, prop_params.frequency, prop_params.tx_power, prop_params.tx_gain };
@@ -121,16 +121,16 @@ int main(int argc, char* argv []) {
     std::vector<std::reference_wrapper<SignalTracer::Model>> models{ *city_model_ptr1 };
 
     // TODO: generate coverage map
-    float cell_size{ 2.0f };
+    float cell_size{ 1.0f };
     int max_reflection_count{ 20 };
-    int num_rays{ int(3e4) };
+    int num_rays{ int(1e6) };
     SignalTracer::CoverageTracer cov_tracer{ models, max_reflection_count, num_rays };
 
     SignalTracer::CoverageMap cm{};
     {
         std::vector<SignalTracer::PathRecord> tmp_ref_records{};
         std::vector<SignalTracer::PathRecord>* ref_records_ptr{ nullptr };
-        // std::vector<SignalTracer::PathRecord>* ref_records_ptr{ &tmp_ref_records };
+        // ref_records_ptr = &tmp_ref_records;
         cm = cov_tracer.generate({ tx0 }, cell_size, ref_records_ptr);
         // SignalTracer::CoverageMap cm{ cov_tracer.generate({ tx0 }, cell_size, &tmp_ref_records) };
         rx0.add_reflection_records(tx0.get_id(), tmp_ref_records);

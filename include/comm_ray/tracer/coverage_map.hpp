@@ -29,8 +29,8 @@ namespace SignalTracer {
         CoverageMap(const Quad& quad, const float cell_size = 2.0f)
             : m_cm{ quad }
             , m_cell_size{ cell_size }
-            , m_num_row{ int(m_cm.get_height() / cell_size) + 2 }
-            , m_num_col{ int(m_cm.get_width() / cell_size) + 2 }
+            , m_num_row{ int(m_cm.get_height() / cell_size) + 1 }
+            , m_num_col{ int(m_cm.get_width() / cell_size) + 1 }
             , m_cells(m_num_row* m_num_col, Cell()) {
             // , m_points(m_num_row* m_num_col, glm::vec3(0))
             // // , m_indices((m_num_row - 1)* (m_num_col - 1) * 2, glm::uvec3(0))
@@ -62,7 +62,7 @@ namespace SignalTracer {
             //     std::cout << std::endl;
             // }
 
-            std::cout << "Coverage map is created." << std::endl;
+            std::cout << "Coverage map is intialized." << std::endl;
         }
 
         CoverageMap(const Quad& quad, const std::vector<float>& strengths, const float cell_size = 2.0f)
