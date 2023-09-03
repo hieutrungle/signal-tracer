@@ -122,8 +122,9 @@ int main(int argc, char* argv []) {
 
     // TODO: generate coverage map
     float cell_size{ 1.0f };
-    int max_reflection_count{ 20 };
-    int num_rays{ int(1e6) };
+    int max_reflection_count{ 16 };
+    int num_rays{ int(2.5e6) }; // a bit higher than FHD resolution (1920 x 1080)
+    // int num_rays{ 50 };
     SignalTracer::CoverageTracer cov_tracer{ models, max_reflection_count, num_rays };
 
     SignalTracer::CoverageMap cm{};
