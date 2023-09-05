@@ -1,5 +1,8 @@
 // #pragma once
 // #define CL_HPP_TARGET_OPENCL_VERSION 300
+// #include "glad/gl.h"
+// #include "GLFW/glfw3.h"
+// #include "glm/glm.hpp"
 // #include "CL/opencl.hpp"
 // #include <iostream>
 // #include <fstream>
@@ -13,19 +16,76 @@
 // #include <stdio.h>      /* printf */
 // #include <stdarg.h>     /* va_list, va_start, va_arg, va_end */
 
+// // aligned memory allocations
+// #ifdef _MSC_VER
+// #define ALIGN( x ) __declspec( align( x ) )
+// #define MALLOC64( x ) ( ( x ) == 0 ? 0 : _aligned_malloc( ( x ), 64 ) )
+// #define FREE64( x ) _aligned_free( x )
+// #else
+// #define ALIGN( x ) __attribute__( ( aligned( x ) ) )
+// #define MALLOC64( x ) ( ( x ) == 0 ? 0 : aligned_alloc( 64, ( x ) ) )
+// #define FREE64( x ) free( x )
+// #endif
+// #if defined(__GNUC__) && (__GNUC__ >= 4)
+// #define CHECK_RESULT __attribute__ ((warn_unused_result))
+// #elif defined(_MSC_VER) && (_MSC_VER >= 1700)
+// #define CHECK_RESULT _Check_return_
+// #else
+// #define CHECK_RESULT
+// #endif
+
+// #define FATALERROR( fmt, ... ) CLUtils::FatalError( "Error on line %d of %s: " fmt "\n", __LINE__, __FILE__, ##__VA_ARGS__ )
+// #define FATALERROR_IF( condition, fmt, ... ) do { if ( ( condition ) ) FATALERROR( fmt, ##__VA_ARGS__ ); } while ( 0 )
+// #define FATALERROR_IN( prefix, errstr, fmt, ... ) CLUtils::FatalError( prefix " returned error '%s' at %s:%d" fmt "\n", errstr, __FILE__, __LINE__, ##__VA_ARGS__ );
+// #define FATALERROR_IN_CALL( stmt, error_parser, fmt, ... ) do { auto ret = ( stmt ); if ( ret ) FATALERROR_IN( #stmt, error_parser( ret ), fmt, ##__VA_ARGS__ ) } while ( 0 )
+
+
+
 // namespace CLUtils {
 
-// #define FATALERROR( fmt, ... ) FatalError( "Error on line %d of %s: " fmt "\n", __LINE__, __FILE__, ##__VA_ARGS__ )
-// #define FATALERROR_IF( condition, fmt, ... ) do { if ( ( condition ) ) FATALERROR( fmt, ##__VA_ARGS__ ); } while ( 0 )
-// #define FATALERROR_IN( prefix, errstr, fmt, ... ) FatalError( prefix " returned error '%s' at %s:%d" fmt "\n", errstr, __FILE__, __LINE__, ##__VA_ARGS__ );
-// #define FATALERROR_IN_CALL( stmt, error_parser, fmt, ... ) do { auto ret = ( stmt ); if ( ret ) FATALERROR_IN( #stmt, error_parser( ret ), fmt, ##__VA_ARGS__ ) } while ( 0 )
+//     void FatalError(const char* fmt, ...);
+
+//     struct ALIGN(8) int2 {
+//         int2() = default;
+//         int2(const int a, const int b) : x(a), y(b) {}
+//         int2(const int a) : x(a), y(a) {}
+//         union { struct { int x, y; }; int cell[2]; };
+//         int& operator [] (const int n) { return cell[n]; }
+//     };
+
+//     inline int2 make_int2(const int a, const int b) { int2 i2; i2.x = a, i2.y = b; return i2; }
+//     inline int2 make_int2(const int s) { return make_int2(s, s); }
+//     inline int2 operator-(const int2& a) { return make_int2(-a.x, -a.y); }
+//     inline int2 operator << (const int2& a, int b) { return make_int2(a.x << b, a.y << b); }
+//     inline int2 operator >> (const int2& a, int b) { return make_int2(a.x >> b, a.y >> b); }
+//     inline int2 operator+(const int2& a, const int2& b) { return make_int2(a.x + b.x, a.y + b.y); }
+//     inline void operator+=(int2& a, const int2& b) { a.x += b.x;	a.y += b.y; }
+//     inline int2 operator+(const int2& a, int b) { return make_int2(a.x + b, a.y + b); }
+//     inline int2 operator+(int b, const int2& a) { return make_int2(a.x + b, a.y + b); }
+//     inline void operator+=(int2& a, int b) { a.x += b;	a.y += b; }
+//     inline int2 operator-(const int2& a, const int2& b) { return make_int2(a.x - b.x, a.y - b.y); }
+//     inline void operator-=(int2& a, const int2& b) { a.x -= b.x;	a.y -= b.y; }
+//     inline int2 operator-(const int2& a, int b) { return make_int2(a.x - b, a.y - b); }
+//     inline int2 operator-(int b, const int2& a) { return make_int2(b - a.x, b - a.y); }
+//     inline void operator-=(int2& a, int b) { a.x -= b;	a.y -= b; }
+//     inline int2 operator*(const int2& a, const int2& b) { return make_int2(a.x * b.x, a.y * b.y); }
+//     inline void operator*=(int2& a, const int2& b) { a.x *= b.x;	a.y *= b.y; }
+//     inline int2 operator*(const int2& a, int b) { return make_int2(a.x * b, a.y * b); }
+//     inline int2 operator*(int b, const int2& a) { return make_int2(b * a.x, b * a.y); }
+//     inline void operator*=(int2& a, int b) { a.x *= b;	a.y *= b; }
+//     inline int2 min(const int2& a, const int2& b) { return make_int2(std::min(a.x, b.x), std::min(a.y, b.y)); }
+//     inline int2 max(const int2& a, const int2& b) { return make_int2(std::max(a.x, b.x), std::max(a.y, b.y)); }
+//     inline int clamp(int f, int a, int b) { return std::max(a, std::min(f, b)); }
+//     inline int dot(const int2& a, const int2& b) { return a.x * b.x + a.y * b.y; }
+//     inline float length(const int2& v) { return sqrtf((float) dot(v, v)); }
+//     inline int2 abs(const int2& v) { return make_int2(std::abs(v.x), std::abs(v.y)); }
 
 //     // OpenCL buffer
 //     class Buffer {
 //     public:
 //         enum { DEFAULT = 0, TEXTURE = 8, TARGET = 16, READONLY = 1, WRITEONLY = 2 };
 //         // constructor / destructor
-//         Buffer() : hostBuffer(0) {}
+//         Buffer() : hostBuffer(nullptr) {}
 //         Buffer(unsigned int N, void* ptr = 0, unsigned int t = DEFAULT);
 //         ~Buffer();
 //         cl_mem* GetDevicePtr() { return &deviceBuffer; }
@@ -164,9 +224,9 @@
 //         void SetArgument(int idx, Buffer& buffer);
 //         void SetArgument(int idx, float);
 //         void SetArgument(int idx, int);
-//         void SetArgument(int idx, float2);
-//         void SetArgument(int idx, float3);
-//         void SetArgument(int idx, float4);
+//         void SetArgument(int idx, glm::vec2);
+//         void SetArgument(int idx, glm::vec3);
+//         void SetArgument(int idx, glm::vec4);
 //         // other methods
 //     public:
 //         static bool InitCL();

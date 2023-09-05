@@ -8,7 +8,7 @@
 // kernel calculates for each element C=A+B
 std::string kernel_code =
 "   void kernel simple_add(global const int* A, global const int* B, global int* C){ "
-"       C[get_global_id(0)]=A[get_global_id(0)]+B[get_global_id(0)];                 "
+"       C[get_global_id(0)]=A[get_global_id(0)]+B[get_global_id(0)]/(B[get_global_id(0)]+1);                 "
 "   }                                                                               ";
 
 int main() {
@@ -84,32 +84,26 @@ int main() {
     }
 
 
+    std::cout << "Doing GPU computation...\n";
     Utils::Timer timer;
     // create the kernel
     cl::Kernel kernel(program, "simple_add");
     cl::KernelFunctor<cl::Buffer, cl::Buffer, cl::Buffer> simple_add(kernel);
-
     // execute the kernel
     cl::NDRange global(size);
-
     simple_add(cl::EnqueueArgs(queue, global), d_a, d_b, d_c).wait();
-
     timer.execution_time();
 
-
-    queue.enqueueReadBuffer(d_c, CL_TRUE, 0, sizeof(int) * size, h_c);
-
-    timer.execution_time();
-
-    // std::cout << "Result: \n";
-    // for (int i = 0; i < size; i++) {
-    //     std::cout << h_c[i] << " ";
-    // }
-
+    // copy the result from device to host
+    std::cout << "Reading result from device to host...\n";
     timer.reset();
+    queue.enqueueReadBuffer(d_c, CL_TRUE, 0, sizeof(int) * size, h_c);
+    timer.execution_time();
 
+    std::cout << "\nDoing CPU computation...\n";
+    timer.reset();
     for (uint i = 0; i < size; i++) {
-        h_c[i] = h_a[i] + h_b[i];
+        h_c[i] = h_a[i] + h_b[i] / (h_b[i] + 1);
     }
     timer.execution_time();
 

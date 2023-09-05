@@ -21,7 +21,7 @@
 //     }
 
 //     bool FileExists(const char* f) {
-//         ifstream s(f);
+//         std::ifstream s(f);
 //         return s.good();
 //     }
 
@@ -31,26 +31,26 @@
 //     }
 
 //     uint FileSize(std::string filename) {
-//         ifstream s(filename);
+//         std::ifstream s(filename);
 //         return s.good();
 //     }
 
 //     std::string TextFileRead(const char* _File) {
-//         ifstream s(_File);
-//         string str((istreambuf_iterator<char>(s)), istreambuf_iterator<char>());
+//         std::ifstream s(_File);
+//         std::string str((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>());
 //         s.close();
 //         return str;
 //     }
 
-//     int LineCount(const string s) {
+//     int LineCount(const std::string s) {
 //         const char* p = s.c_str();
 //         int lines = 0;
 //         while (*p) if (*p++ == '\n') lines++;
 //         return lines;
 //     }
 
-//     void TextFileWrite(const string& text, const char* _File) {
-//         ofstream s(_File, ios::binary);
+//     void TextFileWrite(const std::string& text, const char* _File) {
+//         std::ofstream s(_File, std::ios::binary);
 //         int len = (int) text.size();
 //         s.write((const char*) &len, sizeof(len));
 //         s.write(text.c_str(), len);
@@ -71,12 +71,12 @@
 //     }
 
 //     // source file information
-//     static int sourceFiles = 0;
-//     static char* sourceFile[64]; // yup, ugly constant
+//     // static int sourceFiles = 0;
+//     // static char* sourceFile[64]; // yup, ugly constant
 
-//     // default worksize
-//     static size_t workSize [] = { SCRWIDTH, SCRHEIGHT };
-//     static size_t localSize [] = { 32, 4 };
+//     // // default worksize
+//     // static size_t workSize [] = { SCRWIDTH, SCRHEIGHT };
+//     // static size_t localSize [] = { 32, 4 };
 
 //     using namespace std;
 
@@ -479,12 +479,40 @@
 //                     if (!hasFeature) hasAll = false;
 //                 }
 //                 if (hasAll) {
+//                     // cl_context_properties props [] =
+//                         // {
+//                         //     CL_GL_CONTEXT_KHR, (cl_context_properties) glfwGetWGLContext(window),
+//                         //     CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
+//                         //     CL_CONTEXT_PLATFORM, (cl_context_properties) platform, 0
+//                         // };
+// #if defined (__APPLE__) || defined(MACOSX)
+//                     CGLContextObj kCGLContext = CGLGetCurrentContext();
+//                     CGLShareGroupObj kCGLShareGroup = CGLGetShareGroup(kCGLContext);
 //                     cl_context_properties props [] =
 //                     {
-//                         CL_GL_CONTEXT_KHR, (cl_context_properties) glfwGetWGLContext(window),
-//                         CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
-//                         CL_CONTEXT_PLATFORM, (cl_context_properties) platform, 0
+//                         CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE, (cl_context_properties) kCGLShareGroup,
+//                         0
 //                     };
+// #else
+// #if defined WIN32 
+//                     cl_context_properties props [] =
+//                     {
+//                         CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext(),
+//                         CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
+//                         CL_CONTEXT_PLATFORM, (cl_context_properties) platform,
+//                         0
+//                     };
+// #else
+//                     cl_context_properties props [] =
+//                     {
+//                         CL_GL_CONTEXT_KHR, (cl_context_properties) glfwGetCurrentContext(),
+//                         CL_GLX_DISPLAY_KHR, (cl_context_properties) glfwGetPrimaryMonitor(),
+//                         // CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
+//                         CL_CONTEXT_PLATFORM, (cl_context_properties) platform,
+//                         0
+//                     };
+// #endif
+// #endif
 //                     // attempt to create a context with the requested features
 //                     context = clCreateContext(props, 1, &devices[i], NULL, NULL, &error);
 //                     if (error == CL_SUCCESS) {
@@ -605,9 +633,9 @@
 //     void Kernel::SetArgument(int idx, Buffer& buffer) { SetArgument(idx, &buffer); }
 //     void Kernel::SetArgument(int idx, int value) { CheckCLStarted(); clSetKernelArg(kernel, idx, sizeof(int), &value); }
 //     void Kernel::SetArgument(int idx, float value) { CheckCLStarted(); clSetKernelArg(kernel, idx, sizeof(float), &value); }
-//     void Kernel::SetArgument(int idx, float2 value) { CheckCLStarted(); clSetKernelArg(kernel, idx, sizeof(float2), &value); }
-//     void Kernel::SetArgument(int idx, float3 value) { CheckCLStarted(); float4 tmp(value, 0); clSetKernelArg(kernel, idx, sizeof(float4), &tmp); }
-//     void Kernel::SetArgument(int idx, float4 value) { CheckCLStarted(); clSetKernelArg(kernel, idx, sizeof(float4), &value); }
+//     void Kernel::SetArgument(int idx, glm::vec2 value) { CheckCLStarted(); clSetKernelArg(kernel, idx, sizeof(glm::vec2), &value); }
+//     void Kernel::SetArgument(int idx, glm::vec3 value) { CheckCLStarted(); glm::vec4 tmp(value, 0); clSetKernelArg(kernel, idx, sizeof(glm::vec4), &tmp); }
+//     void Kernel::SetArgument(int idx, glm::vec4 value) { CheckCLStarted(); clSetKernelArg(kernel, idx, sizeof(glm::vec4), &value); }
 
 //     // Run method
 //     // ----------------------------------------------------------------------------
