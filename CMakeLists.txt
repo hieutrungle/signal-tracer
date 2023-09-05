@@ -68,7 +68,7 @@ include(FetchContent)
 
 # Accumulator library
 # This is header only, so could be replaced with git submodules or FetchContent
-find_package(Boost REQUIRED)
+# find_package(Boost REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(OpenCL REQUIRED)
 find_package(OpenMP REQUIRED)
