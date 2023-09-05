@@ -64,7 +64,7 @@ endif()
 
 # FetchContent added in CMake 3.11, downloads during the configure step
 # FetchContent_MakeAvailable was added in CMake 3.14; simpler usage
-include(FetchContent)
+# include(FetchContent)
 
 # Accumulator library
 # This is header only, so could be replaced with git submodules or FetchContent
@@ -75,20 +75,20 @@ find_package(OpenMP REQUIRED)
 # Adds Boost::boost
 
 # Gtest
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+# FetchContent_Declare(
+#   googletest
+#   URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+# )
+# # For Windows: Prevent overriding the parent project's compiler/linker settings
+# set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# FetchContent_MakeAvailable(googletest)
 
-# Formatting library
-FetchContent_Declare(
-  fmtlib
-  GIT_REPOSITORY https://github.com/fmtlib/fmt.git)
-FetchContent_MakeAvailable(fmtlib)
-# Adds fmt::fmt
+# # Formatting library
+# FetchContent_Declare(
+#   fmtlib
+#   GIT_REPOSITORY https://github.com/fmtlib/fmt.git)
+# FetchContent_MakeAvailable(fmtlib)
+## Adds fmt::fmt
 
 # OpenMP
 if(NOT TARGET OpenMP::OpenMP_CXX)
@@ -107,10 +107,9 @@ add_subdirectory(external)
 set(EXTERNAL_LIBS
     ${OPENGL_LIBRARY}
     ${OpenCL_LIBRARIES}
-    # OpenCL::OpenCL
     OpenMP::OpenMP_CXX
     compiler_flags
-    fmt::fmt
+    # fmt::fmt
     glfw
     glm
     assimp
@@ -128,17 +127,9 @@ set(ALL_LIBS
 # The executable code is here
 add_subdirectory(apps)
 
-# Testing only available if this is the main app
-# Emergency override MODERN_CMAKE_BUILD_TESTING provided as well
-if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
-   AND BUILD_TESTING)
-  add_subdirectory(tests)
-endif()
-
-# Copy shader folder to bin
-# add_custom_command(
-#     TARGET shaders POST_BUILD
-#     COMMAND ${CMAKE_COMMAND} -E copy_directory
-#         ${CMAKE_SOURCE_DIR}/shaders
-#         ${CMAKE_CURRENT_BINARY_DIR}/shaders
-#         )
+# # Testing only available if this is the main app
+# # Emergency override MODERN_CMAKE_BUILD_TESTING provided as well
+# if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
+#    AND BUILD_TESTING)
+#   add_subdirectory(tests)
+# endif()
