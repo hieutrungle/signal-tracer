@@ -51,32 +51,28 @@ namespace Random {
         std::uniform_real_distribution dist{ min, max };
         return dist(mt);
     }
+
+    inline double random_double() {
+        // Returns a random real in [0, 1)
+        // static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+        // return distribution(Random::mt);
+        return Random::get_double(0.0, 1.0);
+    }
+
+    inline double random_double(double min, double max) {
+        // Returns a random real in [min, max)
+        // static std::uniform_real_distribution<double> distribution(min, max);
+        // return distribution(Random::mt);
+        return Random::get_double(min, max);
+    }
+
+    inline int random_int(int min, int max) {
+        // Returns a random integer in [min, max]
+        // static std::uniform_int_distribution<int> distribution(min, max);
+        // return distribution(Random::mt);
+        return Random::get_int(min, max);
+    }
 };
-
-inline double degrees_to_radians(double degrees) {
-    return degrees * Constant::PI / 180.0;
-}
-
-inline double random_double() {
-    // Returns a random real in [0, 1)
-    // static std::uniform_real_distribution<double> distribution(0.0, 1.0);
-    // return distribution(Random::mt);
-    return Random::get_double(0.0, 1.0);
-}
-
-inline double random_double(double min, double max) {
-    // Returns a random real in [min, max)
-    // static std::uniform_real_distribution<double> distribution(min, max);
-    // return distribution(Random::mt);
-    return Random::get_double(min, max);
-}
-
-inline int random_int(int min, int max) {
-    // Returns a random integer in [min, max]
-    // static std::uniform_int_distribution<int> distribution(min, max);
-    // return distribution(Random::mt);
-    return Random::get_int(min, max);
-}
 
 inline double clamp(double x, double min, double max) {
     if (x < min) return min;
@@ -196,6 +192,14 @@ namespace Utils {
         return points;
     }
 
+    inline double degrees_to_radians(double degrees) {
+        return degrees * Constant::PI / 180.0;
+    }
+
+    template<typename T>
+    inline size_t vector_sizeof(const typename std::vector<T>& vec) {
+        return sizeof(T) * vec.size();
+    }
 };
 
 
