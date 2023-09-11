@@ -9,6 +9,7 @@ assets/*
 *tmp*
 *temp*
 **.sh*
+apps/cl_examples*
 
 !assets/demo_layouts
 !assets/images
