@@ -145,9 +145,6 @@ namespace SignalTracer {
         }
 
         float t = glm::dot(edge_ac, qvec) * inv_det;
-        if (t < Constant::EPSILON) {
-            return false;
-        }
 
         if (interval.contains(t)) {
             record.t = t;
