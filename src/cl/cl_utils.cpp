@@ -5,7 +5,7 @@ namespace CLUtils {
     cl::Device get_default_device(const bool& verbose) {
         // Search for all the OpenCL platforms available and check if there are any.
         std::vector<cl::Platform> platforms;
-        cl::Platform::get(&platforms);
+        CHECKCL_ERROR(cl::Platform::get(&platforms));
 
         if (platforms.size() == 0) {
             std::cerr << " No OpenCL platforms found.\n";
@@ -73,6 +73,7 @@ namespace CLUtils {
 
     bool CheckCL(cl_int result, const char* file, int line) {
         if (result == CL_SUCCESS) return true;
+        if (result == CL_PLATFORM_NOT_FOUND_KHR) FatalError("Error: CL_PLATFORM_NOT_FOUND_KHR\n%s, line %i", file, line, "OpenCL error");
         if (result == CL_DEVICE_NOT_FOUND) FatalError("Error: CL_DEVICE_NOT_FOUND\n%s, line %i", file, line, "OpenCL error");
         if (result == CL_DEVICE_NOT_AVAILABLE) FatalError("Error: CL_DEVICE_NOT_AVAILABLE\n%s, line %i", file, line, "OpenCL error");
         if (result == CL_COMPILER_NOT_AVAILABLE) FatalError("Error: CL_COMPILER_NOT_AVAILABLE\n%s, line %i", file, line, "OpenCL error");
@@ -131,22 +132,64 @@ namespace CLUtils {
         return false;
     }
 
-    std::string read_file(const std::string& directory, const std::string& filename) {
-        std::ifstream file(directory + "/" + filename);
+    std::string read_file(const std::string& path) {
+        std::ifstream file(path);
         if (!file.is_open()) {
-            throw std::runtime_error("Could not open file: " + directory + filename);
+            throw std::runtime_error("Could not open file: " + path);
         }
         std::string str_source((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         return str_source;
     }
 
-
-
-    void Kernel::set_arg(int idx, Buffer* buffer) {
-        check_cl_started();
-        cl::Buffer& tmp = buffer->get_device_buffer();
-        set_arg(idx, tmp);
+    std::string read_file(const std::filesystem::path& path) {
+        return read_file(path.string());
     }
-    void Kernel::set_arg(int idx, Buffer& buffer) { set_arg(idx, &buffer); }
+
+    std::string read_file(const std::string& directory, const std::string& filename) {
+        std::string path = (std::filesystem::path{ directory } / filename).string();
+        return read_file(path);
+    }
+
+    // InitCL method
+    // ----------------------------------------------------------------------------
+    void Kernel::init(bool profilling_enabled) {
+        auto device = m_context.getInfo<CL_CONTEXT_DEVICES>().front();
+        if (profilling_enabled) {
+            m_queue = cl::CommandQueue(m_context, device, CL_QUEUE_PROFILING_ENABLE);
+            m_queue2 = cl::CommandQueue(m_context, device, CL_QUEUE_PROFILING_ENABLE);
+        }
+        else {
+            m_queue = cl::CommandQueue(m_context, device);
+            m_queue2 = cl::CommandQueue(m_context, device);
+        }
+        m_cl_started = true;
+    }
+
+    // KillCL method
+    // ----------------------------------------------------------------------------
+    void Kernel::KillCL() {
+        if (!m_cl_started) return;
+        clReleaseCommandQueue(m_queue2());
+        clReleaseCommandQueue(m_queue());
+        clReleaseContext(m_context());
+    }
+
+    // check_cl_started method
+    // ----------------------------------------------------------------------------
+    void Kernel::check_cl_started() {
+        if (!m_cl_started) FatalError("Call InitCL() before using OpenCL functionality.");
+    }
+
+    void Kernel::set_arg(int idx, const cl_mem* buffer) { check_cl_started(); CHECKCL(clSetKernelArg(m_kernel(), idx, sizeof(cl_mem), buffer)); }
+    void Kernel::set_arg(int idx, const cl::Buffer* buffer) { check_cl_started(); CHECKCL(m_kernel.setArg(idx, *buffer)); }
+    void Kernel::set_arg(int idx, const cl::Buffer& buffer) { check_cl_started(); CHECKCL(m_kernel.setArg(idx, buffer)); }
+    void Kernel::set_arg(int idx, const Buffer* buffer) { check_cl_started(); set_arg(idx, buffer->get_device_buffer()); }
+    void Kernel::set_arg(int idx, const Buffer& buffer) { set_arg(idx, &buffer); }
+    void Kernel::set_arg(int idx, const cl::LocalSpaceArg& buffer) { check_cl_started(); CHECKCL(m_kernel.setArg(idx, buffer)); }
+    void Kernel::set_arg(int idx, const int value) { check_cl_started(); CHECKCL(clSetKernelArg(m_kernel(), idx, sizeof(int), &value)); }
+    void Kernel::set_arg(int idx, const float value) { check_cl_started(); CHECKCL(clSetKernelArg(m_kernel(), idx, sizeof(float), &value)); }
+    void Kernel::set_arg(int idx, const glm::vec2& value) { check_cl_started(); CHECKCL(clSetKernelArg(m_kernel(), idx, sizeof(glm::vec2), &value)); }
+    void Kernel::set_arg(int idx, const glm::vec3& value) { check_cl_started(); glm::vec4 tmp(value, 0); CHECKCL(clSetKernelArg(m_kernel(), idx, sizeof(glm::vec4), &tmp)); }
+    void Kernel::set_arg(int idx, const glm::vec4& value) { check_cl_started(); CHECKCL(clSetKernelArg(m_kernel(), idx, sizeof(glm::vec4), &value)); }
 
 }
