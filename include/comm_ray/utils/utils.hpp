@@ -28,7 +28,6 @@ using std::sqrt;
 namespace Random {
     inline std::mt19937 init() {
         std::random_device rd;
-
         // Create seed_seq with high-res clock and 7 random numbers from std::random_device
         std::seed_seq ss{
             static_cast<std::seed_seq::result_type>(std::chrono::steady_clock::now().time_since_epoch().count()),
