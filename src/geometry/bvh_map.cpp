@@ -304,7 +304,6 @@ namespace SignalTracer {
             // transform back to world space
             glm::vec3 point{ glm::vec3(m_transform_point * glm::vec4(record.point, 1.0f)) };
             record.point = point;
-            // record.set_point(point);
         }
         return hit_flag;
     }
