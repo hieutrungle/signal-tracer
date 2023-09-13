@@ -7,13 +7,12 @@
 #define CL_USE_DEPRECATED_OPENCL_2_0_APIS
 #define CL_HPP_TARGET_OPENCL_VERSION 200
 #include "CL/opencl.hpp"
-// #include "glad/gl.h"
-// #include "GLFW/glfw3.h"
+#include "glad/gl.h"
 #include "glm/glm.hpp"
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 #include <string>
-// #include <vector>
 #include <stdio.h>      /* printf */
 #include <stdarg.h>     /* va_list, va_start, va_arg, va_end */
 
@@ -40,6 +39,13 @@ namespace CLUtils {
     }
 
 #define CHECKCL(r) CheckCL( r, __FILE__, __LINE__ )
+
+#define CHECKCL_ERROR(func) \
+    try {func;}  \
+    catch (const cl::Error& errr) { \
+        CHECKCL(errr.err()); \
+    };
+
 #endif
 
     // CHECKCL method
@@ -47,24 +53,25 @@ namespace CLUtils {
     // ----------------------------------------------------------------------------
     bool CheckCL(cl_int result, const char* file, int line);
 
+    std::string read_file(const std::string& path);
     std::string read_file(const std::string& directory, const std::string& filename);
+    std::string read_file(const std::filesystem::path& path);
 
-    // TODO: move definition to cpp file
     class Buffer;
 
     class Kernel {
         friend class Buffer;
     public:
+        Kernel() = default;
         Kernel(const std::string& source, const std::string& kernel_function, const cl::Context& context) {
             m_idx = 100;
             m_context = context;
             cl::Program::Sources sources;
             sources.emplace_back(source.c_str(), source.length());
             m_program = cl::Program(m_context, sources);
-            m_err = m_program.build();
-            CHECKCL(m_err);
+            CHECKCL_ERROR(m_program.build());
 
-            m_kernel = cl::Kernel(m_program, kernel_function.c_str(), &m_err);
+            CHECKCL_ERROR(m_kernel = cl::Kernel(m_program, kernel_function.c_str(), &m_err));
             CHECKCL(m_err);
             init();
         }
@@ -78,6 +85,15 @@ namespace CLUtils {
         Kernel(const std::string& directory, const std::string& filename, const std::string& kernel_function, bool verbose = false)
             : Kernel{ read_file(directory, filename), kernel_function, cl::Context(get_default_device(verbose)) } {}
 
+        Kernel(const std::filesystem::path& directory, const std::string& filename, const std::string& kernel_function, bool verbose = false)
+            : Kernel{ read_file(directory, filename), kernel_function, cl::Context(get_default_device(verbose)) } {}
+
+        Kernel(const std::filesystem::path& path, const std::string& kernel_function, const cl::Context& context)
+            : Kernel{ read_file(path), kernel_function, context } {}
+
+        Kernel(const std::filesystem::path& path, const std::string& kernel_function, bool verbose = false)
+            : Kernel{ read_file(path), kernel_function, cl::Context(get_default_device(verbose)) } {}
+
         cl::Device get_context_device() { return m_context.getInfo<CL_CONTEXT_DEVICES>().front(); }
         cl::Context get_context() { return m_context; }
         cl::Program get_program() { return m_program; }
@@ -86,17 +102,22 @@ namespace CLUtils {
 
         void run(const cl::NDRange& global, const cl::NDRange& local = cl::NullRange, cl::Event* event = nullptr) {
             check_cl_started();
-            m_err = m_queue.enqueueNDRangeKernel(m_kernel, cl::NullRange, global, local, nullptr, event);
-            CHECKCL(m_err);
+            CHECKCL_ERROR(m_queue.enqueueNDRangeKernel(m_kernel, cl::NullRange, global, local, nullptr, event));
         }
 
-        void run(const size_t count, cl::Event* event = nullptr) {
+        // void run(const size_t count, cl::Event* event = nullptr) {
+        //     check_cl_started();
+        //     auto device = get_context_device();
+        //     const std::size_t tmp_local{ device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() * 2 };
+        //     const std::size_t tmp_global{ ((count + tmp_local - 1) / tmp_local) * tmp_local };
+        //     cl::NDRange global{ cl::NDRange(tmp_global) };
+        //     cl::NDRange local{ cl::NDRange(tmp_local) };
+        //     run(global, local, event);
+        // }
+        void run(const size_t count1, const size_t count2 = 1, const size_t count3 = 1, cl::Event* event = nullptr) {
             check_cl_started();
-            auto device = get_context_device();
-            const std::size_t tmp_local{ device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() * 2 };
-            const std::size_t tmp_global{ ((count + tmp_local - 1) / tmp_local) * tmp_local };
-            cl::NDRange global{ cl::NDRange(tmp_global) };
-            cl::NDRange local{ cl::NDRange(tmp_local) };
+            cl::NDRange global{ count1, count2, count3 };
+            cl::NDRange local{ cl::NullRange };
             run(global, local, event);
         }
 
@@ -194,46 +215,23 @@ namespace CLUtils {
         }
 
     public:
-        static void init(bool profilling_enabled = false) {
-            auto device = m_context.getInfo<CL_CONTEXT_DEVICES>().front();
-            if (profilling_enabled) {
-                m_queue = cl::CommandQueue(m_context, device, CL_QUEUE_PROFILING_ENABLE);
-                m_queue2 = cl::CommandQueue(m_context, device, CL_QUEUE_PROFILING_ENABLE);
-            }
-            else {
-                m_queue = cl::CommandQueue(m_context, device);
-                m_queue2 = cl::CommandQueue(m_context, device);
-            }
-            m_cl_started = true;
-        }
-
-        // KillCL method
-        // ----------------------------------------------------------------------------
-        static void KillCL() {
-            if (!m_cl_started) return;
-            clReleaseCommandQueue(m_queue2());
-            clReleaseCommandQueue(m_queue());
-            clReleaseContext(m_context());
-        }
-
-        // check_cl_started method
-        // ----------------------------------------------------------------------------
-        static void check_cl_started() {
-            if (!m_cl_started) FatalError("Call InitCL() before using OpenCL functionality.");
-        }
+        static void init(bool profilling_enabled = false);
+        static void KillCL();
+        static void check_cl_started();
 
         // set_arg methods
         // ----------------------------------------------------------------------------
-        void set_arg(int idx, cl_mem* buffer) { check_cl_started(); clSetKernelArg(m_kernel(), idx, sizeof(cl_mem), buffer); }
-        void set_arg(int idx, cl::Buffer* buffer) { check_cl_started(); CHECKCL(m_err = m_kernel.setArg(idx, *buffer)); }
-        void set_arg(int idx, cl::Buffer& buffer) { check_cl_started(); CHECKCL(m_err = m_kernel.setArg(idx, buffer)); }
-        void set_arg(int idx, Buffer* buffer);
-        void set_arg(int idx, Buffer& buffer);
-        void set_arg(int idx, int value) { check_cl_started(); clSetKernelArg(m_kernel(), idx, sizeof(int), &value); }
-        void set_arg(int idx, float value) { check_cl_started(); clSetKernelArg(m_kernel(), idx, sizeof(float), &value); }
-        void set_arg(int idx, glm::vec2 value) { check_cl_started(); clSetKernelArg(m_kernel(), idx, sizeof(glm::vec2), &value); }
-        void set_arg(int idx, glm::vec3 value) { check_cl_started(); glm::vec4 tmp(value, 0); clSetKernelArg(m_kernel(), idx, sizeof(glm::vec4), &tmp); }
-        void set_arg(int idx, glm::vec4 value) { check_cl_started(); clSetKernelArg(m_kernel(), idx, sizeof(glm::vec4), &value); }
+        void set_arg(int idx, const cl_mem* buffer);
+        void set_arg(int idx, const cl::Buffer* buffer);
+        void set_arg(int idx, const cl::Buffer& buffer);
+        void set_arg(int idx, const Buffer* buffer);
+        void set_arg(int idx, const Buffer& buffer);
+        void set_arg(int idx, const cl::LocalSpaceArg& buffer);
+        void set_arg(int idx, const int value);
+        void set_arg(int idx, const float value);
+        void set_arg(int idx, const glm::vec2& value);
+        void set_arg(int idx, const glm::vec3& value);
+        void set_arg(int idx, const glm::vec4& value);
 
     private:
         inline static uint m_idx{ 1 };
@@ -262,62 +260,63 @@ namespace CLUtils {
                 m_size = count;
                 m_texture_id = 0; // not representing a texture
                 m_device_buffer = cl::Buffer(Kernel::m_context, rw_flag, m_size, 0, 0);
-                // m_device_buffer = clCreateBuffer(Kernel::m_context(), rw_flag, m_size, 0, 0);
                 m_host_buffer_ptr = (uint*) data_ptr;
             }
+            else {
+                m_texture_id = count; // representing texture count
+                int error = 0;
+                if (type == TARGET) m_device_buffer = clCreateFromGLTexture(Kernel::m_context(), CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, count, &error);
+                else m_device_buffer = clCreateFromGLTexture(Kernel::m_context(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, count, &error);
+                CHECKCL(error);
+                m_host_buffer_ptr = 0;
+            }
+        }
 
-            // else {
-            //     m_texture_id = count; // representing texture N
-            //     if (!Kernel::candoInterop) FatalError("didn't expect to get here.");
-            //     int error = 0;
-            //     if (type == TARGET) m_device_buffer = clCreateFromGLTexture(Kernel::GetContext(), CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, N, &error);
-            //     else m_device_buffer = clCreateFromGLTexture(Kernel::GetContext(), CL_MEM_READ_ONLY, GL_TEXTURE_2D, 0, N, &error);
-            //     CHECKCL(error);
-            //     m_host_buffer_ptr = 0;
-            // }
+        ~Buffer() {
+            if (m_own_data) delete [] m_host_buffer_ptr;
+            else { m_host_buffer_ptr = nullptr; }
+
+            // if (m_texture_id) clReleaseMemObject(m_device_buffer());
+            // else clReleaseMemObject(m_device_buffer());
         }
 
         cl::Buffer& get_device_buffer() { return m_device_buffer; }
+        const cl::Buffer& get_device_buffer() const { return m_device_buffer; }
         uint* get_host_buffer() { return m_host_buffer_ptr; }
 
         void copy_to_device(bool blocking = true) {
             Kernel::check_cl_started();
             // if (m_type & (TEXTURE | TARGET)) return;
             if (m_host_buffer_ptr == 0) return;
-            m_err = Kernel::m_queue.enqueueWriteBuffer(m_device_buffer, blocking ? CL_TRUE : CL_FALSE, 0, m_size, m_host_buffer_ptr);
-            CHECKCL(m_err);
+            CHECKCL_ERROR(Kernel::m_queue.enqueueWriteBuffer(m_device_buffer, blocking ? CL_TRUE : CL_FALSE, 0, m_size, m_host_buffer_ptr));
         }
 
         void copy_to_device2(bool blocking, cl::Event* e = 0, const size_t s = 0) {
             Kernel::check_cl_started();
             // if (m_type & (TEXTURE | TARGET)) return;
             if (m_host_buffer_ptr == 0) return;
-            m_err = Kernel::m_queue2.enqueueWriteBuffer(m_device_buffer, blocking ? CL_TRUE : CL_FALSE, 0, s ? s : m_size, m_host_buffer_ptr, 0, e);
-            CHECKCL(m_err);
+            CHECKCL_ERROR(Kernel::m_queue2.enqueueWriteBuffer(m_device_buffer, blocking ? CL_TRUE : CL_FALSE, 0, s ? s : m_size, m_host_buffer_ptr, 0, e));
         }
 
         void copy_from_device(bool blocking = true) {
             Kernel::check_cl_started();
             // if (m_type & (TEXTURE | TARGET)) return;
             if (m_host_buffer_ptr == 0) return;
-            m_err = Kernel::m_queue.enqueueReadBuffer(m_device_buffer, blocking ? CL_TRUE : CL_FALSE, 0, m_size, m_host_buffer_ptr);
-            CHECKCL(m_err);
+            CHECKCL_ERROR(Kernel::m_queue.enqueueReadBuffer(m_device_buffer, blocking ? CL_TRUE : CL_FALSE, 0, m_size, m_host_buffer_ptr));
         }
 
         void copy_to(Buffer* buffer) {
             Kernel::check_cl_started();
             // if (m_type & (TEXTURE | TARGET)) return;
             if (m_host_buffer_ptr == 0) return;
-            m_err = Kernel::m_queue.enqueueCopyBuffer(m_device_buffer, buffer->m_device_buffer, 0, 0, m_size);
-            CHECKCL(m_err);
+            CHECKCL_ERROR(Kernel::m_queue.enqueueCopyBuffer(m_device_buffer, buffer->m_device_buffer, 0, 0, m_size));
         }
 
         void clear() {
             Kernel::check_cl_started();
             // if (m_type & (TEXTURE | TARGET)) return;
             if (m_host_buffer_ptr == 0) return;
-            m_err = Kernel::m_queue.enqueueFillBuffer(m_device_buffer, 0, 0, m_size);
-            CHECKCL(m_err);
+            CHECKCL_ERROR(Kernel::m_queue.enqueueFillBuffer(m_device_buffer, 0, 0, m_size));
         }
 
     private:
