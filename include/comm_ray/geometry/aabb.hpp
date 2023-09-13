@@ -208,22 +208,21 @@ namespace SignalTracer {
             const auto& rdirection = ray.get_rdirection();
             const auto& origin = ray.get_origin();
 
-            for (std::size_t i = 0; i < 3; i++) {
-                if (std::fabs(ray.get_direction()[i]) <= 1e-6) {
-                    continue;
-                }
-                T t0 = (m_min[i] - origin[i]) * rdirection[i];
-                T t1 = (m_max[i] - origin[i]) * rdirection[i];
+            T t0 = (m_min.x - origin.x) * rdirection.x;
+            T t1 = (m_max.x - origin.x) * rdirection.x;
+            T t2 = (m_min.y - origin.y) * rdirection.y;
+            T t3 = (m_max.y - origin.y) * rdirection.y;
+            T t4 = (m_min.z - origin.z) * rdirection.z;
+            T t5 = (m_max.z - origin.z) * rdirection.z;
 
-                if (rdirection[i] < 0.0f) std::swap<T>(t0, t1);
-
-                interval.min(std::fmax(t0, interval.min()));
-                interval.max(std::fmin(t1, interval.max()));
-                if (interval.max() < interval.min()) {
-                    return Constant::INF_POS_T<T>;
-                }
+            T t_min = std::fmax(std::fmax(std::fmin(t0, t1), std::fmin(t2, t3)), std::fmin(t4, t5));
+            T t_max = std::fmin(std::fmin(std::fmax(t0, t1), std::fmax(t2, t3)), std::fmax(t4, t5));
+            t_min = std::fmax(t_min, interval.min());
+            t_max = std::fmin(t_max, interval.max());
+            if (t_max < t_min || t_max < 0.0f) {
+                return Constant::INF_POS_T<T>;
             }
-            return static_cast<T>(interval.min());
+            return t_min;
         }
 
         /**
