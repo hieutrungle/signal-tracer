@@ -21,7 +21,7 @@ namespace SignalTracer {
 
     public:
         Triangle() = default;
-        Triangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, std::shared_ptr<Material> p_material = std::make_shared<Concrete>());
+        Triangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, std::shared_ptr<Material> mat_ptr = std::make_shared<Concrete>());
 
         // copy constructor
         Triangle(const Triangle& rhs);
@@ -49,13 +49,13 @@ namespace SignalTracer {
         const glm::vec3& b() const;
         const glm::vec3& c() const;
         AABB bounding_box() const override;
-        const std::shared_ptr<Material> p_material() const;
+        const std::shared_ptr<Material> get_mat_ptr() const;
 
         // Set edges
         void a(const glm::vec3& a);
         void b(const glm::vec3& b);
         void c(const glm::vec3& c);
-        void p_material(std::shared_ptr<Material> p_material);
+        void set_mat_ptr(std::shared_ptr<Material> mat_ptr);
 
 
         glm::vec3 get_normal() const;
@@ -72,16 +72,17 @@ namespace SignalTracer {
 
         bool is_hit(const Ray& ray, const Interval& interval, IntersectRecord& record) const override;
 
+        void update() {
+            m_box = AABB{ m_a, m_b, m_c };
+        }
+
     private:
         glm::vec3 m_a{};
         glm::vec3 m_b{};
         glm::vec3 m_c{};
         AABB m_box{};
-        std::shared_ptr<Material> m_material_ptr{};
+        std::shared_ptr<Material> m_mat_ptr{};
 
-        void update() {
-            m_box = AABB{ m_a, m_b, m_c };
-        }
     };
 }
 

@@ -1,5 +1,9 @@
+
+
 #include "glad/gl.h"
 #include "GLFW/glfw3.h"
+#include "cl_utils.hpp"
+
 #include "cyGL.h"
 #include "cubesphere.hpp"
 #include "lighting.hpp"
@@ -17,6 +21,7 @@
 #include "path_record.hpp"
 #include "propagation_params.hpp"
 #include "theoratical_model.hpp"
+#include "utils.hpp"
 
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -29,7 +34,6 @@
 #include <vector>
 #include <memory>
 
-// TODO:
 #include "coverage_tracer.hpp"
 #include "coverage_map.hpp"
 #include "map_draw.hpp"
@@ -64,7 +68,7 @@ int main(int argc, char* argv []) {
         std::filesystem::path{ (current_path / "shader/model.vert") }.c_str(),
         std::filesystem::path{ (current_path / "shader/model.frag") }.c_str())) {
         std::cout << "Cannot build shader program" << std::endl;
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     cy::GLSLProgram radio_prog{};
@@ -72,7 +76,7 @@ int main(int argc, char* argv []) {
         std::filesystem::path{ (current_path / "shader/radio.vert") }.c_str(),
         std::filesystem::path{ (current_path / "shader/radio.frag") }.c_str())) {
         std::cout << "Cannot build shader program" << std::endl;
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     cy::GLSLProgram cm_prog{};
@@ -80,7 +84,7 @@ int main(int argc, char* argv []) {
         std::filesystem::path{ (current_path / "shader/radio.vert") }.c_str(),
         std::filesystem::path{ (current_path / "shader/signal.frag") }.c_str())) {
         std::cout << "Cannot build shader program" << std::endl;
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     cy::GLSLProgram line_prog{};
@@ -88,7 +92,7 @@ int main(int argc, char* argv []) {
         std::filesystem::path{ (current_path / "shader/radio.vert") }.c_str(),
         std::filesystem::path{ (current_path / "shader/line.frag") }.c_str())) {
         std::cout << "Cannot build shader program" << std::endl;
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     /*
@@ -99,16 +103,16 @@ int main(int argc, char* argv []) {
 
     // Load models
     // ----------------------------------
-    std::filesystem::path city_path{ current_path / "assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj" };
-    auto city_model_ptr1{ std::make_shared<SignalTracer::Model>(city_path.string()) };
-    // glm::vec3 tx_pos{ 5.0f, 1.5f, 5.0f };
-    glm::vec3 tx_pos{ 5.0f, 7.0f, 5.0f };
-    glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
-
-    // std::filesystem::path city_path{ current_path / "assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj" };
+    // std::filesystem::path city_path{ current_path / "assets/demo_layouts/Basic_Demo/OBJ/Basic_Demo_Layout_OBJ.obj" };
     // auto city_model_ptr1{ std::make_shared<SignalTracer::Model>(city_path.string()) };
-    // glm::vec3 tx_pos{ 0.0f, 7.5f, 20.0f };
+    // // glm::vec3 tx_pos{ 5.0f, 1.5f, 5.0f };
+    // glm::vec3 tx_pos{ 5.0f, 7.0f, 5.0f };
     // glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
+
+    std::filesystem::path city_path{ current_path / "assets/demo_layouts/City_Demo/OBJ/City_Map_Layout_OBJ.obj" };
+    auto city_model_ptr1{ std::make_shared<SignalTracer::Model>(city_path.string()) };
+    glm::vec3 tx_pos{ 0.0f, 7.5f, 20.0f };
+    glm::vec3 rx_pos{ -13.0f, 3.0f, -0.5f };
 
     SignalTracer::Transmitter tx0{ 0, tx_pos, prop_params.frequency, prop_params.tx_power, prop_params.tx_gain };
     SignalTracer::Receiver rx0{ 0, rx_pos, prop_params.rx_gain };
@@ -123,7 +127,7 @@ int main(int argc, char* argv []) {
     // TODO: generate coverage map
     float cell_size{ 1.0f };
     int max_reflection_count{ 16 };
-    int num_rays{ int(2.5e6) }; // a bit higher than FHD resolution (1920 x 1080)
+    int num_rays{ int(3e6) }; // a bit higher than FHD resolution (1920 x 1080)
     // int num_rays{ 50 };
     SignalTracer::CoverageTracer cov_tracer{ models, max_reflection_count, num_rays };
 
@@ -142,16 +146,16 @@ int main(int argc, char* argv []) {
     // int max_reflection_count{ 20 };
     // int num_rays{ int(12e6) };
 
-    // auto timer = Utils::Timer{};
-    // SignalTracer::RayCastingTracer sig_tracer{ models, max_reflection_count, num_rays };
-    // timer.execution_time();
-    // timer.reset();
-    // {
-    //     std::vector<SignalTracer::PathRecord> ref_records{};
-    //     sig_tracer.trace_rays(tx0.get_position(), rx0.get_position(), ref_records);
-    //     rx0.add_reflection_records(tx0.get_id(), ref_records);
-    // }
-    // timer.execution_time();
+    auto timer = Utils::Timer{};
+    SignalTracer::RayCastingTracer sig_tracer{ models, max_reflection_count, num_rays };
+    timer.execution_time();
+    timer.reset();
+    {
+        std::vector<SignalTracer::PathRecord> ref_records{};
+        sig_tracer.trace_rays(tx0.get_position(), rx0.get_position(), ref_records);
+        rx0.add_reflection_records(tx0.get_id(), ref_records);
+    }
+    timer.execution_time();
 
     std::cout << "Number of reflections: " << rx0.get_reflection_records().at(tx0.get_id()).size() << std::endl;
 
@@ -161,9 +165,9 @@ int main(int argc, char* argv []) {
     std::cout << prop_model << std::endl;
     {
         auto ref_records{ rx0.get_reflection_records().at(tx0.get_id()) };
-        // prop_model.calc_all_propagation_properties(ref_records);
+        prop_model.calc_all_propagation_properties(ref_records);
 
-        // std::cout << "Total receiving power: " << prop_model.calc_total_receiving_power(ref_records) << " dB" << std::endl;
+        std::cout << "Total receiving power: " << prop_model.calc_total_receiving_power(ref_records) << " dB" << std::endl;
 
         rx0.add_reflection_records(tx0.get_id(), ref_records);
     }
@@ -227,7 +231,8 @@ int main(int argc, char* argv []) {
     auto station_object_ptr{ std::make_shared<SignalTracer::Cubesphere>(0.25f, 3, true) };
     std::vector<std::shared_ptr<SignalTracer::Drawable>> station_objects{ };
     std::vector<glm::mat4> station_model_mats{};
-    for (const auto& pos : { tx_pos, rx_pos }) {
+    for (const auto& pos : { tx_pos }) {
+        // for (const auto& pos : { tx_pos, rx_pos }) {
         station_objects.push_back(station_object_ptr);
         station_model_mats.push_back(glm::translate(glm::mat4{ 1.0f }, pos));
     }

@@ -2,15 +2,15 @@
 
 namespace SignalTracer {
 
-    Triangle::Triangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, std::shared_ptr<Material> p_material)
-        : m_a(a), m_b(b), m_c(c), m_material_ptr(p_material) {
+    Triangle::Triangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, std::shared_ptr<Material> mat_ptr)
+        : m_a(a), m_b(b), m_c(c), m_mat_ptr(mat_ptr) {
         update();
     }
 
     // copy constructor
     Triangle::Triangle(const Triangle& rhs)
         : m_a(rhs.m_a), m_b(rhs.m_b), m_c(rhs.m_c)
-        , m_material_ptr(rhs.m_material_ptr) {
+        , m_mat_ptr(rhs.m_mat_ptr) {
         update();
     }
 
@@ -19,7 +19,7 @@ namespace SignalTracer {
         : m_a(std::move(rhs.m_a))
         , m_b(std::move(rhs.m_b))
         , m_c(std::move(rhs.m_c))
-        , m_material_ptr(std::move(rhs.m_material_ptr)) {
+        , m_mat_ptr(std::move(rhs.m_mat_ptr)) {
         update();
     }
 
@@ -32,7 +32,7 @@ namespace SignalTracer {
         m_b = rhs.m_b;
         m_c = rhs.m_c;
         m_box = rhs.m_box;
-        m_material_ptr = rhs.m_material_ptr;
+        m_mat_ptr = rhs.m_mat_ptr;
         return *this;
     }
 
@@ -45,7 +45,7 @@ namespace SignalTracer {
         m_b = std::move(rhs.m_b);
         m_c = std::move(rhs.m_c);
         m_box = std::move(rhs.m_box);
-        m_material_ptr = std::move(rhs.m_material_ptr);
+        m_mat_ptr = std::move(rhs.m_mat_ptr);
         return *this;
     }
 
@@ -55,11 +55,11 @@ namespace SignalTracer {
                 return false;
             }
         }
-        return m_material_ptr == rhs.m_material_ptr;
+        return m_mat_ptr == rhs.m_mat_ptr;
     }
 
     bool Triangle::operator!=(const Triangle& rhs) const {
-        return m_a != rhs.m_a || m_b != rhs.m_b || m_c != rhs.m_c || m_material_ptr != rhs.m_material_ptr;
+        return m_a != rhs.m_a || m_b != rhs.m_b || m_c != rhs.m_c || m_mat_ptr != rhs.m_mat_ptr;
     }
 
     // array subscript operator
@@ -72,7 +72,7 @@ namespace SignalTracer {
     // cout
     std::ostream& Triangle::print(std::ostream& out) const {
         out << "Triangle: [" << glm::to_string(m_a) << ", " << glm::to_string(m_b) << ", " << glm::to_string(m_c) << "]" << std::endl;
-        out << "Material: " << *m_material_ptr << std::endl;
+        out << "Material: " << *m_mat_ptr << std::endl;
         return out;
     }
 
@@ -80,12 +80,12 @@ namespace SignalTracer {
     const glm::vec3& Triangle::b() const { return m_b; }
     const glm::vec3& Triangle::c() const { return m_c; }
     AABB Triangle::bounding_box() const { return m_box; }
-    const std::shared_ptr<Material> Triangle::p_material() const { return m_material_ptr; }
+    const std::shared_ptr<Material> Triangle::get_mat_ptr() const { return m_mat_ptr; }
 
     void Triangle::a(const glm::vec3& a) { m_a = a; update(); }
     void Triangle::b(const glm::vec3& b) { m_b = b; update(); }
     void Triangle::c(const glm::vec3& c) { m_c = c; update(); }
-    void Triangle::p_material(std::shared_ptr<Material> p_material) { m_material_ptr = p_material; }
+    void Triangle::set_mat_ptr(std::shared_ptr<Material> mat_ptr) { m_mat_ptr = mat_ptr; }
 
 
     glm::vec3 Triangle::get_normal() const {
@@ -150,7 +150,7 @@ namespace SignalTracer {
             record.t = t;
             record.point = ray.point_at(t);
             record.normal = get_normal();
-            record.mat_ptr = m_material_ptr;
+            record.tri_ptr = std::make_shared<Triangle>(*this);
             return true;
         }
         return false;

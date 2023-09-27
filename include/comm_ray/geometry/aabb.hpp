@@ -14,11 +14,11 @@ namespace SignalTracer {
     class AABBT {
     public:
 
-        /**
-         * Constructor.
-         * The default constructor creates a new bounding box which contains no
-         * points.
-         */
+        //     /**
+        //      * Constructor.
+        //      * The default constructor creates a new bounding box which contains no
+        //      * points.
+        //      */
         AABBT() : m_min{ Constant::INF_POS_T<T> }, m_max{ Constant::INF_NEG_T<T> }, m_extent{ m_max - m_min } {};
 
         /**
@@ -256,6 +256,7 @@ namespace SignalTracer {
         }
 
     private:
+        // Total 36 bytes
         glm::vec3 m_min{ Constant::INF_POS_T<T> };
         glm::vec3 m_max{ Constant::INF_NEG_T<T> };
         glm::vec3 m_extent{ m_max - m_min };
@@ -263,6 +264,88 @@ namespace SignalTracer {
 
     // define float aabb
     using AABB = AABBT<float>;
+
+
+    // typedef struct AABB {
+    //     glm::vec3 min;
+    //     glm::vec3 max;
+    //     glm::vec3 extent;
+    // } AABB_t;
+
+    // AABB_t make_aabb(glm::vec3 min, glm::vec3 max) {
+    //     AABB_t aabb;
+    //     aabb.min = min;
+    //     aabb.max = max;
+    //     aabb.extent = max - min;
+    //     return aabb;
+    // }
+
+    // AABB_t make_aabb_from_points(glm::vec3* points, int num_points) {
+    //     AABB_t aabb;
+    //     aabb.min = glm::vec3(Constant::INF_POS);
+    //     aabb.max = glm::vec3(Constant::INF_NEG);
+    //     for (int i = 0; i < num_points; i++) {
+    //         aabb.min.x = fmin(aabb.min.x, points[i].x);
+    //         aabb.min.y = fmin(aabb.min.y, points[i].y);
+    //         aabb.min.z = fmin(aabb.min.z, points[i].z);
+    //         aabb.max.x = fmax(aabb.max.x, points[i].x);
+    //         aabb.max.y = fmax(aabb.max.y, points[i].y);
+    //         aabb.max.z = fmax(aabb.max.z, points[i].z);
+    //     }
+    //     aabb.extent = aabb.max - aabb.min;
+    //     return aabb;
+    // }
+
+    // void aabb_expand(AABB_t* aabb, glm::vec3 point) {
+    //     aabb->min.x = fmin(aabb->min.x, point.x);
+    //     aabb->min.y = fmin(aabb->min.y, point.y);
+    //     aabb->min.z = fmin(aabb->min.z, point.z);
+    //     aabb->max.x = fmax(aabb->max.x, point.x);
+    //     aabb->max.y = fmax(aabb->max.y, point.y);
+    //     aabb->max.z = fmax(aabb->max.z, point.z);
+    //     aabb->extent = aabb->max - aabb->min;
+    // }
+
+    // bool aabb_contains(const AABB_t* aabb, glm::vec3 point) {
+    //     return aabb->min.x <= point.x && point.x <= aabb->max.x &&
+    //         aabb->min.y <= point.y && point.y <= aabb->max.y &&
+    //         aabb->min.z <= point.z && point.z <= aabb->max.z;
+    // }
+
+    // glm::vec3 aabb_centroid(const AABB_t* aabb) {
+    //     return glm::vec3((aabb->min.x + aabb->max.x) * 0.5f,
+    //         (aabb->min.y + aabb->max.y) * 0.5f,
+    //         (aabb->min.z + aabb->max.z) * 0.5f);
+    // }
+
+    // float aabb_hit(const AABB_t* aabb, const Ray_t* ray, Interval_t interval) {
+    //     if (ray->direction.x == 0.0f && ray->direction.y == 0.0f &&
+    //         ray->direction.z == 0.0f) {
+    //         return Constant::INF_POS;
+    //     }
+
+    //     float t0 = (aabb->min.x - ray->origin.x) * ray->rdirection.x;
+    //     float t1 = (aabb->max.x - ray->origin.x) * ray->rdirection.x;
+    //     float t2 = (aabb->min.y - ray->origin.y) * ray->rdirection.y;
+    //     float t3 = (aabb->max.y - ray->origin.y) * ray->rdirection.y;
+    //     float t4 = (aabb->min.z - ray->origin.z) * ray->rdirection.z;
+    //     float t5 = (aabb->max.z - ray->origin.z) * ray->rdirection.z;
+
+    //     float t_min = fmax(fmax(fmin(t0, t1), fmin(t2, t3)), fmin(t4, t5));
+    //     float t_max = fmin(fmin(fmax(t0, t1), fmax(t2, t3)), fmax(t4, t5));
+    //     t_min = fmax(t_min, interval.t_min);
+    //     t_max = fmin(t_max, interval.t_max);
+    //     if (t_max < t_min || t_max < 0.0f) {
+    //         return Constant::INF_POS;
+    //     }
+    //     return t_min;
+    // }
+
+    // float aabb_surface_area(AABB_t* aabb) {
+    //     glm::vec3 extent = aabb->extent;
+    //     return 2.0f *
+    //         (extent.x * extent.y + extent.y * extent.z + extent.z * extent.x);
+    // }
 }// namespace SignalTracer
 
 #endif // !AABB_HPP

@@ -43,7 +43,6 @@ namespace SignalTracer {
         // Ray hits the 2D shape; set the rest of the hit record and return true.
         record.t = t;
         record.point = intersection_point;
-        record.mat_ptr = m_mat_ptr;
         record.normal = (glm::dot(ray.get_direction(), m_normal) > 0) ? -m_normal : m_normal;
 
         return true;

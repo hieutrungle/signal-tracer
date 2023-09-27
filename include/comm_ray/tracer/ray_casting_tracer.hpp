@@ -205,10 +205,10 @@ namespace SignalTracer {
             }
 
             if (b_is_hit) {
-                path_rec.add_record(record.point, record.mat_ptr, record.tri_ptr);
+                path_rec.add_record(record.point, record.tri_ptr->get_mat_ptr(), record.tri_ptr);
                 Ray scattered_ray{};
                 glm::vec3 attenuation{};
-                if (record.mat_ptr->is_scattering(ray, record, attenuation, scattered_ray)) {
+                if (record.tri_ptr->get_mat_ptr()->is_scattering(ray, record, attenuation, scattered_ray)) {
                     trace_ray(scattered_ray, rx_pos, rx_radius, depth - 1, path_rec);
                     return;
                 }

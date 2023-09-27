@@ -324,7 +324,7 @@ namespace CLUtils {
         uint* m_host_buffer_ptr;
         uint m_type, m_size /* in bytes */, m_texture_id;
         bool m_own_data, m_aligned;
-        cl_int m_err;
+        // cl_int m_err;
     };
 }
 
